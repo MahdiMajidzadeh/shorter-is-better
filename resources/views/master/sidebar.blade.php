@@ -94,8 +94,8 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="./examples/icons.html">
-                        <i class="ni ni-planet text-blue"></i> Icons
+                    <a class="nav-link" href="{{ url('panel/links') }}">
+                        <i class="fa fa-link"></i> Links
                     </a>
                 </li>
                 <li class="nav-item">
