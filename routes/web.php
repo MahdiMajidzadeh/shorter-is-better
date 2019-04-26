@@ -6,7 +6,7 @@ Route::group(['prefix' => 'panel', 'namespace' => 'Panel'], function(){
         Route::get('/','PageController@root');
 
         Route::get('/links', 'LinkController@all');
-        Route::get('/links/create', 'PanelController@linksCreate');
+        Route::get('/links/create', 'LinkController@create');
         Route::post('/links/create', 'PanelController@linksCreateSubmit');
         Route::get('/links/{id}', 'PanelController@linksDetail');
     });

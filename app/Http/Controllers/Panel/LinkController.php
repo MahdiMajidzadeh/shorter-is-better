@@ -11,4 +11,9 @@ class LinkController extends Controller
     {
         return view('links_all');
     }
+
+    public function  create()
+    {
+        return view('links_create');
+    }
 }
