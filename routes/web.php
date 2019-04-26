@@ -1,16 +1,16 @@
 <?php
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
+//Route::group(['prefix' => 'panel', 'middleware' => 'auth'], function(){
+Route::group(['prefix' => 'panel', 'namespace' => 'Panel'], function(){
 
-Route::get('/', function () {
-    return view('welcome');
-});
+        Route::get('/','PageController@root');
+
+        Route::get('/links', 'PanelController@linksAll');
+        Route::get('/links/create', 'PanelController@linksCreate');
+        Route::post('/links/create', 'PanelController@linksCreateSubmit');
+        Route::get('/links/{id}', 'PanelController@linksDetail');
+    });
+
+
+Route::get('/', 'RedirectController@root');
+Route::get('{slug}', 'RedirectController@link');
