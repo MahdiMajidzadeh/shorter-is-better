@@ -1,8 +1,6 @@
 @extends('master.base')
 
-@section('title', 'all links')
-
-@section('nav-title', 'All Links')
+@section('title', 'All Links')
 
 @section('content')
     <div class="main-content">

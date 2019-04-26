@@ -1,8 +1,6 @@
 @extends('master.base')
 
-@section('title', 'all links')
-
-@section('nav-title', 'All Links')
+@section('title', 'Create new Shorter')
 
 @section('content')
     <div class="main-content">
@@ -14,8 +12,7 @@
                     <div class="card shadow">
                         <div class="card-header border-0">
                             <h3 class="mb-0">
-                                Your Valid Link
-
+                                Create new shorter
                             </h3>
                         </div>
                         <div class="card-body">
@@ -35,6 +32,10 @@
                                     </div>
                                 </div>
                             </form>
+                        </div>
+                        <div class="card-footer py-4">
+                            <button type="submit" class="btn btn-success">Submit</button>
+                            <a href="#" class="btn btn-secondary">Dismiss</a>
                         </div>
                     </div>
                 </div>
