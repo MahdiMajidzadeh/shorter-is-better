@@ -21,14 +21,14 @@
                                     <div class="row">
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <input type="text" class="form-control form-control-alternative" placeholder="link ..." required>
+                                                <input type="text" name="url" class="form-control form-control-alternative" placeholder="link ..." required>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <input type="text" class="form-control form-control-alternative" placeholder="slug (optional)">
+                                                <input type="text" name="slug" class="form-control form-control-alternative" placeholder="slug (optional)">
                                             </div>
                                         </div>
                                     </div>

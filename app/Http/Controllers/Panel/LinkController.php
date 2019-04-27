@@ -10,7 +10,9 @@ class LinkController extends Controller
 {
     public function all()
     {
-        return view('links_all');
+        $data['links'] = Link::orderBy('id', 'desc')->paginate(30);
+        $data['setting'] = \Setting::all();
+        return view('links_all', $data);
     }
 
     public function create()
@@ -37,7 +39,7 @@ class LinkController extends Controller
             $length = \Setting::get('minCharacter');
             //TODO: check valid length
             while(true){
-                $slug = Str::random($length);
+                $slug = \Str::random($length);
                 $links = Link::where('slug', $slug)->first();
                 if(! $links){
                     break;
