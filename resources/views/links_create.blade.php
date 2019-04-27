@@ -9,35 +9,36 @@
         <div class="container-fluid mt--7">
             <div class="row">
                 <div class="col">
-                    <div class="card shadow">
-                        <div class="card-header border-0">
-                            <h3 class="mb-0">
-                                Create new shorter
-                            </h3>
-                        </div>
-                        <div class="card-body">
-                            <form>
-                                <div class="row">
-                                    <div class="col-md-6 col-12">
-                                        <div class="form-group">
-                                            <input type="email" class="form-control form-control-alternative" placeholder="link ...">
+                    <form method="post" action="{{ url('panel/links/create') }}">
+                        @csrf
+                        <div class="card shadow">
+                            <div class="card-header border-0">
+                                <h3 class="mb-0">
+                                    Create new shorter
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <input type="text" class="form-control form-control-alternative" placeholder="link ..." required>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6 col-12">
-                                        <div class="form-group">
-                                            <input type="email" class="form-control form-control-alternative" placeholder="slug (optional)">
+                                    <div class="row">
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <input type="text" class="form-control form-control-alternative" placeholder="slug (optional)">
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </form>
+                            </div>
+                            <div class="card-footer py-4">
+                                <button type="submit" class="btn btn-success">Submit</button>
+                                <a href="{{ url('panel/links') }}" class="btn btn-secondary">Dismiss</a>
+                            </div>
                         </div>
-                        <div class="card-footer py-4">
-                            <button type="submit" class="btn btn-success">Submit</button>
-                            <a href="#" class="btn btn-secondary">Dismiss</a>
-                        </div>
-                    </div>
+                    </form>
                 </div>
             </div>
             @include('master.footer')

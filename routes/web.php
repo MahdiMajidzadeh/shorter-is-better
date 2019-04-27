@@ -7,7 +7,7 @@ Route::group(['prefix' => 'panel', 'namespace' => 'Panel'], function(){
 
     Route::get('/links', 'LinkController@all');
     Route::get('/links/create', 'LinkController@create');
-    Route::post('/links/create', 'PanelController@linksCreateSubmit');
+    Route::post('/links/create', 'LinkController@createSubmit');
     Route::get('/links/{id}', 'PanelController@linksDetail');
 
     Route::get('/setting/', 'SettingController@root');
