@@ -31,8 +31,8 @@
                                 @foreach($links as $link)
                                 <tr>
                                     <th scope="row">
-                                        <a href="{{ $setting['defaultURL']. '/'. $link->slug }}">
-                                            {{ $setting['defaultURL']. '/'. $link->slug }}
+                                        <a href="{{ $setting['domain']. '/'. $link->slug }}">
+                                            {{ $setting['domain']. '/'. $link->slug }}
                                         </a>
                                     </th>
                                     <td>
