@@ -45,7 +45,7 @@
                                         {{ $link->user->name }}
                                     </td>
                                     <td class="text-right">
-                                        <a href="#" class="btn btn-icon btn-secondary btn-sm">
+                                        <a href="{{ url('panel/links/'. $link->id) }}" class="btn btn-icon btn-secondary btn-sm">
                                             <span class="btn-inner--icon"><i class="fa fa-chart-bar"></i></span>
                                         </a>
                                         {{--<div class="dropdown">--}}

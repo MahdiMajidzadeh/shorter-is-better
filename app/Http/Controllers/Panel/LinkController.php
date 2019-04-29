@@ -54,4 +54,20 @@ class LinkController extends Controller
 
         return redirect('panel/links');
     }
+
+    public function detail($id)
+    {
+        $link = Link::findOrFail($id);
+        $views = $link->views;
+
+        $system = $views->groupBy('system');
+
+        $system_count = $system->map(function ($item, $key) {
+            return collect($item)->count();
+        });
+
+        return $system_count ;
+    }
+
+    
 }
