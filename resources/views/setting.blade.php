@@ -21,6 +21,11 @@
                             <div class="row">
                                 <div class="col-12 col-md-6">
                                     <div class="form-group">
+                                        <label>Default Domain</label>
+                                        <input type="text" class="form-control" name="domain" value="{{ $domain }}">
+                                        <small class="form-text text-muted"></small>
+                                    </div>
+                                    <div class="form-group">
                                         <label>Default Url</label>
                                         <input type="text" class="form-control" name="defaultURL" value="{{ $defaultURL }}">
                                         <small class="form-text text-muted"></small>
