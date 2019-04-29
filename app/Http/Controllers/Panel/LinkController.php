@@ -60,14 +60,21 @@ class LinkController extends Controller
         $link = Link::findOrFail($id);
         $views = $link->views;
 
-        $system = $views->groupBy('system');
+        $data['link'] = $link;
+        $data['system'] = $this->counted($views, 'system');
+        $data['browser'] = $this->counted($views, 'browser');
+        $data['platform'] = $this->counted($views, 'platform');
+        $data['device'] = $this->counted($views, 'device');
 
-        $system_count = $system->map(function ($item, $key) {
-            return collect($item)->count();
-        });
-
-        return $system_count ;
+        return view('') ;
     }
 
-    
+    private function counted($views, $filter)
+    {
+        $grouped = $views->groupBy($filter);
+
+        return $grouped->map(function ($item, $key) {
+            return collect($item)->count();
+        });
+    }
 }
