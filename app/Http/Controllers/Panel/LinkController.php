@@ -66,7 +66,7 @@ class LinkController extends Controller
         $data['platform'] = $this->counted($views, 'platform');
         $data['device'] = $this->counted($views, 'device');
 
-        return view('') ;
+        return view('links_detail', $data) ;
     }
 
     private function counted($views, $filter)
