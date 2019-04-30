@@ -8,7 +8,7 @@
         <div class="header bg-gradient-primary pb-8 pt-5 pt-md-8"></div>
         <div class="container-fluid mt--7">
             <div class="row">
-                <div class="col-6">
+                <div class="col-12 col-md-6 mb-4">
                     <div class="card shadow">
                         <div class="card-header bg-transparent">
                             <div class="row align-items-center">
@@ -25,7 +25,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-6">
+                <div class="col-12 col-md-6 mb-4">
                     <div class="card shadow">
                         <div class="card-header bg-transparent">
                             <div class="row align-items-center">
@@ -43,8 +43,8 @@
                     </div>
                 </div>
             </div>
-            <div class="row mt-4">
-                <div class="col-6">
+            <div class="row">
+                <div class="col-12 col-md-6 mb-4">
                     <div class="card shadow">
                         <div class="card-header bg-transparent">
                             <div class="row align-items-center">
@@ -61,7 +61,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-6">
+                <div class="col-12 col-md-6 mb-4">
                     <div class="card shadow">
                         <div class="card-header bg-transparent">
                             <div class="row align-items-center">
