@@ -66,6 +66,8 @@ class LinkController extends Controller
         $data['platform'] = $this->counted($views, 'platform');
         $data['device'] = $this->counted($views, 'device');
 
+        $data['setting'] = \Setting::all();
+
         return view('links_detail', $data) ;
     }
 

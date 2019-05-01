@@ -8,6 +8,24 @@
         <div class="header bg-gradient-primary pb-8 pt-5 pt-md-8"></div>
         <div class="container-fluid mt--7">
             <div class="row">
+                <div class="col-12 mb-4">
+                    <div class="card shadow">
+                        <div class="card-body row">
+                            <div class="col-10">
+                            <h1>{{ $link->link }}</h1>
+                            <h3>shorted to </h3>
+                            <h1>{{ $setting['domain']. '/'. $link->slug }}</h1>
+                            </div>
+                            <div class="col-2">
+                                <div>viewed for</div>
+                                <div class="display-1 mt-3">{{ $link->view }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
                 <div class="col-12 col-md-6 mb-4">
                     <div class="card shadow">
                         <div class="card-header bg-transparent">
