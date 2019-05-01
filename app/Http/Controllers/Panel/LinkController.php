@@ -52,7 +52,7 @@ class LinkController extends Controller
         $link->view = 0;
         $link->save();
 
-        return redirect('panel/links');
+        return redirect('panel/links/'. $link->id);
     }
 
     public function detail($id)

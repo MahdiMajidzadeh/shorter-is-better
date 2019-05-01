@@ -25,6 +25,6 @@ class SettingController extends Controller
         \Setting::set('domain', $request->get('domain'));
         \Setting::save();
 
-        return redirect('panel/setting');
+        return redirect('panel/setting')->with('msg-ok','');
     }
 }
