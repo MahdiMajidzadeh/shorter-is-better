@@ -23,7 +23,11 @@ class UserController extends Controller
 
     public function createSubmit(Request $request)
     {
-        //TODO: validations
+        $request->validate([
+            'name' => 'required',
+            'username' => 'required|unique:users',
+            'password' => 'required'
+        ]);
 
         $user = New User();
         $user->name = $request->get('name');

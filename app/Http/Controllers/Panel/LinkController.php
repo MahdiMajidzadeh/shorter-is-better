@@ -36,8 +36,8 @@ class LinkController extends Controller
         }
         else{
             $slug = '';
-            $length = \Setting::get('minCharacter');
-            //TODO: check valid length
+            $length = \Setting::get('slugLength', 4);
+
             while(true){
                 $slug = \Str::random($length);
                 $links = Link::where('slug', $slug)->first();
@@ -48,7 +48,7 @@ class LinkController extends Controller
             $link->slug = $slug;
         }
 
-        $link->user_id = 1;  //TODO: auth
+        $link->user_id = auth()->id();
         $link->view = 0;
         $link->save();
 

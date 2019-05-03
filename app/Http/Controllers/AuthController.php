@@ -14,7 +14,14 @@ class AuthController extends Controller
 
     public function loginSubmit(Request $request)
     {
-
+        $username = $request->get('username');
+        $password = $request->get('password');
+        if (Auth::attempt(['username' => $username, 'password' => $password])) {
+            return redirect('panel');
+        }
+        else{
+            return redirect('auth')->with('msg-err', '');
+        }
     }
 
     public function logout()

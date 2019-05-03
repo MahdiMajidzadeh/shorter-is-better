@@ -7,14 +7,12 @@
         @include('master.nav')
         <div class="header bg-gradient-primary pb-8 pt-5 pt-md-8"></div>
         <div class="container-fluid mt--7">
-            @if(session()->has('msg-ok'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <span class="alert-inner--icon"><i class="ni ni-like-2"></i></span>
-                    <span class="alert-inner--text"><strong>Success!</strong></span>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
+            @if ($errors->any())
+                @foreach ($errors->all() as $error)
+                    <div class="alert alert-danger fade show" role="alert">
+                        <span class="alert-inner--text">{{ $error }}</span>
+                    </div>
+                @endforeach
             @endif
             <div class="row">
                 <div class="col">
@@ -30,14 +28,14 @@
                                 <div class="row">
                                     <div class="col-md-6 col-12">
                                         <div class="form-group">
-                                            <input type="text" name="name" class="form-control form-control-alternative" placeholder="name" required>
+                                            <input type="text" name="name" class="form-control form-control-alternative" placeholder="name" required value="{{ old('name') }}">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6 col-12">
                                         <div class="form-group">
-                                            <input type="text" name="username" class="form-control form-control-alternative" placeholder="username" required>
+                                            <input type="text" name="username" class="form-control form-control-alternative" placeholder="username" required value="{{ old('username') }}">
                                         </div>
                                     </div>
                                 </div>

@@ -9,7 +9,6 @@
         <div class="container-fluid mt--7">
             @if(session()->has('msg-ok'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <span class="alert-inner--icon"><i class="ni ni-like-2"></i></span>
                 <span class="alert-inner--text"><strong>Success!</strong></span>
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -40,13 +39,8 @@
                                         <small class="form-text text-muted"></small>
                                     </div>
                                     <div class="form-group">
-                                        <label>Min Character</label>
-                                        <input type="text" class="form-control" name="minCharacter" value="{{ $minCharacter }}">
-                                        <small class="form-text text-muted"></small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Max Character</label>
-                                        <input type="text" class="form-control" name="maxCharacter" value="{{ $maxCharacter }}">
+                                        <label>Slug length</label>
+                                        <input type="text" class="form-control" name="slugLength" value="{{ $slugLength }}">
                                         <small class="form-text text-muted"></small>
                                     </div>
                                 </div>

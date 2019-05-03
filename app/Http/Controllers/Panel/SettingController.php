@@ -9,8 +9,7 @@ class SettingController extends Controller
 {
     public  function  root()
     {
-        $data['minCharacter'] = \Setting::get('minCharacter', '3');
-        $data['maxCharacter'] = \Setting::get('maxCharacter', '6');
+        $data['maxCharacter'] = \Setting::get('slugLength', '4');
         $data['defaultURL'] = \Setting::get('defaultURL', 'http://mahdi.majidzadeh.ir');
         $data['domain'] = \Setting::get('domain', request()->getSchemeAndHttpHost());
 
@@ -19,8 +18,7 @@ class SettingController extends Controller
 
     public function  rootSubmit(Request $request)
     {
-        \Setting::set('minCharacter', $request->get('minCharacter'));
-        \Setting::set('maxCharacter', $request->get('maxCharacter'));
+        \Setting::set('slugLength', $request->get('slugLength'));
         \Setting::set('defaultURL', $request->get('defaultURL'));
         \Setting::set('domain', $request->get('domain'));
         \Setting::save();

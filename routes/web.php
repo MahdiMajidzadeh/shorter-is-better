@@ -1,7 +1,6 @@
 <?php
 
-//Route::group(['prefix' => 'panel', 'middleware' => 'auth'], function(){
-Route::group(['prefix' => 'panel', 'namespace' => 'Panel'], function(){
+Route::group(['prefix' => 'panel', 'namespace' => 'Panel', 'middleware' => 'auth'], function(){
 
     Route::get('/','PageController@root');
 
