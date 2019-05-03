@@ -47,17 +47,25 @@
                         <i class="fa fa-link"></i> Links
                     </a>
                 </li>
+            </ul>
+            <hr class="my-3">
+            <ul class="navbar-nav mb-md-3">
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url('panel/users') }}">
                         <i class="fa fa-user"></i> Users
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url('panel/setting') }}">
+                        <i class="fas fa-sliders-h"></i> Setting
                     </a>
                 </li>
             </ul>
             <hr class="my-3">
             <ul class="navbar-nav mb-md-3">
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url('panel/setting') }}">
-                        <i class="fas fa-sliders-h"></i> Setting
+                    <a class="nav-link" href="{{ url('auth/logout') }}">
+                        <i class="fas fa-sign-out-alt"></i> Logout
                     </a>
                 </li>
             </ul>
