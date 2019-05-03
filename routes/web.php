@@ -11,6 +11,7 @@ Route::group(['prefix' => 'panel', 'namespace' => 'Panel'], function(){
     Route::get('/links/{id}', 'LinkController@detail');
 
     Route::get('/users', 'UserController@root');
+    Route::get('/users/create', 'UserController@create');
     Route::post('/users/create', 'UserController@createSubmit');
 
     Route::get('/setting/', 'SettingController@root');
@@ -20,10 +21,9 @@ Route::group(['prefix' => 'panel', 'namespace' => 'Panel'], function(){
 Route::group(['prefix' => 'auth'], function() {
 
     Route::get('/','AuthController@login');
-
+    Route::post('/login','AuthController@loginSubmit');
     Route::get('/logout', 'AuthController@logout');
 });
-
 
 Route::get('/', 'RedirectController@root');
 Route::get('{slug}', 'RedirectController@link');

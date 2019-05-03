@@ -1,6 +1,6 @@
 @extends('master.base')
 
-@section('title', 'All Links')
+@section('title', 'All User')
 
 @section('content')
     <div class="main-content">
@@ -13,6 +13,7 @@
                         <div class="card-header border-0">
                             <h3 class="mb-0">
                                 Your Shorter Mates
+                                <a  href="{{ url('panel/users/create') }}" class="btn btn-default right--5">Add new</a>
                             </h3>
                         </div>
                         <div class="table-responsive">

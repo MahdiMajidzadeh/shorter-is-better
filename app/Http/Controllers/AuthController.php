@@ -12,6 +12,11 @@ class AuthController extends Controller
         return view('login');
     }
 
+    public function loginSubmit(Request $request)
+    {
+
+    }
+
     public function logout()
     {
         Auth::logout();
