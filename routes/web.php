@@ -14,6 +14,11 @@ Route::group(['prefix' => 'panel', 'namespace' => 'Panel'], function(){
     Route::post('/setting/', 'SettingController@rootSubmit');
 });
 
+Route::group(['prefix' => 'auth'], function() {
+
+    Route::get('/','AuthController@login');
+});
+
 
 Route::get('/', 'RedirectController@root');
 Route::get('{slug}', 'RedirectController@link');
