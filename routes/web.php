@@ -19,7 +19,7 @@ Route::group(['prefix' => 'panel', 'namespace' => 'Panel', 'middleware' => 'auth
 
 Route::group(['prefix' => 'auth'], function() {
 
-    Route::get('/','AuthController@login');
+    Route::get('/','AuthController@login')->name('login');
     Route::post('/login','AuthController@loginSubmit');
     Route::get('/logout', 'AuthController@logout');
 });
