@@ -9,7 +9,7 @@ class SettingController extends Controller
 {
     public  function  root()
     {
-        $data['maxCharacter'] = \Setting::get('slugLength', '4');
+        $data['slugLength'] = \Setting::get('slugLength', '4');
         $data['defaultURL'] = \Setting::get('defaultURL', 'http://mahdi.majidzadeh.ir');
         $data['domain'] = \Setting::get('domain', request()->getSchemeAndHttpHost());
 

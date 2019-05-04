@@ -14,7 +14,9 @@
                             <div class="col-10">
                             <h1>{{ $link->link }}</h1>
                             <h3>shorted to </h3>
-                            <h1>{{ $setting['domain']. '/'. $link->slug }}</h1>
+                            <a href="{{ $setting['domain']. '/'. $link->slug }}" target="_blank">
+                                <h1>{{ $setting['domain']. '/'. $link->slug }}</h1>
+                            </a>
                             </div>
                             <div class="col-2">
                                 <div>viewed for</div>
