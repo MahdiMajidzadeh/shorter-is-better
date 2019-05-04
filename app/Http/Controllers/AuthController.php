@@ -16,7 +16,9 @@ class AuthController extends Controller
     {
         $username = $request->get('username');
         $password = $request->get('password');
-        if (Auth::attempt(['username' => $username, 'password' => $password])) {
+        $remember = $request->get('remember');
+
+        if (Auth::attempt(['username' => $username, 'password' => $password], $remember)) {
             return redirect('panel');
         }
         else{
@@ -27,5 +29,7 @@ class AuthController extends Controller
     public function logout()
     {
         Auth::logout();
+
+        return redirect('auth');
     }
 }
