@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Model\Link;
+use Hashids\Hashids;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -34,23 +35,29 @@ class LinkController extends Controller
             $link->slug = $request->slug;
             //TODO: check slug uniqueness
         }
-        else{
-            $slug = '';
-            $length = \Setting::get('slugLength', 4);
-
-            while(true){
-                $slug = \Str::random($length);
-                $links = Link::where('slug', $slug)->first();
-                if(! $links){
-                    break;
-                };
-            }
-            $link->slug = $slug;
-        }
+//        else{
+//            $slug = '';
+//            $length = \Setting::get('slugLength', 4);
+//
+//            while(true){
+//                $slug = \Str::random($length);
+//                $links = Link::where('slug', $slug)->first();
+//                if(! $links){
+//                    break;
+//                };
+//            }
+//            $link->slug = $slug;
+//        }
 
         $link->user_id = auth()->id();
         $link->view = 0;
         $link->save();
+        if(!$request->filled('slug')){
+            $hashids = new Hashids(env('APP_KEY'));
+            $link->slug = $hashids->encode($link->id);
+            $link->save();
+        }
+
 
         return redirect('panel/links/'. $link->id);
     }
