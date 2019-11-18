@@ -47,12 +47,12 @@ class RedirectController extends Controller
         $view->country = \Location::get()->countryName ?: "Unknown";
         $view->city = \Location::get()->cityName ?: "Unknown";
         $view->ip = $request->ip();
+        $view->user_agent = $request->userAgent();
 
         $view->save();
 
         $link->increment('view');
 
         return redirect($link->link);
-
     }
 }
