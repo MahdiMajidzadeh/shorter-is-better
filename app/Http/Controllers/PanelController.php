@@ -8,6 +8,6 @@ class PanelController extends Controller
 {
     public function index(Request $request)
     {
-        return "ok";
+        return view('panel.dashboard');
     }
 }

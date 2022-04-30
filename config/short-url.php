@@ -11,7 +11,7 @@ return [
     | is registered for the short URL route.
     |
     */
-    'prefix' => '/short',
+    'prefix' => null,
 
     /*
     |--------------------------------------------------------------------------
@@ -66,7 +66,7 @@ return [
     | method.
     |
     */
-    'enforce_https'         => true,
+    'enforce_https'         => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -98,7 +98,7 @@ return [
     | generated keys are unique.
     |
     */
-    'key_salt'              => 'AshAllenDesign\ShortURL',
+    'key_salt'              => 'AshAllenDesign//\ShortURL',
 
     /*
     |--------------------------------------------------------------------------
