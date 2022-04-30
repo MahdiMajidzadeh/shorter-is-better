@@ -1,28 +1,18 @@
 <?php
 
-Route::group(['prefix' => 'panel', 'namespace' => 'Panel', 'middleware' => 'auth'], function(){
+use Illuminate\Support\Facades\Route;
 
-    Route::get('/','PageController@root');
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
 
-    Route::get('/links', 'LinkController@all');
-    Route::get('/links/create', 'LinkController@create');
-    Route::post('/links/create', 'LinkController@createSubmit');
-    Route::get('/links/{id}', 'LinkController@detail');
-
-    Route::get('/users', 'UserController@root');
-    Route::get('/users/create', 'UserController@create');
-    Route::post('/users/create', 'UserController@createSubmit');
-
-    Route::get('/setting/', 'SettingController@root');
-    Route::post('/setting/', 'SettingController@rootSubmit');
+Route::get('/', function () {
+    return view('welcome');
 });
-
-Route::group(['prefix' => 'auth'], function() {
-
-    Route::get('/','AuthController@login')->name('login');
-    Route::post('/login','AuthController@loginSubmit');
-    Route::get('/logout', 'AuthController@logout');
-});
-
-Route::get('/', 'RedirectController@root');
-Route::get('{slug}', 'RedirectController@link');
