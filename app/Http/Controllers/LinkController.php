@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Illuminate\Http\Request;
-use DefStudio\Telegraph\Facades\Telegraph;
 use AshAllenDesign\ShortURL\Classes\Builder;
 use AshAllenDesign\ShortURL\Facades\ShortURL;
 
@@ -22,10 +22,33 @@ class LinkController extends Controller
 
 //        dd($shortURL);
 
-        $bot = \DefStudio\Telegraph\Models\TelegraphBot::find(1);
+        return view('panel.links-create');
+    }
 
-        $ok = Telegraph::bot($bot)->botInfo()->send();
+    public function createSubmit(Request $request)
+    {
+        $request->validate([
+            'url' => 'required|url',
+        ]);
+//        dd($request);
 
-        dd($ok);
+        $builder = new Builder();
+        $shortURLObject = ShortURL::destinationUrl($request->get('url'));
+
+        if ($request->filled('key')){
+            $shortURLObject->urlKey($request->get('key'));
+        }
+
+        try {
+            $shorted = $shortURLObject->make();
+        }
+        catch(Exception $e) {
+            return redirect()->back()->with('msg-error', $e->getMessage());
+        }
+
+//        $shortURLObject = $builder->destinationUrl('https://destination.com')->singleUse()->make();
+//        $shortURL = $shortURLObject->default_short_url;
+
+        return redirect('links/'. $shorted['url_key']);
     }
 }

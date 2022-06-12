@@ -11,6 +11,9 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
+        if(auth()->check()){
+            return redirect('panel');
+        }
         return view('auth.login');
     }
 

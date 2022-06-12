@@ -11,7 +11,7 @@ return [
     | is registered for the short URL route.
     |
     */
-    'prefix' => null,
+    'prefix' => 's',
 
     /*
     |--------------------------------------------------------------------------
@@ -98,7 +98,7 @@ return [
     | generated keys are unique.
     |
     */
-    'key_salt'              => 'AshAllenDesign//\ShortURL',
+    'key_salt'              => 'MyNameIsMajid@babe',
 
     /*
     |--------------------------------------------------------------------------

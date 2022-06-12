@@ -12,8 +12,9 @@ Route::group(['prefix' => 'auth'], function() {
 
 Route::group(['prefix' => 'panel'], function() {
     Route::get('/', [C\PanelController::class, 'index']);
+});
 
-    Route::group(['prefix' => 'links'], function() {
-        Route::get('/', [C\LinkController::class, 'create']);
-    });
+Route::group(['prefix' => 'links'], function() {
+    Route::get('/create', [C\LinkController::class, 'create']);
+    Route::post('/create', [C\LinkController::class, 'createSubmit']);
 });
