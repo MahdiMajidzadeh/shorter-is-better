@@ -48,7 +48,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url('/panel/links') }}">
+                            <a class="nav-link" href="{{ url('/links') }}">
                                 <i class="bi bi-link"></i> Links
                             </a>
                         </li>
@@ -56,13 +56,13 @@
                     <!-- Divider -->
                     <hr class="navbar-divider my-5 opacity-20">
                     <!-- Navigation -->
-                    <ul class="navbar-nav mb-md-4">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url('panel/settings') }}">
-                                <i class="bi bi-gear"></i> Settings
-                            </a>
-                        </li>
-                    </ul>
+{{--                    <ul class="navbar-nav mb-md-4">--}}
+{{--                        <li class="nav-item">--}}
+{{--                            <a class="nav-link" href="{{ url('panel/settings') }}">--}}
+{{--                                <i class="bi bi-gear"></i> Settings--}}
+{{--                            </a>--}}
+{{--                        </li>--}}
+{{--                    </ul>--}}
                     <!-- Push content down -->
                     <div class="mt-auto"></div>
                     <!-- User (md) -->
