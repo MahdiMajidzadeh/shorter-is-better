@@ -44,8 +44,10 @@ class SettingController extends Controller
 
         $bot->registerCommands([
                 'short' => 'short url',
-                'shortkey' => 'short key with custom key',
+                'shortkey' => 'short url with custom key',
                 'stat' => 'show stat for shorted url'
         ])->send();
+
+        return redirect()->back();
     }
 }

@@ -18,7 +18,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="">
-                                    <input type="url" class="form-control" name="name">
+                                    <input type="text" class="form-control" name="name">
                                 </div>
                             </div>
                         </div>
