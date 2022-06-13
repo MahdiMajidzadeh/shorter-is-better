@@ -98,7 +98,7 @@
                                 <!-- Actions -->
                                 <div class="col-md-6 col-12 text-md-end">
                                     <div class="mx-n1">
-
+                                        @yield('header-actions')
                                     </div>
                                 </div>
                             </div>

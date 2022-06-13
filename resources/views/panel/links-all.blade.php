@@ -9,7 +9,7 @@
         <table class="table table-hover table-nowrap table-spaced">
             <thead class="thead-light">
             <tr>
-                <th scope="col">url</th>
+                <th scope="col">id</th>
                 <th scope="col">url</th>
                 <th scope="col">link</th>
                 <th></th>
