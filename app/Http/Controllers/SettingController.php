@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use DefStudio\Telegraph\Models\TelegraphBot;
 
 class SettingController extends Controller
 {
@@ -18,5 +19,33 @@ class SettingController extends Controller
         $token = auth()->user()->createToken(now()->format('Y-m-d H:i:s'));
 
         return redirect()->back()->with('token', $token->plainTextToken);
+    }
+
+    public function bots(Request $request)
+    {
+        $data['bots'] = TelegraphBot::all();
+
+        return view('panel.setting-bots-all', $data);
+    }
+
+    public function botsCreate(Request $request)
+    {
+        return view('panel.setting-bots-create');
+    }
+
+    public function botsCreateSubmit(Request $request)
+    {
+        $bot = TelegraphBot::create([
+            'token' => $request->get('token'),
+            'name' => $request->get('name'),
+        ]);
+
+        $bot->registerWebhook()->send();
+
+        $bot->registerCommands([
+                'short' => 'short url',
+                'shortkey' => 'short key with custom key',
+                'stat' => 'show stat for shorted url'
+        ])->send();
     }
 }
