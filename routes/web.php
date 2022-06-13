@@ -19,7 +19,16 @@ Route::group(['middleware' => 'auth'], function() {
         Route::get('/', [C\LinkController::class, 'all']);
         Route::get('/create', [C\LinkController::class, 'create']);
         Route::post('/create', [C\LinkController::class, 'createSubmit']);
-
         Route::get('/{short}', [C\LinkController::class, 'detail']);
+    });
+
+    Route::group(['prefix' => 'setting'], function() {
+        Route::get('/', [C\SettingController::class, 'index']);
+        Route::get('/tokens', [C\SettingController::class, 'tokens']);
+        Route::get('/tokens/create', [C\SettingController::class, 'tokensCreateSubmit']);
+
+        Route::get('/bots', [C\SettingController::class, 'bots']);
+        Route::get('/bots/create', [C\SettingController::class, 'botsCreate']);
+        Route::post('/bots/create', [C\SettingController::class, 'botsCreateSubmit']);
     });
 });
