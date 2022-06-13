@@ -58,8 +58,15 @@
                     <!-- Navigation -->
                     <ul class="navbar-nav mb-md-4">
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url('settings') }}">
-                                <i class="bi bi-gear"></i> Settings
+                            <a class="nav-link" href="{{ url('settings/bots') }}">
+                                <i class="bi bi-robot"></i> Bots
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav mb-md-4">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url('settings/tokens') }}">
+                                <i class="bi bi-key"></i> Tokens
                             </a>
                         </li>
                     </ul>

@@ -6,8 +6,9 @@ use Illuminate\Support\Facades\Route;
 Route::view('/', 'index');
 
 Route::group(['prefix' => 'auth'], function() {
-    Route::get('/', [C\AuthController::class, 'login']);
+    Route::get('/', [C\AuthController::class, 'login'])->name('login');
     Route::post('/', [C\AuthController::class, 'loginSubmit']);
+    Route::post('/logout', [C\AuthController::class, 'logout']);
 });
 
 Route::group(['middleware' => 'auth'], function() {

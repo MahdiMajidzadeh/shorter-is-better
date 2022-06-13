@@ -10,7 +10,7 @@ class LinkController extends Controller
 {
     public function all(Request $request)
     {
-        $data['links'] = \AshAllenDesign\ShortURL\Models\ShortURL::orderBy('id', 'desc')->paginate(1);
+        $data['links'] = \AshAllenDesign\ShortURL\Models\ShortURL::orderBy('id', 'desc')->paginate(40);
 
         return view('panel.links-all',$data);
     }
