@@ -17,3 +17,7 @@
 "updated_at": "2022-06-12T19:57:30.000000Z",
 "created_at": "2022-06-12T19:57:30.000000Z",
 "id": 4
+
+
+$text = $this->message->text();
+$this->chat->message('hello')->send();

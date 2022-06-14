@@ -34,13 +34,7 @@ class Handler extends WebhookHandler
     protected function handleChatMessage(Stringable $text): void
     {
         $this->initCache();
-
-        Log::debug(Cache::get($this->cacheKey));
-
         $this->checkState();
-
-//        $text = $this->message->text();
-//        $this->chat->message('hello')->send();
     }
 
     public function initCache()
@@ -56,7 +50,6 @@ class Handler extends WebhookHandler
     public function checkState()
     {
         if($this->state == 'short'){
-            Log::debug('short');
             $this->makeShort();
         }
     }
