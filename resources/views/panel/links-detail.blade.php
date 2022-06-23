@@ -17,7 +17,7 @@
                         </div>
                         <div class="ps-4">
                             <span class="d-block text-sm text-muted font-semibold mb-1">link</span>
-                            <div class="d-flex align-items-center h4 mb-0">
+                            <div class="d-flex align-items-center h4 mb-0 text-break">
                                 {{ $short->destination_url }}
                             </div>
                         </div>

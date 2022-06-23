@@ -43,3 +43,12 @@
     </div>
     {{ $links->links() }}
 @endsection
+
+@section('header-actions')
+    <a href="{{ url('links/create') }}" class="btn d-inline-flex btn-sm btn-primary border-base mx-1">
+        <span class=" pe-2">
+            <i class="bi bi-plus-lg"></i>
+        </span>
+        <span>create link</span>
+    </a>
+@endsection
