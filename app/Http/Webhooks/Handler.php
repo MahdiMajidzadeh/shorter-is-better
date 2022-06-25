@@ -2,10 +2,8 @@
 
 namespace App\Http\Webhooks;
 
-use Exception;
 use Illuminate\Support\Stringable;
 use Illuminate\Support\Facades\Cache;
-use AshAllenDesign\ShortURL\Facades\ShortURL;
 use DefStudio\Telegraph\Handlers\WebhookHandler;
 
 class Handler extends WebhookHandler
@@ -26,6 +24,14 @@ class Handler extends WebhookHandler
 
     public function _cache($data = null)
     {
+//        $chat = TelegraphChat::where('chat_id',  $this->chat['chat_id'])->first();
+//        if(!$chat){
+//            $this->chat->message("Not Allowed \nPlease Authenticate with valid token")->send();
+//            return false;
+//        }
+
+//        $this->chat->message(Auth::)->send();
+
         $this->cacheKey = 'tgs_' . $this->bot->id . '_' . $this->chat;
 
         if (is_null($data)) {
@@ -49,49 +55,15 @@ class Handler extends WebhookHandler
             'inputs' => [],
         ]);
 
-        $this->shortURLWithKey('');
+        $state = new StateManager($this->chat, $this->inputs);
+        $state->shortURLWithKey($this->step, $this->message);
+        $this->inputs = $state->inputs;
+        $this->_cacheUpdate($state->lastStep);
     }
 
-    public function shortURLWithKey($text)
+    public function _cacheUpdate($lastStep)
     {
-        $lastStep = false;
-
-        if ($this->step == 1) {
-            $this->chat->message('send your url 2')->send();
-        } else if ($this->step == 2) {
-            // url validation
-            $this->inputs['url'] = $text;
-            $this->chat->message('send your key 3')->send();
-        } else if ($this->step == 3) {
-            $this->inputs['key'] = $text;
-            $this->makeShort($this->inputs['url'], $this->inputs['key']); // get for send message
-            $lastStep = true;
-        }
-
-        $this->_cacheUpdate($lastStep);
-    }
-
-    public function makeShort($url, $key = null)
-    {
-        $shortURLObject = ShortURL::destinationUrl($url);
-
-        if (!is_null($key)) {
-            $shortURLObject->urlKey($key);
-        }
-
-        try {
-            $shorted = $shortURLObject->make();
-        } catch (Exception $e) {
-            return false;
-        }
-
-        $this->chat->message($shorted['default_short_url'])->send();
-
-        return true;
-    }
-
-    public function _cacheUpdate($lastStep = false)
-    {
+//        $this->chat->message(json_encode([$lastStep, $this->state, $this->step, $this->inputs]))->send();
         if ($lastStep) {
             Cache::forget($this->cacheKey);
         } else {
@@ -113,22 +85,10 @@ class Handler extends WebhookHandler
             'inputs' => [],
         ]);
 
-        $this->shortURL('');
-    }
-
-    public function shortURL($text)
-    {
-        $lastStep = false;
-
-        if ($this->step == 1) {
-            $this->chat->message('send your url')->send();
-        } else if ($this->step == 2) {
-            $this->inputs['url'] = $text;
-            $this->makeShort($this->inputs['url']); // get for send message
-            $lastStep = true;
-        }
-
-        $this->_cacheUpdate($lastStep);
+        $state = new StateManager($this->chat, $this->inputs);
+        $state->shortURL($this->step, $this->message);
+        $this->inputs = $state->inputs;
+        $this->_cacheUpdate($state->lastStep);
     }
 
     protected function handleChatMessage(Stringable $text): void
@@ -136,11 +96,16 @@ class Handler extends WebhookHandler
         $this->_cache();
         $fun = $this->state;
 
+        $state = new StateManager($this->chat, $this->inputs);
+
         if (!is_null($fun)) {
-            $this->$fun($text);
+            $state->$fun($this->step, $text);
+            $this->inputs = $state->inputs;
         } else {
             $this->step = 2;
-            $this->shortURL($text);
+            $state->shortURL($this->step, $text);
         }
+        
+        $this->_cacheUpdate($state->lastStep);
     }
 }
