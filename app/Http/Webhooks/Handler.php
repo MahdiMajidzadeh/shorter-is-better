@@ -105,7 +105,7 @@ class Handler extends WebhookHandler
             $this->step = 2;
             $state->shortURL($this->step, $text);
         }
-        
+
         $this->_cacheUpdate($state->lastStep);
     }
 }

@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Exception;
 use Illuminate\Http\Request;
-use AshAllenDesign\ShortURL\Facades\ShortURL;
+use AshAllenDesign\ShortURL\Models\ShortURL;
+use AshAllenDesign\ShortURL\Models\ShortURLVisit;
 
 class LinkController extends Controller
 {
@@ -46,8 +47,16 @@ class LinkController extends Controller
 
     public function detail(Request $request, $short)
     {
-        $data['short'] = \AshAllenDesign\ShortURL\Models\ShortURL::findByKey($short);
+        $data['short'] = ShortURL::findByKey($short);
 
         return view('panel.links-detail', $data);
+    }
+
+    public function deleteSubmit(Request $request, $id)
+    {
+        ShortURLVisit::where('short_url_id', $id)->delete();
+        ShortURL::find($id)->delete();
+
+        return redirect('links');
     }
 }
