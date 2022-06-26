@@ -11,7 +11,6 @@
         "defstudio/telegraph": "^1.9",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^9.2",
-        "laravel/sanctum": "^2.15",
         "laravel/telescope": "^4.9",
         "laravel/tinker": "^2.7"
     },
