@@ -1,6 +1,6 @@
 @extends('template.dash')
 
-@section('title','login')
+@section('title','dashboard')
 
 @section('header','Dashboard')
 

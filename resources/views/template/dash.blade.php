@@ -11,33 +11,8 @@
                 </button>
                 <!-- Brand -->
                 <a class="navbar-brand py-lg-5 mb-lg-5 px-lg-6 me-0" href="{{ url('/panel') }}">
-                    <img src="{{ asset('favicon.png') }}" alt="...">
+                    <img src="{{ asset('logo.png') }}" alt="...">
                 </a>
-                <!-- User menu (mobile) -->
-                <div class="navbar-user d-lg-none">
-                    <!-- Dropdown -->
-                    <div class="dropdown">
-                        <!-- Toggle -->
-                        <a href="#" id="sidebarAvatar" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <div class="avatar bg-warning rounded-circle text-white">
-                                <img alt="..." src="https://images.unsplash.com/photo-1579463148228-138296ac3b98?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=3&w=256&h=256&q=80">
-                            </div>
-                        </a>
-                        <!-- Menu -->
-                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                            <div class="dropdown-item">
-                                <span class="d-block text-sm text-muted mb-1">Signed in as</span>
-                                <span class="d-block text-heading font-semibold">Heather Wright</span>
-                            </div>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#">Action</a>
-                            <a class="dropdown-item" href="#">Another action</a>
-                            <a class="dropdown-item" href="#">Something else here</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#">Separated link</a>
-                        </div>
-                    </div>
-                </div>
                 <!-- Collapse -->
                 <div class="collapse navbar-collapse" id="sidebarCollapse">
                     <!-- Navigation -->
