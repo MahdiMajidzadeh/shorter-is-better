@@ -13,7 +13,7 @@ class LinkController extends Controller
     {
         $data['links'] = \AshAllenDesign\ShortURL\Models\ShortURL::orderBy('id', 'desc')->paginate(40);
 
-        return view('panel.links-all',$data);
+        return view('panel.links-all', $data);
     }
 
     public function create(Request $request)
@@ -47,7 +47,22 @@ class LinkController extends Controller
 
     public function detail(Request $request, $short)
     {
-        $data['short'] = ShortURL::findByKey($short);
+        $data['short']            = ShortURL::findByKey($short);
+        $data['browser']          = ShortURLVisit::where('short_url_id', $data['short']->id)
+            ->groupBy('browser')
+            ->selectRaw('browser as name, count(*) as total')
+            ->orderBy('total', 'desc')
+            ->get();
+        $data['device_type']      = ShortURLVisit::where('short_url_id', $data['short']->id)
+            ->groupBy('device_type')
+            ->selectRaw('device_type as name, count(*) as total')
+            ->orderBy('total', 'desc')
+            ->get();
+        $data['operating_system'] = ShortURLVisit::where('short_url_id', $data['short']->id)
+            ->groupBy('operating_system')
+            ->selectRaw('operating_system as name, count(*) as total')
+            ->orderBy('total', 'desc')
+            ->get();
 
         return view('panel.links-detail', $data);
     }

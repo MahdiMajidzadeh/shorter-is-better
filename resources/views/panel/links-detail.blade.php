@@ -83,6 +83,74 @@
             </div>
         </div>
     </div>
+    <div class="row mt-3">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Operating System</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        @foreach($operating_system as $item)
+                            <div class="list-group-item d-flex align-items-center px-0 py-2 border-0">
+                                <div>
+                                    <span
+                                            class="d-block h6 font-regular mb-0 stretched-link">{{ $item['name']?: "[other]" }}</span>
+                                </div>
+                                <div class="ms-auto text-end">
+                                    <span class="badge bg-tint-secondary rounded-pill  text-muted">{{ $item['total'] }}</span>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>browser</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        @foreach($browser as $item)
+                            <div class="list-group-item d-flex align-items-center px-0 py-2 border-0">
+                                <div>
+                                    <span
+                                       class="d-block h6 font-regular mb-0 stretched-link">{{ $item['name']?: "[other]" }}</span>
+                                </div>
+                                <div class="ms-auto text-end">
+                                    <span class="badge bg-tint-secondary rounded-pill  text-muted">{{ $item['total'] }}</span>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Device Type</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        @foreach($device_type as $item)
+                            <div class="list-group-item d-flex align-items-center px-0 py-2 border-0">
+                                <div>
+                                    <span
+                                       class="d-block h6 font-regular mb-0 stretched-link">{{ $item['name']?: "[other]" }}</span>
+                                </div>
+                                <div class="ms-auto text-end">
+                                    <span class="badge bg-tint-secondary rounded-pill  text-muted">{{ $item['total'] }}</span>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="modal" id="exampleModal" tabindex="-1" aria-labelledby="modal_example" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-4">
@@ -96,7 +164,8 @@
                         <h3 class="mt-7 mb-4">Delete Short Link?</h3>
                         <!-- Text -->
                         <p class="text-sm text-muted">
-                            We will delete Short Link and all <strong> {{ $short->visits()->count() }} Views</strong>. This action can not be undone. Are you sure you want to do this?
+                            We will delete Short Link and all <strong> {{ $short->visits()->count() }} Views</strong>.
+                            This action can not be undone. Are you sure you want to do this?
                         </p>
                     </div>
                 </div>
