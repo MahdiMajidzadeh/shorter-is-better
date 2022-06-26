@@ -12,6 +12,7 @@ Route::group(['prefix' => 'auth'], function() {
 });
 
 Route::group(['middleware' => 'auth'], function() {
+    Route::get('auth/bot/{hash}', [C\AuthController::class, 'hash']);
     Route::group(['prefix' => 'panel'], function() {
         Route::get('/', [C\PanelController::class, 'index']);
     });

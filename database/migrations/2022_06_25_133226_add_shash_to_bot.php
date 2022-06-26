@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         Schema::table('telegraph_chats', function(Blueprint $table) {
             $table->dropColumn('token_id');
-            $table->string('hash', 100);
+            $table->string('hash', 50)->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
         });
     }

@@ -2,8 +2,10 @@
 
 namespace App\Http\Webhooks;
 
+use Illuminate\Support\Str;
 use Illuminate\Support\Stringable;
 use Illuminate\Support\Facades\Cache;
+use DefStudio\Telegraph\Models\TelegraphChat;
 use DefStudio\Telegraph\Handlers\WebhookHandler;
 
 class Handler extends WebhookHandler
@@ -15,22 +17,24 @@ class Handler extends WebhookHandler
 
     public function stat()
     {
-        $this->_cache([
+        $token = $this->_cache([
             'state'  => 'statURL',
             'step'   => 1,
             'inputs' => [],
         ]);
+
+        if(!$token){
+            return;
+        }
     }
 
     public function _cache($data = null)
     {
-//        $chat = TelegraphChat::where('chat_id',  $this->chat['chat_id'])->first();
-//        if(!$chat){
-//            $this->chat->message("Not Allowed \nPlease Authenticate with valid token")->send();
-//            return false;
-//        }
-
-//        $this->chat->message(Auth::)->send();
+        $chat = TelegraphChat::where('chat_id', $this->chat['chat_id'])->first();
+        if (!$chat || is_null($chat->user_id)) {
+            $this->chat->message("Not Allowed \nPlease Authenticate with valid token")->send();
+            return false;
+        }
 
         $this->cacheKey = 'tgs_' . $this->bot->id . '_' . $this->chat;
 
@@ -45,15 +49,21 @@ class Handler extends WebhookHandler
             $this->step   = $data['step'];
             $this->inputs = $data['inputs'];
         }
+
+        return true;
     }
 
     public function shortkey()
     {
-        $this->_cache([
+        $token = $this->_cache([
             'state'  => 'shortURLWithKey',
             'step'   => 1,
             'inputs' => [],
         ]);
+
+        if(!$token){
+            return;
+        }
 
         $state = new StateManager($this->chat, $this->inputs);
         $state->shortURLWithKey($this->step, $this->message);
@@ -79,11 +89,15 @@ class Handler extends WebhookHandler
 
     public function short()
     {
-        $this->_cache([
+        $token = $this->_cache([
             'state'  => 'shortURL',
             'step'   => 1,
             'inputs' => [],
         ]);
+
+        if(!$token){
+            return;
+        }
 
         $state = new StateManager($this->chat, $this->inputs);
         $state->shortURL($this->step, $this->message);
@@ -93,7 +107,11 @@ class Handler extends WebhookHandler
 
     protected function handleChatMessage(Stringable $text): void
     {
-        $this->_cache();
+        $token = $this->_cache();
+
+        if(!$token){
+            return;
+        }
         $fun = $this->state;
 
         $state = new StateManager($this->chat, $this->inputs);
@@ -107,5 +125,24 @@ class Handler extends WebhookHandler
         }
 
         $this->_cacheUpdate($state->lastStep);
+    }
+
+    public function auth()
+    {
+        $chat = TelegraphChat::where('chat_id', $this->chat['chat_id'])->first();
+
+        if (!$chat) {
+            $this->bot->chats()->create([
+                'chat_id' => $this->chat['chat_id'],
+                'name' => $this->chat['chat_id'],
+            ]);
+
+            $chat = TelegraphChat::where('chat_id', $this->chat['chat_id'])->first();
+            $chat->hash = Str::random(50);
+            $chat->save();
+        }
+
+        $this->chat->message("Please open this url:")->send();
+        $this->chat->message(url('/auth/bot/'. $chat->hash))->send();
     }
 }

@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use DefStudio\Telegraph\Models\TelegraphChat;
 
 class AuthController extends Controller
 {
@@ -43,5 +44,19 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    public function hash(Request $request, $hash)
+    {
+        $chat = TelegraphChat::where('hash', $hash)->first();
+
+        if(!$chat){
+            return abort();
+        }
+
+        $chat->user_id = auth()->id();
+        $chat->save();
+
+        return redirect('panel')->with('msg-ok', 'Your Bot is Active now!');
     }
 }
