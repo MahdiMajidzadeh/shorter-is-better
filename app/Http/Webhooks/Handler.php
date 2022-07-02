@@ -2,17 +2,20 @@
 
 namespace App\Http\Webhooks;
 
+use DefStudio\Telegraph\Handlers\WebhookHandler;
+use DefStudio\Telegraph\Models\TelegraphChat;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Support\Stringable;
-use Illuminate\Support\Facades\Cache;
-use DefStudio\Telegraph\Models\TelegraphChat;
-use DefStudio\Telegraph\Handlers\WebhookHandler;
 
 class Handler extends WebhookHandler
 {
     public $state = null;
+
     public $step = null;
+
     public $cacheKey = null;
+
     public $inputs = [];
 
     public function stat()
@@ -23,7 +26,7 @@ class Handler extends WebhookHandler
             'inputs' => [],
         ]);
 
-        if(!$token){
+        if (! $token) {
             return;
         }
     }
@@ -31,12 +34,13 @@ class Handler extends WebhookHandler
     public function _cache($data = null)
     {
         $chat = TelegraphChat::where('chat_id', $this->chat['chat_id'])->first();
-        if (!$chat || is_null($chat->user_id)) {
+        if (! $chat || is_null($chat->user_id)) {
             $this->chat->message("Not Allowed \nPlease Authenticate with valid token")->send();
+
             return false;
         }
 
-        $this->cacheKey = 'tgs_' . $this->bot->id . '_' . $this->chat;
+        $this->cacheKey = 'tgs_'.$this->bot->id.'_'.$this->chat;
 
         if (is_null($data)) {
             $data = Cache::get($this->cacheKey);
@@ -44,9 +48,9 @@ class Handler extends WebhookHandler
             Cache::put($this->cacheKey, $data, now()->addMinutes(10));
         }
 
-        if (!is_null($data)) {
-            $this->state  = $data['state'];
-            $this->step   = $data['step'];
+        if (! is_null($data)) {
+            $this->state = $data['state'];
+            $this->step = $data['step'];
             $this->inputs = $data['inputs'];
         }
 
@@ -61,7 +65,7 @@ class Handler extends WebhookHandler
             'inputs' => [],
         ]);
 
-        if(!$token){
+        if (! $token) {
             return;
         }
 
@@ -95,7 +99,7 @@ class Handler extends WebhookHandler
             'inputs' => [],
         ]);
 
-        if(!$token){
+        if (! $token) {
             return;
         }
 
@@ -109,14 +113,14 @@ class Handler extends WebhookHandler
     {
         $token = $this->_cache();
 
-        if(!$token){
+        if (! $token) {
             return;
         }
         $fun = $this->state;
 
         $state = new StateManager($this->chat, $this->inputs);
 
-        if (!is_null($fun)) {
+        if (! is_null($fun)) {
             $state->$fun($this->step, $text);
             $this->inputs = $state->inputs;
         } else {
@@ -131,7 +135,7 @@ class Handler extends WebhookHandler
     {
         $chat = TelegraphChat::where('chat_id', $this->chat['chat_id'])->first();
 
-        if (!$chat) {
+        if (! $chat) {
             $this->bot->chats()->create([
                 'chat_id' => $this->chat['chat_id'],
                 'name' => $this->chat['chat_id'],
@@ -142,7 +146,7 @@ class Handler extends WebhookHandler
             $chat->save();
         }
 
-        $this->chat->message("Please open this url:")->send();
-        $this->chat->message(url('/auth/bot/'. $chat->hash))->send();
+        $this->chat->message('Please open this url:')->send();
+        $this->chat->message(url('/auth/bot/'.$chat->hash))->send();
     }
 }

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Exception;
-use Illuminate\Http\Request;
 use AshAllenDesign\ShortURL\Models\ShortURL;
 use AshAllenDesign\ShortURL\Models\ShortURLVisit;
+use Exception;
+use Illuminate\Http\Request;
 
 class LinkController extends Controller
 {
@@ -42,18 +42,18 @@ class LinkController extends Controller
 //        $shortURLObject = $builder->destinationUrl('https://destination.com')->singleUse()->make();
 //        $shortURL = $shortURLObject->default_short_url;
 
-        return redirect('links/' . $shorted['url_key']);
+        return redirect('links/'.$shorted['url_key']);
     }
 
     public function detail(Request $request, $short)
     {
-        $data['short']            = ShortURL::findByKey($short);
-        $data['browser']          = ShortURLVisit::where('short_url_id', $data['short']->id)
+        $data['short'] = ShortURL::findByKey($short);
+        $data['browser'] = ShortURLVisit::where('short_url_id', $data['short']->id)
             ->groupBy('browser')
             ->selectRaw('browser as name, count(*) as total')
             ->orderBy('total', 'desc')
             ->get();
-        $data['device_type']      = ShortURLVisit::where('short_url_id', $data['short']->id)
+        $data['device_type'] = ShortURLVisit::where('short_url_id', $data['short']->id)
             ->groupBy('device_type')
             ->selectRaw('device_type as name, count(*) as total')
             ->orderBy('total', 'desc')

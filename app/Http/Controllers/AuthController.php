@@ -3,18 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use DefStudio\Telegraph\Models\TelegraphChat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use DefStudio\Telegraph\Models\TelegraphChat;
 
 class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        if(auth()->check()){
+        if (auth()->check()) {
             return redirect('panel');
         }
+
         return view('auth.login');
     }
 
@@ -50,7 +51,7 @@ class AuthController extends Controller
     {
         $chat = TelegraphChat::where('hash', $hash)->first();
 
-        if(!$chat){
+        if (! $chat) {
             return abort();
         }
 

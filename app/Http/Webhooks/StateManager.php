@@ -2,18 +2,20 @@
 
 namespace App\Http\Webhooks;
 
-use Exception;
 use AshAllenDesign\ShortURL\Facades\ShortURL;
+use Exception;
 
 class StateManager
 {
     public $chat;
+
     public $inputs;
+
     public $lastStep = false;
 
     public function __construct($chat, $inputs)
     {
-        $this->chat   = $chat;
+        $this->chat = $chat;
         $this->inputs = $inputs;
     }
 
@@ -21,11 +23,11 @@ class StateManager
     {
         if ($step == 1) {
             $this->chat->message('send your url')->send();
-        } else if ($step == 2) {
+        } elseif ($step == 2) {
             // url validation
             $this->inputs['url'] = $text;
             $this->chat->message('send your key')->send();
-        } else if ($step == 3) {
+        } elseif ($step == 3) {
             $this->inputs['key'] = $text;
             $this->_makeShort($this->inputs['url'], $this->inputs['key']); // get for send message
             $this->lastStep = true;
@@ -36,7 +38,7 @@ class StateManager
     {
         $shortURLObject = ShortURL::destinationUrl($url);
 
-        if (!is_null($key)) {
+        if (! is_null($key)) {
             $shortURLObject->urlKey($key);
         }
 
@@ -55,7 +57,7 @@ class StateManager
     {
         if ($step == 1) {
             $this->chat->message('send your url')->send();
-        } else if ($step == 2) {
+        } elseif ($step == 2) {
             $this->inputs['url'] = $text;
             $this->_makeShort($this->inputs['url']); // get for send message
             $this->lastStep = true;

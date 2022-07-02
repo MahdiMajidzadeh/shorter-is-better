@@ -24,7 +24,7 @@ return [
     'debug_mode' => false,
 
     /*
-     * Set model class for both TelegraphBot and TelegraphChat, 
+     * Set model class for both TelegraphBot and TelegraphChat,
      * to allow more customization.
      *
      * Bot model must be or extend `DefStudio\Telegraph\Models\TelegraphBot::class`

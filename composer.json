@@ -6,7 +6,6 @@
     "license": "MIT",
     "require": {
         "php": "^8.0.2",
-        "anlutro/l4-settings": "^1.1",
         "ashallendesign/short-url": "^7.0",
         "defstudio/telegraph": "^1.9",
         "guzzlehttp/guzzle": "^7.2",
@@ -17,6 +16,7 @@
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.6",
         "fakerphp/faker": "^1.9.1",
+        "laravel/pint": "^0.2.2",
         "laravel/sail": "^1.0.1",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^6.1",
