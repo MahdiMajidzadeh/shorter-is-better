@@ -77,7 +77,6 @@ class Handler extends WebhookHandler
 
     public function _cacheUpdate($lastStep)
     {
-//        $this->chat->message(json_encode([$lastStep, $this->state, $this->step, $this->inputs]))->send();
         if ($lastStep) {
             Cache::forget($this->cacheKey);
         } else {
@@ -148,5 +147,23 @@ class Handler extends WebhookHandler
 
         $this->chat->message('Please open this url:')->send();
         $this->chat->message(url('/auth/bot/'.$chat->hash))->send();
+    }
+
+    public function report()
+    {
+        $token = $this->_cache([
+            'state'  => 'report',
+            'step'   => 1,
+            'inputs' => [],
+        ]);
+
+        if (! $token) {
+            return;
+        }
+
+        $state = new StateManager($this->chat, $this->inputs);
+        $state->report($this->step, $this->message);
+        $this->inputs = $state->inputs;
+        $this->_cacheUpdate($state->lastStep);
     }
 }

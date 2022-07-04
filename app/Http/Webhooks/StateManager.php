@@ -2,8 +2,10 @@
 
 namespace App\Http\Webhooks;
 
-use AshAllenDesign\ShortURL\Facades\ShortURL;
 use Exception;
+use Illuminate\Support\Facades\DB;
+use AshAllenDesign\ShortURL\Facades\ShortURL;
+use AshAllenDesign\ShortURL\Models\ShortURLVisit;
 
 class StateManager
 {
@@ -15,7 +17,7 @@ class StateManager
 
     public function __construct($chat, $inputs)
     {
-        $this->chat = $chat;
+        $this->chat   = $chat;
         $this->inputs = $inputs;
     }
 
@@ -23,11 +25,11 @@ class StateManager
     {
         if ($step == 1) {
             $this->chat->message('send your url')->send();
-        } elseif ($step == 2) {
+        } else if ($step == 2) {
             // url validation
             $this->inputs['url'] = $text;
             $this->chat->message('send your key')->send();
-        } elseif ($step == 3) {
+        } else if ($step == 3) {
             $this->inputs['key'] = $text;
             $this->_makeShort($this->inputs['url'], $this->inputs['key']); // get for send message
             $this->lastStep = true;
@@ -38,7 +40,7 @@ class StateManager
     {
         $shortURLObject = ShortURL::destinationUrl($url);
 
-        if (! is_null($key)) {
+        if (!is_null($key)) {
             $shortURLObject->urlKey($key);
         }
 
@@ -57,10 +59,29 @@ class StateManager
     {
         if ($step == 1) {
             $this->chat->message('send your url')->send();
-        } elseif ($step == 2) {
+        } else if ($step == 2) {
             $this->inputs['url'] = $text;
             $this->_makeShort($this->inputs['url']); // get for send message
             $this->lastStep = true;
         }
+    }
+
+    public function report($step, $text)
+    {
+        $this->lastStep = true;
+
+        $views = ShortURLVisit::query()
+            ->select(DB::raw('Date(visited_at) as date'), DB::raw('count(*) as views'))
+            ->where('visited_at', '>=', now()->subDays(7))
+            ->groupBy(DB::raw('Date(visited_at)'))
+            ->get();
+
+        $text = '';
+
+        foreach ($views as $view) {
+            $text .= $view->date . ": " . $view->views . "\n";
+        }
+
+        $this->chat->message($text)->send();
     }
 }

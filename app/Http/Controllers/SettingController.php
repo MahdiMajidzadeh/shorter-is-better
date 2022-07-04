@@ -7,20 +7,6 @@ use Illuminate\Http\Request;
 
 class SettingController extends Controller
 {
-    public function tokens(Request $request)
-    {
-        $data['tokens'] = auth()->user()->tokens;
-
-        return view('panel.setting-tokens-all', $data);
-    }
-
-    public function tokensCreateSubmit(Request $request)
-    {
-        $token = auth()->user()->createToken(now()->format('Y-m-d H:i:s'));
-
-        return redirect()->back()->with('token', $token->plainTextToken);
-    }
-
     public function bots(Request $request)
     {
         $data['bots'] = TelegraphBot::all();
@@ -44,9 +30,10 @@ class SettingController extends Controller
 
         $bot->registerCommands([
             'short'    => 'short url',
-            'shortkey' => 'short url with custom key',
+            'shortKey' => 'short url with custom key',
             'stat'     => 'show stat for shorted url',
             'auth'     => 'Authenticate Bot with your account',
+            'report'   => 'Short Report of Last 7 days'
         ])->send();
 
         return redirect()->back();
