@@ -12,10 +12,10 @@ class PanelController extends Controller
     {
         $data['views'] = ShortURLVisit::query()
             ->select(DB::raw('Date(visited_at) as date'), DB::raw('count(*) as Views'))
-            ->where('visited_at','>', now()->subDays(7))
+            ->where('visited_at', '>', now()->subDays(7))
             ->groupBy(DB::raw('Date(visited_at)'))
             ->toSql();
 
-        return view('panel.dashboard',$data);
+        return view('panel.dashboard', $data);
     }
 }

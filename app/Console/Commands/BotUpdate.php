@@ -21,12 +21,13 @@ class BotUpdate extends Command
             $v = $bot->registerCommands([
                 'short'    => 'short url',
                 'shortkey' => 'short url with custom key',
+                'report'   => 'short report of last 7 days',
                 'stat'     => 'show stat for shorted url',
+                'bulk'     => 'short bulk of links in text',
                 'auth'     => 'authenticate bot with your account',
-                'report'   => 'short report of last 7 days'
             ])->send();
 
-            $this->info($bot->name . ' updated!');
+            $this->info($bot->name.' updated!');
         }
 
         $this->info('Happy Shorting!!!');

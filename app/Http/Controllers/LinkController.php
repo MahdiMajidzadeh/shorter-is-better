@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use AshAllenDesign\ShortURL\Models\ShortURL;
-use AshAllenDesign\ShortURL\Models\ShortURLVisit;
 use Exception;
 use Illuminate\Http\Request;
+use AshAllenDesign\ShortURL\Models\ShortURL;
+use AshAllenDesign\ShortURL\Models\ShortURLVisit;
 
 class LinkController extends Controller
 {

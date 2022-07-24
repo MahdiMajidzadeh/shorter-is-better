@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use DefStudio\Telegraph\Models\TelegraphBot;
 use Illuminate\Http\Request;
+use DefStudio\Telegraph\Models\TelegraphBot;
 
 class SettingController extends Controller
 {
@@ -33,7 +33,7 @@ class SettingController extends Controller
             'shortKey' => 'short url with custom key',
             'stat'     => 'show stat for shorted url',
             'auth'     => 'Authenticate Bot with your account',
-            'report'   => 'Short Report of Last 7 days'
+            'report'   => 'Short Report of Last 7 days',
         ])->send();
 
         return redirect()->back();

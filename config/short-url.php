@@ -66,7 +66,7 @@ return [
     | method.
     |
     */
-    'enforce_https'         => false,
+    'enforce_https' => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -86,7 +86,7 @@ return [
     |       used, a 4 character long key will be created.
     |
     */
-    'key_length'            => 5,
+    'key_length' => 5,
 
     /*
     |--------------------------------------------------------------------------
@@ -98,7 +98,7 @@ return [
     | generated keys are unique.
     |
     */
-    'key_salt'              => 'MyNameIsMajid@babe',
+    'key_salt' => 'MyNameIsMajid@babe',
 
     /*
     |--------------------------------------------------------------------------
@@ -110,7 +110,7 @@ return [
     | and cannot contain spaces.
     |
     */
-    'alphabet'              => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
+    'alphabet' => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
 
     /*
     |--------------------------------------------------------------------------
@@ -123,7 +123,7 @@ return [
     | be overridden when creating a short URL.
     |
     */
-    'tracking'              => [
+    'tracking' => [
         'default_enabled' => true,
 
         'fields' => [

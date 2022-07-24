@@ -2,11 +2,11 @@
 
 namespace App\Http\Webhooks;
 
-use DefStudio\Telegraph\Handlers\WebhookHandler;
-use DefStudio\Telegraph\Models\TelegraphChat;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Support\Stringable;
+use Illuminate\Support\Facades\Cache;
+use DefStudio\Telegraph\Models\TelegraphChat;
+use DefStudio\Telegraph\Handlers\WebhookHandler;
 
 class Handler extends WebhookHandler
 {
@@ -137,7 +137,7 @@ class Handler extends WebhookHandler
         if (! $chat) {
             $this->bot->chats()->create([
                 'chat_id' => $this->chat['chat_id'],
-                'name' => $this->chat['chat_id'],
+                'name'    => $this->chat['chat_id'],
             ]);
 
             $chat = TelegraphChat::where('chat_id', $this->chat['chat_id'])->first();
