@@ -30,10 +30,11 @@ class SettingController extends Controller
 
         $bot->registerCommands([
             'short'    => 'short url',
-            'shortKey' => 'short url with custom key',
+            'shortkey' => 'short url with custom key',
+            'report'   => 'short report of last 7 days',
             'stat'     => 'show stat for shorted url',
-            'auth'     => 'Authenticate Bot with your account',
-            'report'   => 'Short Report of Last 7 days',
+            'bulk'     => 'short bulk of links in text',
+            'auth'     => 'authenticate bot with your account',
         ])->send();
 
         return redirect()->back();

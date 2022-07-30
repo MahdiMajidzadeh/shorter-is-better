@@ -15,24 +15,24 @@
             </div>
         </div>
     @endif
+    <div class="card">
+        <div class="card-body h-3" >
+            <canvas id="view-chart"  width="400" height="400"></canvas>
+        </div>
+    </div>
 @endsection
 
 @push('js')
-    <script scr="https://cdn.jsdelivr.net/npm/chart.js@3.8.0/dist/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.8.2/chart.min.js"></script>
     <script>
-        const ctx = document.getElementById('myChart').getContext('2d');
+        const ctx = document.getElementById('view-chart');
         const myChart = new Chart(ctx, {
-            type: 'bar',
+            type: 'line',
             data: @json($views),
             options: {
-                responsive: true,
                 plugins: {
                     legend: {
                         position: 'top',
-                    },
-                    title: {
-                        display: true,
-                        text: 'Chart.js Bar Chart'
                     }
                 }
             },

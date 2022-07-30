@@ -4,14 +4,15 @@ namespace App\Http\Controllers;
 
 use Exception;
 use Illuminate\Http\Request;
-use AshAllenDesign\ShortURL\Models\ShortURL;
+use AshAllenDesign\ShortURL\Facades\ShortURL;
+use AshAllenDesign\ShortURL\Models\ShortURL as ShortModel;
 use AshAllenDesign\ShortURL\Models\ShortURLVisit;
 
 class LinkController extends Controller
 {
     public function all(Request $request)
     {
-        $data['links'] = \AshAllenDesign\ShortURL\Models\ShortURL::orderBy('id', 'desc')->paginate(40);
+        $data['links'] = ShortModel::orderBy('id', 'desc')->paginate(40);
 
         return view('panel.links-all', $data);
     }
@@ -47,7 +48,7 @@ class LinkController extends Controller
 
     public function detail(Request $request, $short)
     {
-        $data['short'] = ShortURL::findByKey($short);
+        $data['short'] = ShortModel::findByKey($short);
         $data['browser'] = ShortURLVisit::where('short_url_id', $data['short']->id)
             ->groupBy('browser')
             ->selectRaw('browser as name, count(*) as total')
