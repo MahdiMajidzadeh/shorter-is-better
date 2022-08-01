@@ -6,42 +6,48 @@
 
 @section('page')
     <div class="table-responsive">
-        <table class="table table-hover table-nowrap table-spaced">
-            <thead class="thead-light">
+        <table class="table table-hover table-nowrap">
+            <thead class="table-light">
             <tr>
-                <th scope="col">id</th>
-                <th scope="col">url</th>
-                <th scope="col">link</th>
-                <th></th>
+                <th scope="col" width="5%">id</th>
+                <th scope="col" width="40%">url</th>
+                <th scope="col" width="15%">link</th>
+                <th scope="col" width="35%">title</th>
+                <th width="5%"></th>
             </tr>
             </thead>
             <tbody>
             @foreach($links as $link)
-                <tr>
-                    <td>
-                        {{ $link->id }}
-                    </td>
-                    <td data-label="Email">
-                        <a class="text-current" href="{{ $link->destination_url }}">
-                            {{ $link->destination_url }}
-                        </a>
-                    </td>
-                    <td data-label="Phone">
-                        <a class="text-current" href="{{ $link->default_short_url }}">
-                            {{ $link->default_short_url }}
-                        </a>
-                    </td>
-                    <td class="text-end">
-                        <a class="btn p-0" href="{{ url('links/'. $link->url_key)}}">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                    </td>
-                </tr>
+            <tr>
+                <td>
+                    {{ $link->id }}
+                </td>
+                <td>
+                    <a class="text-current text-wrap" href="{{ $link->destination_url }}">
+                        {{ $link->destination_url }}
+                    </a>
+                </td>
+                <td>
+                    <a class="text-current" href="{{ $link->default_short_url }}">
+                        {{ $link->default_short_url }}
+                    </a>
+                </td>
+                <td>
+
+                </td>
+                <td class="text-end">
+                    <a href="{{ url('links/'. $link->url_key)}}" class="btn btn-sm btn-neutral">
+                        <i class="bi bi-eye"></i> View
+                    </a>
+                </td>
+            </tr>
             @endforeach
             </tbody>
         </table>
     </div>
-    {{ $links->links() }}
+    <div class="my-2">
+        {{ $links->links() }}
+    </div>
 @endsection
 
 @section('header-actions')
