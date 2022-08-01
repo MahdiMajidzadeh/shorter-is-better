@@ -71,7 +71,7 @@ class LinkController extends Controller
     public function deleteSubmit(Request $request, $id)
     {
         ShortURLVisit::where('short_url_id', $id)->delete();
-        ShortURL::find($id)->delete();
+        ShortModel::find($id)->delete();
 
         return redirect('links');
     }
