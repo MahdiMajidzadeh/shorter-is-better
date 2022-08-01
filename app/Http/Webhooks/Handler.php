@@ -3,8 +3,12 @@
 namespace App\Http\Webhooks;
 
 use Illuminate\Support\Str;
+use App\Http\Webhooks\State\Stat;
 use Illuminate\Support\Stringable;
+use App\Http\Webhooks\State\Short;
+use App\Http\Webhooks\State\Report;
 use Illuminate\Support\Facades\Cache;
+use App\Http\Webhooks\State\ShortWithKey;
 use DefStudio\Telegraph\Models\TelegraphChat;
 use DefStudio\Telegraph\Handlers\WebhookHandler;
 
@@ -20,15 +24,22 @@ class Handler extends WebhookHandler
 
     public function stat()
     {
-        $token = $this->_cache([
-            'state'  => 'statURL',
-            'step'   => 1,
-            'inputs' => [],
-        ]);
+        $this->startState(Stat::class);
+    }
 
-        if (! $token) {
-            return;
-        }
+    public function shortkey()
+    {
+        $this->startState(ShortWithKey::class);
+    }
+
+    public function short()
+    {
+        $this->startState(Short::class);
+    }
+
+    public function report()
+    {
+        $this->startState(Report::class);
     }
 
     public function _cache($data = null)
@@ -57,24 +68,6 @@ class Handler extends WebhookHandler
         return true;
     }
 
-    public function shortkey()
-    {
-        $token = $this->_cache([
-            'state'  => 'shortURLWithKey',
-            'step'   => 1,
-            'inputs' => [],
-        ]);
-
-        if (! $token) {
-            return;
-        }
-
-        $state = new StateManager($this->chat, $this->inputs);
-        $state->shortURLWithKey($this->step, $this->message);
-        $this->inputs = $state->inputs;
-        $this->_cacheUpdate($state->lastStep);
-    }
-
     public function _cacheUpdate($lastStep)
     {
         if ($lastStep) {
@@ -90,24 +83,6 @@ class Handler extends WebhookHandler
         }
     }
 
-    public function short()
-    {
-        $token = $this->_cache([
-            'state'  => 'shortURL',
-            'step'   => 1,
-            'inputs' => [],
-        ]);
-
-        if (! $token) {
-            return;
-        }
-
-        $state = new StateManager($this->chat, $this->inputs);
-        $state->shortURL($this->step, $this->message);
-        $this->inputs = $state->inputs;
-        $this->_cacheUpdate($state->lastStep);
-    }
-
     protected function handleChatMessage(Stringable $text): void
     {
         $token = $this->_cache();
@@ -117,14 +92,14 @@ class Handler extends WebhookHandler
         }
         $fun = $this->state;
 
-        $state = new StateManager($this->chat, $this->inputs);
-
         if (! is_null($fun)) {
-            $state->$fun($this->step, $text);
+            $state = new $this->state($this->chat, $this->inputs);
+            $state->handle($this->step, $text);
             $this->inputs = $state->inputs;
         } else {
             $this->step = 2;
-            $state->shortURL($this->step, $text);
+            $state = new Short($this->chat, $this->inputs);
+            $state->handle($this->step, $text);
         }
 
         $this->_cacheUpdate($state->lastStep);
@@ -149,10 +124,11 @@ class Handler extends WebhookHandler
         $this->chat->message(url('/auth/bot/'.$chat->hash))->send();
     }
 
-    public function report()
+
+    private function startState($class)
     {
         $token = $this->_cache([
-            'state'  => 'report',
+            'state'  => $class,
             'step'   => 1,
             'inputs' => [],
         ]);
@@ -161,8 +137,8 @@ class Handler extends WebhookHandler
             return;
         }
 
-        $state = new StateManager($this->chat, $this->inputs);
-        $state->report($this->step, $this->message);
+        $state = new $class($this->chat, $this->inputs);
+        $state->handle($this->step, $this->message);
         $this->inputs = $state->inputs;
         $this->_cacheUpdate($state->lastStep);
     }
