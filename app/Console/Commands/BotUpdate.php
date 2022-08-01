@@ -19,12 +19,13 @@ class BotUpdate extends Command
             $bot->unregisterCommands()->send();
 
             $v = $bot->registerCommands([
-                'short'    => 'short url',
-                'shortkey' => 'short url with custom key',
-                'report'   => 'short report of last 7 days',
-                'stat'     => 'show stat for shorted url',
-                'bulk'     => 'short bulk of links in text',
-                'auth'     => 'authenticate bot with your account',
+                'shortkey'   => 'short url with custom key',
+                'forchannel' => 'make short for channel',
+                'report'     => 'short report of last 7 days',
+                'short'      => 'short url',
+                'stat'       => 'show stat for shorted url',
+                'bulk'       => 'short bulk of links in text',
+                'auth'       => 'authenticate bot with your account',
             ])->send();
 
             $this->info($bot->name.' updated!');

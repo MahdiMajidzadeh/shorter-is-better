@@ -8,6 +8,7 @@ use App\Http\Webhooks\State\Short;
 use Illuminate\Support\Stringable;
 use App\Http\Webhooks\State\Report;
 use Illuminate\Support\Facades\Cache;
+use App\Http\Webhooks\State\ForChannel;
 use App\Http\Webhooks\State\ShortWithKey;
 use DefStudio\Telegraph\Models\TelegraphChat;
 use DefStudio\Telegraph\Handlers\WebhookHandler;
@@ -40,6 +41,11 @@ class Handler extends WebhookHandler
     public function report()
     {
         $this->startState(Report::class);
+    }
+
+    public function forchannel()
+    {
+        $this->startState(ForChannel::class);
     }
 
     public function _cache($data = null)
