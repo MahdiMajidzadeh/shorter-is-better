@@ -16,7 +16,7 @@ class PanelController extends Controller
             ->groupBy(DB::raw('Date(visited_at)'))
             ->get();
 
-        $data['views']= chart_data_line($views, "date", "views", "views per day");
+        $data['views'] = chart_data_line($views, 'date', 'views', 'views per day');
 
         return view('panel.dashboard', $data);
     }

@@ -4,8 +4,8 @@ namespace App\Http\Webhooks;
 
 use Illuminate\Support\Str;
 use App\Http\Webhooks\State\Stat;
-use Illuminate\Support\Stringable;
 use App\Http\Webhooks\State\Short;
+use Illuminate\Support\Stringable;
 use App\Http\Webhooks\State\Report;
 use Illuminate\Support\Facades\Cache;
 use App\Http\Webhooks\State\ShortWithKey;
@@ -123,7 +123,6 @@ class Handler extends WebhookHandler
         $this->chat->message('Please open this url:')->send();
         $this->chat->message(url('/auth/bot/'.$chat->hash))->send();
     }
-
 
     private function startState($class)
     {

@@ -21,5 +21,4 @@ class Stat extends StateManager
 //            $this->lastStep = true;
 //        }
     }
-
 }

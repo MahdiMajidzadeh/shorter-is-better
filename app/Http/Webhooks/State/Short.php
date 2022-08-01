@@ -14,7 +14,7 @@ class Short extends StateManager
             $this->chat->message('send your url')->send();
         } elseif ($step == 2) {
             $this->inputs['url'] = $text;
-            if($this->isUrl($text)) {
+            if ($this->isUrl($text)) {
                 $this->_makeShort($this->inputs['url']); // get for send message
                 $this->lastStep = true;
             }

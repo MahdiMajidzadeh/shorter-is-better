@@ -18,8 +18,9 @@ class StateManager
 
     protected function isUrl($url)
     {
-        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+        if (! filter_var($url, FILTER_VALIDATE_URL)) {
             $this->chat->message('URL not valid')->send();
+
             return false;
         }
 

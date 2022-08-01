@@ -14,7 +14,7 @@ class ShortWithKey extends StateManager
             $this->chat->message('send your url')->send();
         } elseif ($step == 2) {
             $this->inputs['url'] = $text;
-            if($this->isUrl($text)) {
+            if ($this->isUrl($text)) {
                 $this->chat->message('send your key')->send();
             }
         } elseif ($step == 3) {
@@ -42,5 +42,4 @@ class ShortWithKey extends StateManager
 
         return true;
     }
-
 }

@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use Exception;
 use Illuminate\Http\Request;
 use AshAllenDesign\ShortURL\Facades\ShortURL;
-use AshAllenDesign\ShortURL\Models\ShortURL as ShortModel;
 use AshAllenDesign\ShortURL\Models\ShortURLVisit;
+use AshAllenDesign\ShortURL\Models\ShortURL as ShortModel;
 
 class LinkController extends Controller
 {
