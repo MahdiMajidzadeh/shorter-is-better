@@ -18,15 +18,7 @@ class BotUpdate extends Command
         foreach ($bots as $bot) {
             $bot->unregisterCommands()->send();
 
-            $v = $bot->registerCommands([
-                'shortkey'   => 'short url with custom key',
-                'forchannel' => 'make short for channel',
-                'report'     => 'short report of last 7 days',
-                'short'      => 'short url',
-                'stat'       => 'show stat for shorted url',
-                'bulk'       => 'short bulk of links in text',
-                'auth'       => 'authenticate bot with your account',
-            ])->send();
+            $v = $bot->registerCommands(bot_commands())->send();
 
             $this->info($bot->name.' updated!');
         }

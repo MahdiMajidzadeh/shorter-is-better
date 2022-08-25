@@ -19,7 +19,7 @@ class ForChannel extends StateManager
                 $data = $og->fetch($this->inputs['url']);
                 $short = $this->makeShort($this->inputs['url']);
 
-                $this->chat->message($data['title']."\n\n".$short."\n\n@productinbox")->send();
+                $this->chat->message($data['title']."\n\n".$short."\n\n". setting('channel.username'))->send();
 
                 $this->lastStep = true;
             }

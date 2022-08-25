@@ -2,16 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use DefStudio\Telegraph\Models\TelegraphBot;
 
 class SettingController extends Controller
 {
+    public function index(Request $request): View
+    {
+        return view('panel.setting-all');
+    }
+
+    public function indexSubmit(Request $request): RedirectResponse
+    {
+        setting([
+            'channel.has'      => $request->get('channel_has'),
+            'channel.username' => $request->get('channel_username'),
+        ])->save();
+
+        return redirect('settings');
+    }
+
     public function bots(Request $request)
     {
         $data['bots'] = TelegraphBot::all();
 
-        return view('panel.setting-bots-all', $data);
+        return view('panel.setting-all', $data);
     }
 
     public function botsCreate(Request $request)
@@ -27,16 +44,7 @@ class SettingController extends Controller
         ]);
 
         $bot->registerWebhook()->send();
-
-        $bot->registerCommands([
-            'shortkey'   => 'short url with custom key',
-            'forchannel' => 'make short for channel',
-            'report'     => 'short report of last 7 days',
-            'short'      => 'short url',
-            'stat'       => 'show stat for shorted url',
-            'bulk'       => 'short bulk of links in text',
-            'auth'       => 'authenticate bot with your account',
-        ])->send();
+        $bot->registerCommands(bot_commands())->send();
 
         return redirect()->back();
     }
