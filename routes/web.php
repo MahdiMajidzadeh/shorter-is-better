@@ -1,6 +1,5 @@
 <?php
 
-use Goutte\Client;
 use App\Http\Controllers as C;
 use Illuminate\Support\Facades\Route;
 

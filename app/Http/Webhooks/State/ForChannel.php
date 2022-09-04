@@ -13,17 +13,17 @@ class ForChannel extends StateManager
     {
         if ($step == 1) {
             $this->chat->message('send your url')->send();
-        } else if ($step == 2) {
+        } elseif ($step == 2) {
             $this->inputs['url'] = $text;
             if ($this->isUrl($text)) {
-                $og    = new OpenGraph();
-                $data  = $og->fetch($this->inputs['url']);
+                $og = new OpenGraph();
+                $data = $og->fetch($this->inputs['url']);
                 $short = $this->makeShort($this->inputs['url']);
 
                 $this->chat->message(
-                    $data['title'] . "\n\n" .
-                    $this->timeRead($this->inputs['url']) . " min read\n\n" .
-                    $short . "\n\n" .
+                    $data['title']."\n\n".
+                    $this->timeRead($this->inputs['url'])." min read\n\n".
+                    $short."\n\n".
                     setting('channel.username')
                 )->send();
 
@@ -35,17 +35,17 @@ class ForChannel extends StateManager
     protected function makeShort($url)
     {
         $shortURLObject = ShortURL::destinationUrl($url);
-        $shorted        = $shortURLObject->make();
+        $shorted = $shortURLObject->make();
 
         return $shorted['default_short_url'];
     }
 
     protected function timeRead($url): int
     {
-        $client  = new Client();
+        $client = new Client();
         $crawler = $client->request('GET', 'https://productify.substack.com/p/14-spotify-music-as-an-algorithm');
 
-        $text = $crawler->filter('p')->each(function($node) {
+        $text = $crawler->filter('p')->each(function ($node) {
             return $node->text();
         });
 

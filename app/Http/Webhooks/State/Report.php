@@ -28,7 +28,7 @@ class Report extends StateManager
         $text = "All Data:\n\n";
 
         foreach ($views as $view) {
-            $text .= $view->date . ': ' . $view->views . "\n";
+            $text .= $view->date.': '.$view->views."\n";
         }
 
         return $text;
@@ -46,7 +46,7 @@ class Report extends StateManager
         $text = "Non Bot Data:\n\n";
 
         foreach ($views as $view) {
-            $text .= $view->date . ': ' . $view->views . "\n";
+            $text .= $view->date.': '.$view->views."\n";
         }
 
         return $text;
@@ -58,12 +58,12 @@ class Report extends StateManager
             ->with(['shortURL'])
             ->where('visited_at', '>=', now()->subDays(7))
             ->whereNot('device_type', 'robot')
-            ->get(array(DB::raw('COUNT(*) as views'),'url'));
+            ->get([DB::raw('COUNT(*) as views'), 'url']);
 
         $text = "7 Days Top Url:\n\n";
 
         foreach ($urls as $url) {
-            $text .= $url->url . ': ' . $url->views . "\n";
+            $text .= $url->url.': '.$url->views."\n";
         }
 
         return $text;
