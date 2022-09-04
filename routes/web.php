@@ -5,17 +5,6 @@ use App\Http\Controllers as C;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'index');
-Route::get('/c', function(){
-    $client = new Client();
-    $crawler = $client->request('GET', 'https://productify.substack.com/p/14-spotify-music-as-an-algorithm');
-
-    $text = $crawler->filter('p')->each(function($node){
-        return $node->text();
-    });
-
-    return round(count(explode(' ', implode("\n", $text)))/180);
-
-});
 
 Route::group(['prefix' => 'auth'], function () {
     Route::get('/', [C\AuthController::class, 'login'])->name('login');
