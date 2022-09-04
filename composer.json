@@ -9,10 +9,12 @@
         "anlutro/l4-settings": "^1.1",
         "ashallendesign/short-url": "^7.0",
         "defstudio/telegraph": "^1.9",
+        "fabpot/goutte": "^4.0",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^9.2",
         "laravel/telescope": "^4.9",
         "laravel/tinker": "^2.7",
+        "roach-php/laravel": "^1.0",
         "sentry/sentry-laravel": "^2.13",
         "shweshi/opengraph": "^1.1"
     },
