@@ -43,7 +43,7 @@ class ForChannel extends StateManager
     protected function timeRead($url): int
     {
         $client = new Client();
-        $crawler = $client->request('GET', 'https://productify.substack.com/p/14-spotify-music-as-an-algorithm');
+        $crawler = $client->request('GET', $url);
 
         $text = $crawler->filter('p')->each(function ($node) {
             return $node->text();
