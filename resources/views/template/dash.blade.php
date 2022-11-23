@@ -38,13 +38,6 @@
                             </a>
                         </li>
                     </ul>
-                    <ul class="navbar-nav mb-md-4">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url('settings/bots') }}">
-                                <i class="bi bi-robot"></i> Bots
-                            </a>
-                        </li>
-                    </ul>
                     <!-- Push content down -->
                     <div class="mt-auto"></div>
                     <!-- User (md) -->

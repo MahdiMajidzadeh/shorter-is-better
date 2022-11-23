@@ -12,7 +12,9 @@ class SettingController extends Controller
 {
     public function index(Request $request): View
     {
-        return view('panel.setting-all');
+        $data['bot'] = TelegraphBot::first();
+
+        return view('panel.setting-all', $data);
     }
 
     public function indexSubmit(Request $request): RedirectResponse
@@ -22,14 +24,9 @@ class SettingController extends Controller
             'channel.username' => $request->get('channel_username'),
         ])->save();
 
+        bot_update();
+
         return redirect('settings');
-    }
-
-    public function bots(Request $request)
-    {
-        $data['bots'] = TelegraphBot::all();
-
-        return view('panel.setting-all', $data);
     }
 
     public function botsCreate(Request $request)

@@ -1,6 +1,8 @@
 <?php
 
-if (! function_exists('chart_data_line')) {
+use DefStudio\Telegraph\Models\TelegraphBot;
+
+if (!function_exists('chart_data_line')) {
     function chart_data_line($data, $label, $col, $chartLabel)
     {
         return [
@@ -13,7 +15,7 @@ if (! function_exists('chart_data_line')) {
     }
 }
 
-if (! function_exists('bot_commands')) {
+if (!function_exists('bot_commands')) {
     function bot_commands()
     {
         $commands = [
@@ -30,5 +32,17 @@ if (! function_exists('bot_commands')) {
         }
 
         return $commands;
+    }
+}
+
+if (!function_exists('bot_update')) {
+    function bot_update()
+    {
+        $bots = TelegraphBot::all();
+
+        foreach ($bots as $bot) {
+            $bot->unregisterCommands()->send();
+            $v = $bot->registerCommands(bot_commands())->send();
+        }
     }
 }

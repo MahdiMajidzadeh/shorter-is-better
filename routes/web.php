@@ -28,7 +28,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::group(['prefix' => 'settings'], function () {
         Route::get('/', [C\SettingController::class, 'index']);
         Route::post('/', [C\SettingController::class, 'indexSubmit']);
-        Route::get('/bots', [C\SettingController::class, 'bots']);
         Route::get('/bots/create', [C\SettingController::class, 'botsCreate']);
         Route::post('/bots/create', [C\SettingController::class, 'botsCreateSubmit']);
     });

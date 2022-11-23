@@ -42,6 +42,22 @@
                     <hr class="my-6"/>
                     <div class="row align-items-center my-3">
                         <div class="col-md-4">
+                            <h6 class="mb-0 font-semibold">Bot: </h6>
+                        </div>
+                        <div class="col-md-6">
+                            @if(!is_null($bot))
+                                bot active: {{ $bot->name }}
+                            @else
+                                bot inactive:
+                                <a href="{{ url('settings/bots/create') }}" class="btn btn-primary btn-sm">
+                                    Create Bot
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                    <hr class="my-6"/>
+                    <div class="row align-items-center my-3">
+                        <div class="col-md-4">
                             <h6 class="mb-0 font-semibold">Telescope: </h6>
                         </div>
                         <div class="col-md-6">
