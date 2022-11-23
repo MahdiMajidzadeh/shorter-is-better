@@ -24,7 +24,7 @@
             <div class="w-8 text-lg">
                 <i class="bi bi-check-circle-fill"></i>
             </div>
-            <span class="font-bold">{{ session('msg-error') }}</span>
+            <span class="font-bold">{{ session('msg-ok') }}</span>
         </div>
     </div>
 @endif

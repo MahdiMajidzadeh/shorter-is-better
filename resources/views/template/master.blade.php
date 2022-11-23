@@ -6,7 +6,7 @@
     <link href="{{ asset('index.css') }}" rel="stylesheet">
     <title>@yield('title') - Shorter Is Better</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-    <link rel="icon" href="{{ asset('favicon.png') }}" type="image/x-icon"/>
+    <link rel="icon" href="{{ asset('favicon-2.png') }}" type="image/x-icon"/>
     @stack('css')
 </head>
 <body>

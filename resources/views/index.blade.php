@@ -1,6 +1,6 @@
 @extends('template.master')
 
-@section('title','login')
+@section('title','Hi !')
 
 @section('content')
     <div class="px-5 py-5 p-lg-0">

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Artisan;
 use DefStudio\Telegraph\Models\TelegraphBot;
 
 class SettingController extends Controller

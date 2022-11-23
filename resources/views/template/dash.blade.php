@@ -11,7 +11,7 @@
                 </button>
                 <!-- Brand -->
                 <a class="navbar-brand py-lg-5 mb-lg-5 px-lg-6 me-0" href="{{ url('/panel') }}">
-                    <img src="{{ asset('logo.png') }}" alt="...">
+                    <img src="{{ asset('logo-2.png') }}" alt="...">
                 </a>
                 <!-- Collapse -->
                 <div class="collapse navbar-collapse" id="sidebarCollapse">
