@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Artisan;
 use DefStudio\Telegraph\Models\TelegraphBot;
+use DefStudio\Telegraph\Models\TelegraphChat;
 
 class SettingController extends Controller
 {
@@ -19,9 +19,19 @@ class SettingController extends Controller
 
     public function indexSubmit(Request $request): RedirectResponse
     {
+        $chat = TelegraphChat::where('chat_id', $request->get('channel_id'))->first();
+
+        if (!$chat) {
+            $chat = TelegraphBot::first()->chats()->create([
+                'chat_id' => $request->get('channel_id'),
+                'name'    => $request->get('channel_id'),
+            ]);
+        }
+
         setting([
             'channel.has'      => $request->get('channel_has'),
             'channel.username' => $request->get('channel_username'),
+            'channel.id'       => $request->get('channel_id'),
         ])->save();
 
         bot_update();

@@ -35,6 +35,18 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row align-items-center my-3">
+                            <div class="col-md-4">
+                                <h6 class="mb-0 font-semibold">Channel Id</h6>
+                                <p class="text-muted text-sm">for send message to channel</p>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="">
+                                    <input type="text" class="form-control" name="channel_id"
+                                           value="{{ setting('channel.id', '') }}">
+                                </div>
+                            </div>
+                        </div>
                         <div class="text-end">
                             <button type="submit" class="btn btn-primary">Save</button>
                         </div>
