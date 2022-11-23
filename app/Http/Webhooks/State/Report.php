@@ -12,23 +12,25 @@ class Report extends StateManager
     {
         $this->lastStep = true;
 
-        $this->chat->message($this->allData())->send();
-        $this->chat->message($this->nonBotData())->send();
         $this->chat->message($this->urlList())->send();
+        $this->chat->message($this->nonBotData())->send();
     }
 
-    private function allData(): string
+    private function urlList(): string
     {
-        $views = ShortURLVisit::query()
-            ->select(DB::raw('Date(visited_at) as date'), DB::raw('count(*) as views'))
+        $urls = ShortURLVisit::query()
+            ->join('short_urls', 'short_urls.id', '=', 'short_url_visits.short_url_id')
             ->where('visited_at', '>=', now()->subDays(7))
-            ->groupBy(DB::raw('Date(visited_at)'))
-            ->get();
+            ->whereNot('device_type', 'robot')
+            ->groupBy('short_url_id', 'destination_url', 'default_short_url')
+            ->orderBy('views', 'desc')
+            ->take(20)
+            ->get(['short_url_id', 'destination_url', 'default_short_url', DB::raw('COUNT(*) as views')]);
 
-        $text = "All Data:\n\n";
+        $text = "7 Days Top Url:\n\n";
 
-        foreach ($views as $view) {
-            $text .= $view->date.': '.$view->views."\n";
+        foreach ($urls as $url) {
+            $text .= "original: ".$url->destination_url . "\nshort: " . $url->default_short_url . "\nviews: " . $url->views . "\n\n";
         }
 
         return $text;
@@ -46,24 +48,24 @@ class Report extends StateManager
         $text = "Non Bot Data:\n\n";
 
         foreach ($views as $view) {
-            $text .= $view->date.': '.$view->views."\n";
+            $text .= $view->date . ': ' . $view->views . "\n";
         }
 
         return $text;
     }
 
-    private function urlList(): string
+    private function allData(): string
     {
-        $urls = ShortURLVisit::query()
-            ->with(['shortURL'])
+        $views = ShortURLVisit::query()
+            ->select(DB::raw('Date(visited_at) as date'), DB::raw('count(*) as views'))
             ->where('visited_at', '>=', now()->subDays(7))
-            ->whereNot('device_type', 'robot')
-            ->get([DB::raw('COUNT(*) as views'), 'url']);
+            ->groupBy(DB::raw('Date(visited_at)'))
+            ->get();
 
-        $text = "7 Days Top Url:\n\n";
+        $text = "All Data:\n\n";
 
-        foreach ($urls as $url) {
-            $text .= $url->url.': '.$url->views."\n";
+        foreach ($views as $view) {
+            $text .= $view->date . ': ' . $view->views . "\n";
         }
 
         return $text;

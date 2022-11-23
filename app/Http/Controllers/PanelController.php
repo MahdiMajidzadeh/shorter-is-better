@@ -11,12 +11,12 @@ class PanelController extends Controller
     public function index(Request $request)
     {
         $views = ShortURLVisit::query()
-            ->select(DB::raw('Date(visited_at) as date'), DB::raw('count(*) as views'))
+            ->select(DB::raw('Date(visited_at) as x'), DB::raw('count(*) as y'))
             ->where('visited_at', '>', now()->subDays(30))
             ->groupBy(DB::raw('Date(visited_at)'))
             ->get();
 
-        $data['views'] = chart_data_line($views, 'date', 'views', 'views per day');
+        $data['views'] = $views;
 
         return view('panel.dashboard', $data);
     }
