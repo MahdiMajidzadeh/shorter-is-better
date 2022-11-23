@@ -16,27 +16,32 @@
         </div>
     @endif
     <div class="card">
-        <div class="card-body h-3" >
-            <canvas id="view-chart"  width="400" height="400"></canvas>
+        <div class="card-body">
+            <div id="view-chart"></div>
         </div>
     </div>
 @endsection
 
 @push('js')
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.8.2/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>
-        const ctx = document.getElementById('view-chart');
-        const myChart = new Chart(ctx, {
-            type: 'line',
-            data: @json($views),
-            options: {
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    }
+        options = {
+            chart: {
+                type: 'bar',
+                height: 400
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false
                 }
             },
-        });
+            series: [{
+                data: @json($views)
+            }]
+        }
+
+        var chart = new ApexCharts(document.querySelector("#view-chart"), options);
+        chart.render();
     </script>
 @endpush
 
