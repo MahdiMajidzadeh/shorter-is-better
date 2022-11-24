@@ -7,6 +7,7 @@ use App\Http\Webhooks\State\Stat;
 use App\Http\Webhooks\State\Short;
 use Illuminate\Support\Stringable;
 use App\Http\Webhooks\State\Report;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use App\Http\Webhooks\State\ForChannel;
 use App\Http\Webhooks\State\ShortWithKey;
@@ -46,6 +47,27 @@ class Handler extends WebhookHandler
     public function forchannel()
     {
         $this->startState(ForChannel::class);
+    }
+
+    public function keyboard_handler()
+    {
+        $this->_cache();
+
+        $this->inputs['action'] = $this->data->get('call','confirm');
+
+        $fun = $this->state;
+
+        Log::error(json_encode( $this->inputs));
+        Log::error($fun);
+        Log::error($this->step);
+
+        if (! is_null($fun)) {
+            $state = new $this->state($this->chat, $this->inputs);
+            $state->handle($this->step, '');
+            $this->inputs = $state->inputs;
+
+            $this->_cacheUpdate($state->lastStep);
+        }
     }
 
     public function _cache($data = null)
@@ -145,6 +167,7 @@ class Handler extends WebhookHandler
         $state = new $class($this->chat, $this->inputs);
         $state->handle($this->step, $this->message);
         $this->inputs = $state->inputs;
+
         $this->_cacheUpdate($state->lastStep);
     }
 }

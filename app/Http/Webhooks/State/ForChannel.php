@@ -23,18 +23,19 @@ class ForChannel extends StateManager
                 $data  = $og->fetch($this->inputs['url']);
                 $short = $this->makeShort($this->inputs['url']);
 
-                $messageText =  "*" . $data['title'] . "*\n\n" .
+                $messageText = "*" . $data['title'] . "*\n\n" .
                     "_" . $this->timeRead($this->inputs['url']) . " min read_\n\n" .
-                    "`" . $short . "`\n\n" .
                     "" . $data['description'] . "\n\n" .
+                    "`" . $short . "`\n" .
                     setting('channel.username');
 
-                $msg = $this->chat->markdown($messageText )->keyboard(Keyboard::make()->buttons([
-                    Button::make('Read Article')->url($short),
-                ]));
+                $this->inputs['temp_msg'] = $messageText;
+                $this->inputs['temp_url'] = $short;
 
-                if(isset($data['image'])){
-                    $msg = $msg->photo($data['image']);
+                $msg = $this->chat->markdown($messageText);
+
+                if (isset($data['image'])) {
+                    $this->inputs['temp_image'] = $data['image'];
                 }
 
                 $response = $msg->send();
@@ -42,9 +43,30 @@ class ForChannel extends StateManager
                 $this->chat->replaceKeyboard(
                     messageId: $response->telegraphMessageId(),
                     newKeyboard: Keyboard::make()->buttons([
-                    Button::make('open')->url('https://test.it/' . $response->telegraphMessageId()),
+                    Button::make('Confirm')->action('keyboard_handler')->param('call', 'confirm'),
+                    Button::make('Edit')->action('keyboard_handler')->param('call', 'edit'),
+                    Button::make('Dismiss')->action('keyboard_handler')->param('call', 'dismiss'),
                 ])
                 )->send();
+            }
+        } else if ($step == 3) {
+            if ($this->inputs['action'] == 'confirm') {
+                $channel = TelegraphChat::where('chat_id', setting('channel.id'))->first();
+
+                $msg = $channel->markdown($this->inputs['temp_msg']);
+
+                if (isset($this->inputs['temp_image'])) {
+                   $msg = $msg->photo($this->inputs['temp_image']);
+                }
+
+                $msg->keyboard(Keyboard::make()->buttons([
+                    Button::make('Read Article')->url($this->inputs['temp_url'])
+                ]))->send();
+
+                $this->lastStep = true;
+            } elseif ($this->inputs['action'] == 'dismiss') {
+                $this->chat->markdown('ok')->send();
+                $this->lastStep = true;
             }
         }
     }
