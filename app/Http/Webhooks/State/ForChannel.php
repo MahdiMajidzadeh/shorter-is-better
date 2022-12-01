@@ -26,7 +26,7 @@ class ForChannel extends StateManager
     public function handle($step, $text = null)
     {
         $this->text = $text;
-        $funcName = "handleStep" . $step;
+        $funcName   = "handleStep" . $step;
         $this->$funcName();
     }
 
@@ -73,31 +73,6 @@ class ForChannel extends StateManager
         }
     }
 
-    public function handleStep3(){
-        if ($this->inputs['action'] == 'confirm') {
-            $channel = TelegraphChat::where('chat_id', setting('channel.id'))->latest()->first();
-
-            $msg = $channel->markdown($this->inputs['temp_msg']);
-
-            if (isset($this->inputs['temp_image'])) {
-                $msg = $msg->photo($this->inputs['temp_image']);
-            }
-
-            $msg->keyboard(Keyboard::make()->buttons([
-                Button::make('Read Article')->url($this->inputs['temp_url'])
-            ]))->send();
-
-            $this->lastStep = true;
-        } elseif ($this->inputs['action'] == 'edit') {
-            
-        } elseif ($this->inputs['action'] == 'dismiss') {
-            $this->chat->markdown('ok')->send();
-            $this->lastStep = true;
-        }
-
-        $this->chat->deleteKeyboard($this->inputs['tg_id'])->send();
-    }
-
     protected function makeShort($url)
     {
         $shortURLObject = ShortURL::destinationUrl($url);
@@ -116,5 +91,48 @@ class ForChannel extends StateManager
         });
 
         return round(count(explode(' ', implode("\n", $text))) / 180);
+    }
+
+    public function handleStep3()
+    {
+        if ($this->inputs['action'] == 'confirm') {
+            $channel = TelegraphChat::where('chat_id', setting('channel.id'))->latest()->first();
+
+            $msg = $channel->markdown($this->inputs['temp_msg']);
+
+            if (isset($this->inputs['temp_image'])) {
+                $msg = $msg->photo($this->inputs['temp_image']);
+            }
+
+            $msg->keyboard(Keyboard::make()->buttons([
+                Button::make('Read Article')->url($this->inputs['temp_url']),
+            ]))->send();
+
+            $this->lastStep = true;
+        } else if ($this->inputs['action'] == 'edit') {
+            $this->chat->markdown('sent your replacement text:')->send();
+        } else if ($this->inputs['action'] == 'dismiss') {
+            $this->chat->markdown('ok')->send();
+            $this->lastStep = true;
+        }
+
+        $this->chat->deleteKeyboard($this->inputs['tg_id'])->send();
+    }
+
+    public function handleStep4()
+    {
+        $channel = TelegraphChat::where('chat_id', setting('channel.id'))->latest()->first();
+
+        $msg = $channel->markdown($this->text);
+
+        if (isset($this->inputs['temp_image'])) {
+            $msg = $msg->photo($this->inputs['temp_image']);
+        }
+
+        $msg->keyboard(Keyboard::make()->buttons([
+            Button::make('Read Article')->url($this->inputs['temp_url']),
+        ]))->send();
+
+        $this->lastStep = true;
     }
 }
