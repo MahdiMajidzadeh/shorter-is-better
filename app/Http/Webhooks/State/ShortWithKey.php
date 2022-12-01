@@ -8,8 +8,12 @@ use AshAllenDesign\ShortURL\Facades\ShortURL;
 
 class ShortWithKey extends StateManager
 {
-    public function handle($step, $text = null)
+    public function handle($text = null)
     {
+        $this->text = $text;
+        $funcName   = "handleStep" . $this->step;
+        $this->$funcName();
+
         if ($step == 1) {
             $this->chat->message('send your url')->send();
         } elseif ($step == 2) {
@@ -23,6 +27,8 @@ class ShortWithKey extends StateManager
             $this->lastStep = true;
         }
     }
+
+    public function handleStep1()
 
     protected function _makeShort($url, $key = null)
     {

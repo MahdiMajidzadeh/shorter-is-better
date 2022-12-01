@@ -2,21 +2,22 @@
 
 namespace App\Http\Webhooks;
 
+use DefStudio\Telegraph\Models\TelegraphChat;
+
 class StateManager
 {
-    public $chat;
+    public TelegraphChat $chat;
+    public string $message;
+    public int $step;
 
-    public $inputs;
-
-    public $lastStep = false;
-
-    public function __construct($chat, $inputs)
+    public function __construct($chat,$message)
     {
         $this->chat = $chat;
-        $this->inputs = $inputs;
+        $this->message = $message;
+        $this->step = $chat->storage()->get('step');
     }
 
-    protected function isUrl($url)
+    protected function isUrl($url) : bool
     {
         if (! filter_var($url, FILTER_VALIDATE_URL)) {
             $this->chat->message('URL not valid')->send();

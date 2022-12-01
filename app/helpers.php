@@ -16,12 +16,12 @@ if (!function_exists('chart_data_line')) {
 }
 
 if (!function_exists('bot_commands')) {
-    function bot_commands()
+    function bot_commands() : array
     {
-        $commands['shortkey'] = 'short url with custom key';
+        $commands['short_key'] = 'short url with custom key';
 
         if (setting('channel.has', false)) {
-            $commands['forchannel'] = 'make short for channel';
+            $commands['for_channel'] = 'make short for channel';
         }
 
         $commands['report'] = 'short report of last 7 days';

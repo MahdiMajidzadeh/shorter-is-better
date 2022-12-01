@@ -7,8 +7,6 @@ use App\Http\Webhooks\State\Stat;
 use App\Http\Webhooks\State\Short;
 use Illuminate\Support\Stringable;
 use App\Http\Webhooks\State\Report;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 use App\Http\Webhooks\State\ForChannel;
 use App\Http\Webhooks\State\ShortWithKey;
 use DefStudio\Telegraph\Models\TelegraphChat;
@@ -23,15 +21,14 @@ class Handler extends WebhookHandler
     public $cacheKey = null;
 
     public $inputs = [];
-
     public function stat()
     {
-        $this->startState(Stat::class);
+        $this->startState(Stat::class, 'stat');
     }
 
-    public function shortkey()
+    public function short_key()
     {
-        $this->startState(ShortWithKey::class);
+        $this->startState(ShortWithKey::class, 'short_key');
     }
 
     public function short()
@@ -44,7 +41,7 @@ class Handler extends WebhookHandler
         $this->startState(Report::class);
     }
 
-    public function forchannel()
+    public function for_channel()
     {
         $this->startState(ForChannel::class);
     }
@@ -66,55 +63,27 @@ class Handler extends WebhookHandler
         }
     }
 
-    public function _cache($data = null)
+    public function isAuthenticated() : bool
     {
-        $chat = TelegraphChat::where('chat_id', $this->chat['chat_id'])->first();
+        $chat = TelegraphChat::query()->where('chat_id', $this->chat['chat_id'])->first();
+        //  todo: involve bot
         if (! $chat || is_null($chat->user_id)) {
-            $this->chat->message("Not Allowed \nPlease Authenticate with valid token")->send();
+            $this->chat->message("Not Allowed \nPlease Authenticate with valid token\nUse /start to take a token")->send();
 
             return false;
         }
-
-        $this->cacheKey = 'tgs_'.$this->bot->id.'_'.$this->chat;
-
-        if (is_null($data)) {
-            $data = Cache::get($this->cacheKey);
-        } else {
-            Cache::put($this->cacheKey, $data, now()->addMinutes(10));
-        }
-
-        if (! is_null($data)) {
-            $this->state = $data['state'];
-            $this->step = $data['step'];
-            $this->inputs = $data['inputs'];
-        }
-
         return true;
     }
 
-    public function _cacheUpdate($lastStep)
+    public function lastStep()
     {
-        if ($lastStep) {
-            Cache::forget($this->cacheKey);
-        } else {
-            $this->step++;
-
-            Cache::put($this->cacheKey, [
-                'state'  => $this->state,
-                'step'   => $this->step,
-                'inputs' => $this->inputs,
-            ], now()->addMinutes(10));
-        }
     }
 
     protected function handleChatMessage(Stringable $text): void
     {
-        $token = $this->_cache();
-
-        if (! $token) {
+        if (! $this->isAuthenticated()) {
             return;
         }
-        $fun = $this->state;
 
         if (! is_null($fun)) {
             $state = new $this->state($this->chat, $this->inputs);
@@ -131,7 +100,8 @@ class Handler extends WebhookHandler
 
     public function start()
     {
-        $chat = TelegraphChat::where('chat_id', $this->chat['chat_id'])->first();
+        $chat = TelegraphChat::query()->where('chat_id', $this->chat['chat_id'])->first();
+        //  todo: involve bot
 
         if (strlen($chat->hash) == 0) {
             $chat->hash = Str::random(50);
@@ -142,21 +112,17 @@ class Handler extends WebhookHandler
         $this->chat->message(url('/auth/bot/'.$chat->hash))->send();
     }
 
-    private function startState($class)
+    private function startState($class, $name)
     {
-        $token = $this->_cache([
-            'state'  => $class,
-            'step'   => 1,
-            'inputs' => [],
-        ]);
-
-        if (! $token) {
+        if (! $this->isAuthenticated()) {
             return;
         }
 
-        $state = new $class($this->chat, $this->inputs);
-        $state->handle($this->step, $this->message);
-        $this->inputs = $state->inputs;
+        $this->chat->storage()->set('state', $name);
+        $this->chat->storage()->set('step', 1);
+
+        $state = new $class($this->chat, $this->message);
+        $state->handle();
 
         $this->_cacheUpdate($state->lastStep);
     }
