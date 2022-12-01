@@ -16,12 +16,37 @@ class Handler extends WebhookHandler
 {
     public function stat()
     {
-        $this->startState(Stat::class, 'stat');
+        $this->startState(Stat::class);
+    }
+
+    private function startState($class)
+    {
+        if (!$this->isAuthenticated()) {
+            return;
+        }
+
+        $this->chat->storage()->set('state', $class);
+        $this->chat->storage()->set('step', 1);
+
+        $state = new $class($this->chat, $this->message);
+        $state->handle();
+    }
+
+    public function isAuthenticated(): bool
+    {
+        $chat = TelegraphChat::query()->where('chat_id', $this->chat['chat_id'])->first();
+        //  todo: involve bot
+        if (!$chat || is_null($chat->user_id)) {
+            $this->chat->message("Not Allowed \nPlease Authenticate with valid token\nUse /start to take a token")->send();
+
+            return false;
+        }
+        return true;
     }
 
     public function short_key()
     {
-        $this->startState(ShortWithKey::class, 'short_key');
+        $this->startState(ShortWithKey::class);
     }
 
     public function short()
@@ -43,52 +68,17 @@ class Handler extends WebhookHandler
     {
         $this->_cache();
 
-        $this->inputs['action'] = $this->data->get('call','confirm');
+        $this->inputs['action'] = $this->data->get('call', 'confirm');
 
         $fun = $this->state;
 
-        if (! is_null($fun)) {
+        if (!is_null($fun)) {
             $state = new $this->state($this->chat, $this->inputs);
             $state->handle($this->step, '');
             $this->inputs = $state->inputs;
 
             $this->_cacheUpdate($state->lastStep);
         }
-    }
-
-    public function isAuthenticated() : bool
-    {
-        $chat = TelegraphChat::query()->where('chat_id', $this->chat['chat_id'])->first();
-        //  todo: involve bot
-        if (! $chat || is_null($chat->user_id)) {
-            $this->chat->message("Not Allowed \nPlease Authenticate with valid token\nUse /start to take a token")->send();
-
-            return false;
-        }
-        return true;
-    }
-
-    public function lastStep()
-    {
-    }
-
-    protected function handleChatMessage(Stringable $text): void
-    {
-        if (! $this->isAuthenticated()) {
-            return;
-        }
-
-        if (! is_null($fun)) {
-            $state = new $this->state($this->chat, $this->inputs);
-            $state->handle($this->step, $text);
-            $this->inputs = $state->inputs;
-        } else {
-            $this->step = 2;
-            $state = new Short($this->chat, $this->inputs);
-            $state->handle($this->step, $text);
-        }
-
-        $this->_cacheUpdate($state->lastStep);
     }
 
     public function start()
@@ -102,21 +92,24 @@ class Handler extends WebhookHandler
         }
 
         $this->chat->message('Please open this url:')->send();
-        $this->chat->message(url('/auth/bot/'.$chat->hash))->send();
+        $this->chat->message(url('/auth/bot/' . $chat->hash))->send();
     }
 
-    private function startState($class, $name)
+    protected function handleChatMessage(Stringable $text): void
     {
-        if (! $this->isAuthenticated()) {
+        if (!$this->isAuthenticated()) {
             return;
         }
 
-        $this->chat->storage()->set('state', $name);
-        $this->chat->storage()->set('step', 1);
+        $class = $this->chat->storage()->get('state');
+
+        if (is_null($class)) {
+            $this->chat->storage()->set('state', Short::class);
+            $this->chat->storage()->set('step', 2);
+            $class = Short::class;
+        }
 
         $state = new $class($this->chat, $this->message);
         $state->handle();
-
-        $this->_cacheUpdate($state->lastStep);
     }
 }

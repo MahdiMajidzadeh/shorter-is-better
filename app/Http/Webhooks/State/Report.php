@@ -8,12 +8,12 @@ use AshAllenDesign\ShortURL\Models\ShortURLVisit;
 
 class Report extends StateManager
 {
-    public function handle($step, $text = null)
+    public function handleStep1()
     {
-        $this->lastStep = true;
-
         $this->chat->message($this->urlList())->send();
         $this->chat->message($this->nonBotData())->send();
+        
+        $this->done();
     }
 
     private function urlList(): string
@@ -54,20 +54,4 @@ class Report extends StateManager
         return $text;
     }
 
-    private function allData(): string
-    {
-        $views = ShortURLVisit::query()
-            ->select(DB::raw('Date(visited_at) as date'), DB::raw('count(*) as views'))
-            ->where('visited_at', '>=', now()->subDays(7))
-            ->groupBy(DB::raw('Date(visited_at)'))
-            ->get();
-
-        $text = "All Data:\n\n";
-
-        foreach ($views as $view) {
-            $text .= $view->date . ': ' . $view->views . "\n";
-        }
-
-        return $text;
-    }
 }

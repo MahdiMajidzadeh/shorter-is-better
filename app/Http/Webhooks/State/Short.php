@@ -2,41 +2,24 @@
 
 namespace App\Http\Webhooks\State;
 
-use Exception;
 use App\Http\Webhooks\StateManager;
-use AshAllenDesign\ShortURL\Facades\ShortURL;
 
 class Short extends StateManager
 {
-    public function handle($step, $text = null)
+    public function handleStep1()
     {
-        if ($step == 1) {
-            $this->chat->message('send your url')->send();
-        } elseif ($step == 2) {
-            $this->inputs['url'] = $text;
-            if ($this->isUrl($text)) {
-                $this->_makeShort($this->inputs['url']); // get for send message
-                $this->lastStep = true;
-            }
-        }
+        $this->chat->message('send your url')->send();
+        $this->nextStep();
     }
 
-    protected function _makeShort($url, $key = null)
+    public function handleStep2()
     {
-        $shortURLObject = ShortURL::destinationUrl($url);
-
-        if (! is_null($key)) {
-            $shortURLObject->urlKey($key);
+        if ($this->isUrl($this->message)) {
+            $url = $this->makeShort($this->message);
+            $this->chat->message($url)->send();
+            $this->done();
+        } else {
+            $this->chat->message('url is not valid')->send();
         }
-
-        try {
-            $shorted = $shortURLObject->make();
-        } catch (Exception $e) {
-            return false;
-        }
-
-        $this->chat->message($shorted['default_short_url'])->send();
-
-        return true;
     }
 }

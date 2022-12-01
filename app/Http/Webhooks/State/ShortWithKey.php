@@ -14,7 +14,7 @@ class ShortWithKey extends StateManager
 
     public function handleStep2()
     {
-        if ($this->isUrl($text)) {
+        if ($this->isUrl($this->message)) {
             $this->chat->storage()->set('data.url', $this->message);
             $this->chat->message('short key:')->send();
 
