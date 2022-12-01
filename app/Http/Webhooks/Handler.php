@@ -57,10 +57,6 @@ class Handler extends WebhookHandler
 
         $fun = $this->state;
 
-        Log::error(json_encode( $this->inputs));
-        Log::error($fun);
-        Log::error($this->step);
-
         if (! is_null($fun)) {
             $state = new $this->state($this->chat, $this->inputs);
             $state->handle($this->step, '');
@@ -133,17 +129,11 @@ class Handler extends WebhookHandler
         $this->_cacheUpdate($state->lastStep);
     }
 
-    public function auth()
+    public function start()
     {
         $chat = TelegraphChat::where('chat_id', $this->chat['chat_id'])->first();
 
-        if (! $chat) {
-            $this->bot->chats()->create([
-                'chat_id' => $this->chat['chat_id'],
-                'name'    => $this->chat['chat_id'],
-            ]);
-
-            $chat = TelegraphChat::where('chat_id', $this->chat['chat_id'])->first();
+        if (strlen($chat->hash) == 0) {
             $chat->hash = Str::random(50);
             $chat->save();
         }

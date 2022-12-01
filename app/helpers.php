@@ -18,18 +18,16 @@ if (!function_exists('chart_data_line')) {
 if (!function_exists('bot_commands')) {
     function bot_commands()
     {
-        $commands = [
-            'shortkey' => 'short url with custom key',
-            'report'   => 'short report of last 7 days',
-            'short'    => 'short url',
-            'stat'     => 'show stat for shorted url',
-            //            'bulk'       => 'short bulk of links in text',
-            //            'auth'       => 'authenticate bot with your account',
-        ];
+        $commands['shortkey'] = 'short url with custom key';
 
         if (setting('channel.has', false)) {
             $commands['forchannel'] = 'make short for channel';
         }
+
+        $commands['report'] = 'short report of last 7 days';
+        $commands['stat'] = 'show stat for shorted url';
+        $commands['short'] = 'short url';
+        $commands['bulk'] = 'short bulk of links in text';
 
         return $commands;
     }

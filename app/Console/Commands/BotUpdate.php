@@ -16,6 +16,10 @@ class BotUpdate extends Command
         $bots = TelegraphBot::all();
 
         foreach ($bots as $bot) {
+//            $bot->unregisterWebhook()->send();
+            $bot->registerWebhook()->send();
+//            $this->info(json_encode($bot->info()));
+//            $this->info(json_encode($bot->getWebhookDebugInfo()->send()));
             $bot->unregisterCommands()->send();
 
             $v = $bot->registerCommands(bot_commands())->send();
