@@ -14,13 +14,6 @@ use DefStudio\Telegraph\Handlers\WebhookHandler;
 
 class Handler extends WebhookHandler
 {
-    public $state = null;
-
-    public $step = null;
-
-    public $cacheKey = null;
-
-    public $inputs = [];
     public function stat()
     {
         $this->startState(Stat::class, 'stat');
