@@ -2,50 +2,32 @@
 
 namespace App\Http\Webhooks\State;
 
-use Exception;
 use App\Http\Webhooks\StateManager;
-use AshAllenDesign\ShortURL\Facades\ShortURL;
 
 class ShortWithKey extends StateManager
 {
-    public function handle($text = null)
+    public function handleStep1()
     {
-        $this->text = $text;
-        $funcName   = "handleStep" . $this->step;
-        $this->$funcName();
+        $this->chat->message('send your url')->send();
+        $this->nextStep();
+    }
 
-        if ($step == 1) {
-            $this->chat->message('send your url')->send();
-        } elseif ($step == 2) {
-            $this->inputs['url'] = $text;
-            if ($this->isUrl($text)) {
-                $this->chat->message('send your key')->send();
-            }
-        } elseif ($step == 3) {
-            $this->inputs['key'] = $text;
-            $this->_makeShort($this->inputs['url'], $this->inputs['key']); // get for send message
-            $this->lastStep = true;
+    public function handleStep2()
+    {
+        if ($this->isUrl($text)) {
+            $this->chat->storage()->set('data.url', $this->message);
+            $this->chat->message('short key:')->send();
+
+            $this->nextStep();
+        } else {
+            $this->chat->message('url is not valid')->send();
         }
     }
 
-    public function handleStep1()
-
-    protected function _makeShort($url, $key = null)
+    public function handleStep3()
     {
-        $shortURLObject = ShortURL::destinationUrl($url);
-
-        if (! is_null($key)) {
-            $shortURLObject->urlKey($key);
-        }
-
-        try {
-            $shorted = $shortURLObject->make();
-        } catch (Exception $e) {
-            return false;
-        }
-
-        $this->chat->message($shorted['default_short_url'])->send();
-
-        return true;
+        $url = $this->makeShort($this->chat->storage()->get('data.url'), $this->message);
+        $this->chat->message($url)->send();
+        $this->done();
     }
 }

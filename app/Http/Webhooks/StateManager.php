@@ -2,7 +2,9 @@
 
 namespace App\Http\Webhooks;
 
+use Exception;
 use DefStudio\Telegraph\Models\TelegraphChat;
+use AshAllenDesign\ShortURL\Facades\ShortURL;
 
 class StateManager
 {
@@ -10,21 +12,59 @@ class StateManager
     public string $message;
     public int $step;
 
-    public function __construct($chat,$message)
+    public function __construct($chat, $message)
     {
-        $this->chat = $chat;
+        $this->chat    = $chat;
         $this->message = $message;
-        $this->step = $chat->storage()->get('step');
+        $this->step    = $chat->storage()->get('step');
     }
 
-    protected function isUrl($url) : bool
+    public function handle()
     {
-        if (! filter_var($url, FILTER_VALIDATE_URL)) {
+        $funcName = "handleStep" . $this->step;
+        $this->$funcName();
+    }
+
+    protected function isUrl($url): bool
+    {
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
             $this->chat->message('URL not valid')->send();
 
             return false;
         }
 
         return true;
+    }
+
+    protected function makeShort($url, $key = null) : string
+    {
+        $shortURLObject = ShortURL::destinationUrl($url);
+
+        if (!is_null($key)) {
+            $shortURLObject->urlKey($key);
+        }
+
+        try {
+            $shorted = $shortURLObject->make();
+        } catch (Exception $e) {
+            $shorted['default_short_url'] = '_not_valid_url';
+        }
+
+        return $shorted['default_short_url'];
+    }
+
+    protected function nextStep()
+    {
+        $this->chat->storage()->set(
+            'step',
+            $this->chat->storage()->get('step')
+        );
+    }
+
+    protected function done()
+    {
+        $this->chat->storage()->forget('state');
+        $this->chat->storage()->forget('step');
+        $this->chat->storage()->forget('data.*');
     }
 }
