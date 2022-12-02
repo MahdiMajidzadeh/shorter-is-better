@@ -12,7 +12,7 @@ class Report extends StateManager
     {
         $this->chat->message($this->urlList())->send();
         $this->chat->message($this->nonBotData())->send();
-        
+
         $this->done();
     }
 

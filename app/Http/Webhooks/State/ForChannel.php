@@ -7,29 +7,10 @@ use shweshi\OpenGraph\OpenGraph;
 use App\Http\Webhooks\StateManager;
 use DefStudio\Telegraph\Keyboard\Button;
 use DefStudio\Telegraph\Keyboard\Keyboard;
-use AshAllenDesign\ShortURL\Facades\ShortURL;
 use DefStudio\Telegraph\Models\TelegraphChat;
 
 class ForChannel extends StateManager
 {
-    public $text;
-
-    /*
-     *  input [
-     *      url
-     *      temp_msg
-     *      temp_url
-     *      temp_image
-     *      tg_id
-     */
-
-    public function handle($step, $text = null)
-    {
-        $this->text = $text;
-        $funcName   = "handleStep" . $step;
-        $this->$funcName();
-    }
-
     public function handleStep1()
     {
         $this->chat->message('send your url')->send();
@@ -37,48 +18,56 @@ class ForChannel extends StateManager
 
     public function handleStep2()
     {
-        $this->inputs['url'] = $this->text;
-        if ($this->isUrl($this->text)) {
-            $og    = new OpenGraph();
-            $data  = $og->fetch($this->inputs['url']);
-            $short = $this->makeShort($this->inputs['url']);
+        $this->chat->storage()->set('data.url', $this->message);
 
-            $messageText = "*" . $data['title'] . "*\n\n" .
-                "_" . $this->timeRead($this->inputs['url']) . " min read_\n\n" .
-                "" . $data['description'] . "\n\n" .
-                "`" . $short . "`\n" .
-                setting('channel.username');
-
-            $this->inputs['temp_msg'] = $messageText;
-            $this->inputs['temp_url'] = $short;
-
-            $msg = $this->chat->markdown($messageText);
-
-            if (isset($data['image'])) {
-                $this->inputs['temp_image'] = $data['image'];
-            }
-
-            $response = $msg->send();
-
-            $this->inputs['tg_id'] = $response->telegraphMessageId();
-
-            $this->chat->replaceKeyboard(
-                messageId: $response->telegraphMessageId(),
-                newKeyboard: Keyboard::make()->buttons([
-                Button::make('Confirm')->action('keyboard_handler')->param('call', 'confirm'),
-                Button::make('Edit')->action('keyboard_handler')->param('call', 'edit'),
-                Button::make('Dismiss')->action('keyboard_handler')->param('call', 'dismiss'),
-            ])
-            )->send();
+        if (!$this->isUrl($this->message)) {
+            $this->chat->message('url is not valid')->send();
+            return;
         }
+
+        $this->chat->storage()->set('data.url_short', $this->makeShort($this->message));
+        $this->getOpenGraph();
+        $messageText = $this->generateText();
+        $this->chat->storage()->set('data.messageText', $messageText);
+
+        $msg      = $this->chat->markdown($messageText);
+        $response = $msg->send();
+
+        $this->chat->storage()->set('data.last_id', $response->telegraphMessageId());
+
+        $this->chat->replaceKeyboard(
+            messageId: $response->telegraphMessageId(),
+            newKeyboard: Keyboard::make()->buttons([
+            Button::make('Confirm')->action('keyboard_handler')->param('call', 'confirm'),
+            Button::make('Edit')->action('keyboard_handler')->param('call', 'edit'),
+            Button::make('Dismiss')->action('keyboard_handler')->param('call', 'dismiss'),
+        ])
+        )->send();
     }
 
-    protected function makeShort($url)
+    private function getOpenGraph()
     {
-        $shortURLObject = ShortURL::destinationUrl($url);
-        $shorted        = $shortURLObject->make();
+        $og     = new OpenGraph();
+        $ogData = $og->fetch($this->chat->storage()->get('data.url'));
 
-        return $shorted['default_short_url'];
+        $data = [
+            'title'       => $ogData['title'] ?? '',
+            'description' => $ogData['description'] ?? '',
+            'image'       => $ogData['image'] ?? '',
+        ];
+
+        $this->chat->storage()->set('data.link_data', $data);
+    }
+
+    private function generateText(): string
+    {
+        $data = $this->chat->storage()->get('data.link_data');
+
+        return ("*" . $data['title'] . "*\n\n" .
+            "_" . $this->timeRead($this->chat->storage()->get('data.url')) . " min read_\n\n" .
+            "" . $data['description'] . "\n\n" .
+            "`" . $this->chat->storage()->get('data.url_short') . "`\n" .
+            setting('channel.username'));
     }
 
     protected function timeRead($url): int
@@ -90,7 +79,7 @@ class ForChannel extends StateManager
             return $node->text();
         });
 
-        return round(count(explode(' ', implode("\n", $text))) / 180);
+        return round(count(explode(' ', implode("\n", $text))) / 160);
     }
 
     public function handleStep3()
@@ -133,6 +122,6 @@ class ForChannel extends StateManager
             Button::make('Read Article')->url($this->inputs['temp_url']),
         ]))->send();
 
-        $this->lastStep = true;
+        $this->done();
     }
 }
