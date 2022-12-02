@@ -66,19 +66,17 @@ class Handler extends WebhookHandler
 
     public function keyboard_handler()
     {
-        $this->_cache();
+        $actionList = [
+            'channel_confirm'      => ForChannel::class,
+            'channel_channel_edit' => ForChannel::class,
+            'channel_dismiss'      => ForChannel::class,
+        ];
 
-        $this->inputs['action'] = $this->data->get('call', 'confirm');
+        $actionName = $this->data->get('action_name');
+        $class      = $actionList[$actionName];
 
-        $fun = $this->state;
-
-        if (!is_null($fun)) {
-            $state = new $this->state($this->chat, $this->inputs);
-            $state->handle($this->step, '');
-            $this->inputs = $state->inputs;
-
-            $this->_cacheUpdate($state->lastStep);
-        }
+        $state = new $class($this->chat, $actionName);
+        $state->handle();
     }
 
     public function start()
