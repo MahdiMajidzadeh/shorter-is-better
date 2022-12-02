@@ -19,19 +19,6 @@ class Handler extends WebhookHandler
         $this->startState(Stat::class);
     }
 
-    private function startState($class)
-    {
-        if (!$this->isAuthenticated()) {
-            return;
-        }
-
-        $this->chat->storage()->set('state', $class);
-        $this->chat->storage()->set('step', 1);
-
-        $state = new $class($this->chat, $this->message);
-        $state->handle();
-    }
-
     public function isAuthenticated(): bool
     {
         $chat = TelegraphChat::query()->where('chat_id', $this->chat['chat_id'])->first();
@@ -107,7 +94,21 @@ class Handler extends WebhookHandler
             $class = Short::class;
         }
 
-        $state = new $class($this->chat, $this->message);
+        $state = new $class($this->chat, $text);
+        $state->handle();
+    }
+
+    private function startState($class)
+    {
+        if (!$this->isAuthenticated()) {
+            return;
+        }
+
+        $this->chat->storage()->set('state', $class);
+        $this->chat->storage()->set('step', 1);
+        $this->chat->storage()->forget('data.*');
+
+        $state = new $class($this->chat, '');
         $state->handle();
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Webhooks;
 
 use Exception;
+use DefStudio\Telegraph\DTO\Message;
 use DefStudio\Telegraph\Models\TelegraphChat;
 use AshAllenDesign\ShortURL\Facades\ShortURL;
 
@@ -28,15 +29,13 @@ class StateManager
     protected function isUrl($url): bool
     {
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
-            $this->chat->message('URL not valid')->send();
-
             return false;
         }
 
         return true;
     }
 
-    protected function makeShort($url, $key = null) : string
+    protected function makeShort($url, $key = null): string
     {
         $shortURLObject = ShortURL::destinationUrl($url);
 
@@ -57,7 +56,7 @@ class StateManager
     {
         $this->chat->storage()->set(
             'step',
-            $this->chat->storage()->get('step')
+            $this->chat->storage()->get('step') + 1
         );
     }
 

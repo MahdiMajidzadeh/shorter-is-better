@@ -44,7 +44,7 @@ class ForChannel extends StateManager
 
     public function handleStep3()
     {
-        $action   = strstr($this->message, 'channel_');
+        $action   = str_replace('channel_', '',$this->message);
         $funcName = "handleStep3" . $action;
         $this->$funcName();
 
