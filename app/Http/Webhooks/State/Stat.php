@@ -2,6 +2,7 @@
 
 namespace App\Http\Webhooks\State;
 
+use AsciiTable\Builder;
 use Illuminate\Support\Facades\DB;
 use App\Http\Webhooks\StateManager;
 use AshAllenDesign\ShortURL\Models\ShortURL;
@@ -34,26 +35,29 @@ class Stat extends StateManager
         $browserStat = ShortURLVisit::where('short_url_id', $id)
             ->groupBy('browser')
             ->selectRaw('browser as name, count(*) as num')
+            ->whereNot('device_type', 'robot')
             ->orderBy('num', 'desc')
             ->get();
 
-        $this->sendStat('Browsers', $browserStat);
+        $this->sendStat('Browsers', 'name', $browserStat);
 
         $deviceTypeStat = ShortURLVisit::where('short_url_id', $id)
             ->groupBy('device_type')
             ->selectRaw('device_type as name, count(*) as num')
+            ->whereNot('device_type', 'robot')
             ->orderBy('num', 'desc')
             ->get();
 
-        $this->sendStat('Device Type:', $deviceTypeStat);
+        $this->sendStat('Device Type', 'name', $deviceTypeStat);
 
         $operatingSystemStat = ShortURLVisit::where('short_url_id', $id)
             ->groupBy('operating_system')
             ->selectRaw('operating_system as name, count(*) as num')
+            ->whereNot('device_type', 'robot')
             ->orderBy('num', 'desc')
             ->get();
 
-        $this->sendStat('Operating System:', $operatingSystemStat);
+        $this->sendStat('Operating System', 'name', $operatingSystemStat);
     }
 
     private function nonBotData($id)
@@ -66,17 +70,21 @@ class Stat extends StateManager
             ->groupBy(DB::raw('Date(visited_at)'))
             ->get();
 
-        $this->sendStat('Non Bot Data:', $views);
+        $this->sendStat('Views', 'date', $views);
     }
 
-    private function sendStat($title, $stats)
+    private function sendStat($title, $row, $stats)
     {
-        $text = $title . "\n\n";
+        $builder = new Builder();
+        $builder->setTitle($title);
 
         foreach ($stats as $stat) {
-            $text .= $stat->name . ': ' . $stat->num . "\n";
+            $builder->addRow([
+                $row => $stat->name,
+                ' '  => $stat->num,
+            ]);
         }
 
-        $this->chat->message($text)->send();
+        $this->chat->markdown('```' . $builder->renderTable() . '```')->send();
     }
 }
