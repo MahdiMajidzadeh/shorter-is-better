@@ -90,7 +90,7 @@ class ForChannel extends StateManager
     public function handleStep4()
     {
         $channel = TelegraphChat::where('chat_id', setting('channel.id'))->latest()->first();
-
+        $data    = $this->chat->storage()->get('data.link_data');
         $msg = $channel->markdown($this->message);
 
         if (isset($data['image'])) {
