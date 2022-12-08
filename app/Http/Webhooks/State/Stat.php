@@ -2,11 +2,15 @@
 
 namespace App\Http\Webhooks\State;
 
+use AsciiTable\Builder;
+use Illuminate\Support\Facades\DB;
 use App\Http\Webhooks\StateManager;
+use AshAllenDesign\ShortURL\Models\ShortURL;
+use AshAllenDesign\ShortURL\Models\ShortURLVisit;
 
 class Stat extends StateManager
 {
-    public function handle($step, $text = null)
+    public function handleStep1()
     {
         $this->chat->message('send shorted url')->send();
         $this->nextStep();
