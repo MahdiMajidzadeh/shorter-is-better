@@ -55,7 +55,7 @@ class Handler extends WebhookHandler
     {
         $actionList = [
             'channel_confirm'      => ForChannel::class,
-            'channel_channel_edit' => ForChannel::class,
+            'channel_edit' => ForChannel::class,
             'channel_dismiss'      => ForChannel::class,
         ];
 
