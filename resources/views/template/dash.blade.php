@@ -3,7 +3,7 @@
 @section('content')
     <div class="d-flex flex-column flex-lg-row h-lg-full">
         <!-- Vertical Navbar -->
-        <nav class="navbar show navbar-vertical h-lg-screen navbar-expand-lg px-0 py-3 py-lg-0 navbar-light bg-white border-end-lg" id="navbarVertical">
+        <nav class="navbar show navbar-vertical h-lg-screen navbar-expand-lg px-0 py-3 py-lg-0 border-end-lg  navbar-dark bg-dark" id="navbarVertical">
             <div class="container-fluid">
                 <!-- Toggler -->
                 <button class="navbar-toggler ms-n2" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarCollapse" aria-controls="sidebarCollapse" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,29 +52,26 @@
             </div>
         </nav>
         <!-- Main content -->
-        <div class="h-screen px-3 px-lg-4 flex-grow-1 overflow-y-lg-auto">
-            <header>
+        <div class="h-screen flex-grow-1 overflow-y-lg-auto">
+            <header class="bg-surface-primary border-bottom py-6">
                 <div class="container-fluid">
-                    <div class="py-6 border-bottom">
-                        <!-- Page heading -->
-                        <div>
-                            <div class="row align-items-center">
-                                <div class="col-md-6 col-12 mb-3 mb-md-0">
-                                    <!-- Title -->
-                                    <h1 class="h2 mb-0 ls-tight">@yield('header')</h1>
-                                </div>
-                                <!-- Actions -->
-                                <div class="col-md-6 col-12 text-md-end">
-                                    <div class="mx-n1">
-                                        @yield('header-actions')
-                                    </div>
+                    <div class="mb-npx">
+                        <div class="row align-items-center">
+                            <div class="col-sm-6 col-12">
+                                <!-- Title -->
+                                <h1 class="h2 ls-tight">@yield('header')</h1>
+                            </div>
+                            <!-- Actions -->
+                            <div class="col-sm-6 col-12 text-sm-end">
+                                <div class="mx-n1">
+                                    @yield('header-actions')
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </header>
-            <main class="py-10">
+            <main class="py-10 bg-surface-secondary">
                 <!-- Container -->
                 <div class="container-fluid">
                     @yield('page')
