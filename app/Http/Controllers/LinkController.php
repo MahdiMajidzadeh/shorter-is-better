@@ -91,10 +91,20 @@ class LinkController extends Controller
 
         foreach ($output_array[0] as $url) {
             $short = ShortURL::destinationUrl($url)->make();
-            $text = str_replace($url, $short->default_short_url, $text);
+            $text  = str_replace($url, $short->default_short_url, $text);
         }
 
         return redirect('links/bulk')->with('converted_text', $text);
+    }
+
+    public function logs(Request $request)
+    {
+        $data['logs'] = ShortURLVisit::query()
+            ->with('shortURL')
+            ->orderBy('id', 'desc')
+            ->paginate(40);
+
+        return view('panel.links-logs', $data);
     }
 
     private function getVisitData($id, $type): Collection

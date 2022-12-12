@@ -32,6 +32,11 @@
                                 <i class="bi bi-list-ul"></i> Bulk Link
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url('/links/logs') }}">
+                                <i class="bi bi-body-text"></i> Visit Logs
+                            </a>
+                        </li>
                     </ul>
                     <!-- Divider -->
                     <hr class="navbar-divider my-5 opacity-20">
