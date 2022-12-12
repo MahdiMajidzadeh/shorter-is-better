@@ -71,7 +71,7 @@
                     </div>
                 </div>
             </header>
-            <main class="py-10 bg-surface-secondary h-full">
+            <main class="py-10 bg-surface-secondary min-h-full">
                 <!-- Container -->
                 <div class="container-fluid">
                     @yield('page')
