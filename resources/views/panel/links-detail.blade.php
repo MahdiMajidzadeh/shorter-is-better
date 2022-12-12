@@ -16,7 +16,14 @@
                             </div>
                         </div>
                         <div class="ps-4">
-                            <span class="d-block text-sm text-muted font-semibold mb-1">Original Link</span>
+                            <span class="d-block text-sm text-muted font-semibold mb-1">
+                                Original Link
+                                <button href="#" class="btn btn-square btn-neutral btn-sm copy" data-clipboard-text="{{ $short->destination_url }}">
+                                  <span class="svg-icon">
+                                    <i class="bi bi-clipboard"></i>
+                                  </span>
+                                </button>
+                            </span>
                             <div class="d-flex align-items-center h4 mb-0 text-break">
                                 <a href="{{ $short->destination_url }}">
                                     {{ $short->destination_url }}
@@ -37,7 +44,14 @@
                             </div>
                         </div>
                         <div class="ps-4">
-                            <span class="d-block text-sm text-muted font-semibold mb-1">Shorten Link</span>
+                            <span class="d-block text-sm text-muted font-semibold mb-1">
+                                Shorten Link
+                                <button href="#" class="btn btn-square btn-neutral btn-sm copy" data-clipboard-text="{{ $short->default_short_url }}">
+                                  <span class="svg-icon">
+                                    <i class="bi bi-clipboard"></i>
+                                  </span>
+                                </button>
+                            </span>
                             <div class="d-flex align-items-center h4 mb-0 user-select-all">
                                 <a href="{{ $short->default_short_url }}">
                                     {{ $short->default_short_url }}
@@ -175,6 +189,7 @@
 @endsection
 
 @push('js')
+    <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>
         options = {
@@ -194,5 +209,20 @@
 
         var chart = new ApexCharts(document.querySelector("#view-chart"), options);
         chart.render();
+
+        var clipboard = new ClipboardJS('.copy');
+        clipboard.on('success', function(e) {
+            var tooltip = new bootstrap.Tooltip( e.trigger, {
+                title: "copied !",
+                trigger : "manual"
+            });
+
+            tooltip.show();
+            setTimeout(() => {
+                tooltip.hide();
+            }, 2000);
+
+            e.clearSelection();
+        });
     </script>
 @endpush
