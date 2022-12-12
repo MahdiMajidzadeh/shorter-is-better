@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use AshAllenDesign\ShortURL\Facades\ShortURL;
 use AshAllenDesign\ShortURL\Models\ShortURLVisit;
@@ -74,7 +75,18 @@ class LinkController extends Controller
         return redirect('links');
     }
 
-    public function getVisitData($id, $type) : Collection
+    public function bulk(Request $request) : View
+    {
+        return view('panel.links-bulk');
+    }
+
+    public function bulkSubmit(Request $request)
+    {
+        $text = $request->get('text');
+        
+    }
+
+    private function getVisitData($id, $type) : Collection
     {
         return ShortURLVisit::query()
             ->where('short_url_id', $id)

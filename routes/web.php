@@ -21,6 +21,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/', [C\LinkController::class, 'all']);
         Route::get('/create', [C\LinkController::class, 'create']);
         Route::post('/create', [C\LinkController::class, 'createSubmit']);
+        Route::get('/bulk', [C\LinkController::class, 'bulk']);
+        Route::post('/bulk', [C\LinkController::class, 'bulk']);
         Route::get('/delete/{id}', [C\LinkController::class, 'deleteSubmit']);
         Route::get('/{short}', [C\LinkController::class, 'detail']);
     });

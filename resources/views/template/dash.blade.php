@@ -27,6 +27,11 @@
                                 <i class="bi bi-link"></i> Links
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url('/links/bulk') }}">
+                                <i class="bi bi-list-ul"></i> Bulk Link
+                            </a>
+                        </li>
                     </ul>
                     <!-- Divider -->
                     <hr class="navbar-divider my-5 opacity-20">
