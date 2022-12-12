@@ -75,7 +75,7 @@ class LinkController extends Controller
         return redirect('links');
     }
 
-    public function bulk(Request $request) : View
+    public function bulk(Request $request): View
     {
         return view('panel.links-bulk');
     }
@@ -83,10 +83,21 @@ class LinkController extends Controller
     public function bulkSubmit(Request $request)
     {
         $text = $request->get('text');
-        
+        preg_match_all(
+            '/[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\-\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/',
+            $text,
+            $output_array
+        );
+
+        foreach ($output_array[0] as $url) {
+            $short = ShortURL::destinationUrl($url)->make();
+            $text = str_replace($url, $short->default_short_url, $text);
+        }
+
+        return redirect('links/bulk')->with('converted_text', $text);
     }
 
-    private function getVisitData($id, $type) : Collection
+    private function getVisitData($id, $type): Collection
     {
         return ShortURLVisit::query()
             ->where('short_url_id', $id)
