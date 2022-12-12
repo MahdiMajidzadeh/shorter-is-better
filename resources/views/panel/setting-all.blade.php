@@ -5,6 +5,99 @@
 @section('header','All Setting')
 
 @section('page')
+    <div class="row mb-10 px-16">
+        <div class="col-lg-4 mb-5 mb-lg-0 pe-lg-16">
+            <h4 class="font-semibold mb-2">Telegram Bot</h4>
+            <p class="text-sm">Add Telegram bot for handy shorter</p>
+        </div>
+        <div class="col-lg-8">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <div class="row g-5">
+                        <div class="col-md-12">
+                            <div class="text-black">
+                                @if(!is_null($bot))
+                                    bot name: {{ $bot->name }}
+                                @else
+                                    no bot registered
+                                @endif
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="col-md-12 m-0">
+                            @if(!is_null($bot))
+                                <a class="btn btn-neutral btn-sm" href="#">Add bot</a>
+                            @else
+                                <a class="btn btn-neutral btn-sm" href="#">Edit bot</a>
+                            @endif
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-10 px-16">
+        <div class="col-lg-4 mb-5 mb-lg-0 pe-lg-16">
+            <h4 class="font-semibold mb-2">Telegram Channel</h4>
+            <p class="text-sm">To integrate with Telegram Channel </p>
+        </div>
+        <div class="col-lg-8">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <div class="row align-items-center mb-3">
+                        <div class="col-md-4">
+                            <h6 class="mb-0 font-semibold">Has Channel Signature:</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <a class="btn btn-neutral btn-sm" href="#">Active</a>
+                        </div>
+                    </div>
+                    <div class="row align-items-center mb-3">
+                        <div class="col-md-4">
+                            <h6 class="mb-0 font-semibold">Channel Username:</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" name="channel_username"
+                                   value="{{ setting('channel.username', '') }}">
+                        </div>
+                    </div>
+                    <div class="row align-items-center mb-3">
+                        <div class="col-md-4">
+                            <h6 class="mb-0 font-semibold">Channel Id:</h6>
+                            <p class="text-muted text-sm">for send message to channel</p>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" name="channel_id"
+                                   value="{{ setting('channel.id', '') }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-10 px-16">
+        <div class="col-lg-4 mb-5 mb-lg-0 pe-lg-16">
+            <h4 class="font-semibold mb-2">Telescope</h4>
+            <p class="text-sm">For debugging</p>
+        </div>
+        <div class="col-lg-8">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <div class="row g-5">
+                        <div class="col-md-12">
+                            <a class="btn btn-neutral btn-sm" href="#">Active</a>
+                            <a class="btn btn-neutral btn-sm" href="#">Purge</a>
+                            <a class="btn btn-neutral btn-sm" href="#">Open</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="">
         <div class="container py-7">
             <div class="row">
