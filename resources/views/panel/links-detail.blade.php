@@ -16,9 +16,11 @@
                             </div>
                         </div>
                         <div class="ps-4">
-                            <span class="d-block text-sm text-muted font-semibold mb-1">link</span>
+                            <span class="d-block text-sm text-muted font-semibold mb-1">Original Link</span>
                             <div class="d-flex align-items-center h4 mb-0 text-break">
-                                {{ $short->destination_url }}
+                                <a href="{{ $short->destination_url }}">
+                                    {{ $short->destination_url }}
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -35,9 +37,11 @@
                             </div>
                         </div>
                         <div class="ps-4">
-                            <span class="d-block text-sm text-muted font-semibold mb-1">link</span>
+                            <span class="d-block text-sm text-muted font-semibold mb-1">Shorten Link</span>
                             <div class="d-flex align-items-center h4 mb-0 user-select-all">
-                                {{ $short->default_short_url }}
+                                <a href="{{ $short->default_short_url }}">
+                                    {{ $short->default_short_url }}
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -47,38 +51,23 @@
     </div>
     <hr class="my-5">
     <div class="row">
-        <div class="col-md-3">
+        <div class="col-12">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex">
                         <div>
-                            <div class="icon icon-shape text-lg bg-primary text-white rounded-circle">
-                                <i class="bi bi-eye"></i>
+                            <div class="icon icon-shape text-lg bg-primary text-light rounded-circle">
+                                <i class="bi bi-bar-chart"></i>
                             </div>
                         </div>
                         <div class="ps-4">
-                            <span class="d-block text-sm text-muted font-semibold mb-1">Total visit</span>
+                            <span class="d-block text-sm text-muted font-semibold mb-1">Daily Visit</span>
                             <div class="d-flex align-items-center h4 mb-0">
                                 {{ $short->visits()->count() }}
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex">
-                        <div class="ps-4">
-                            <div class="d-flex align-items-center h4 mb-0">
-                                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                    <i class="bi bi-trash"></i>
-                                    Delete
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <div id="view-chart"></div>
                 </div>
             </div>
         </div>
@@ -117,7 +106,7 @@
                             <div class="list-group-item d-flex align-items-center px-0 py-2 border-0">
                                 <div>
                                     <span
-                                       class="d-block h6 font-regular mb-0 stretched-link">{{ $item['name']?: "[other]" }}</span>
+                                            class="d-block h6 font-regular mb-0 stretched-link">{{ $item['name']?: "[other]" }}</span>
                                 </div>
                                 <div class="ms-auto text-end">
                                     <span class="badge bg-tint-secondary rounded-pill  text-muted">{{ $item['total'] }}</span>
@@ -139,7 +128,7 @@
                             <div class="list-group-item d-flex align-items-center px-0 py-2 border-0">
                                 <div>
                                     <span
-                                       class="d-block h6 font-regular mb-0 stretched-link">{{ $item['name']?: "[other]" }}</span>
+                                            class="d-block h6 font-regular mb-0 stretched-link">{{ $item['name']?: "[other]" }}</span>
                                 </div>
                                 <div class="ms-auto text-end">
                                     <span class="badge bg-tint-secondary rounded-pill  text-muted">{{ $item['total'] }}</span>
@@ -177,3 +166,33 @@
         </div>
     </div>
 @endsection
+
+@section('header-actions')
+    <button class="btn btn-danger  btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal">
+        <i class="bi bi-trash"></i>
+        Delete
+    </button>
+@endsection
+
+@push('js')
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script>
+        options = {
+            chart: {
+                type: 'bar',
+                height: 400
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false
+                }
+            },
+            series: [{
+                data: @json($views)
+            }]
+        }
+
+        var chart = new ApexCharts(document.querySelector("#view-chart"), options);
+        chart.render();
+    </script>
+@endpush

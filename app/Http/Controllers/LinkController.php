@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Collection;
 use AshAllenDesign\ShortURL\Facades\ShortURL;
 use AshAllenDesign\ShortURL\Models\ShortURLVisit;
 use AshAllenDesign\ShortURL\Models\ShortURL as ShortModel;
@@ -43,26 +45,22 @@ class LinkController extends Controller
 //        $shortURLObject = $builder->destinationUrl('https://destination.com')->singleUse()->make();
 //        $shortURL = $shortURLObject->default_short_url;
 
-        return redirect('links/'.$shorted['url_key']);
+        return redirect('links/' . $shorted['url_key']);
     }
 
     public function detail(Request $request, $short)
     {
         $data['short'] = ShortModel::findByKey($short);
-        $data['browser'] = ShortURLVisit::where('short_url_id', $data['short']->id)
-            ->groupBy('browser')
-            ->selectRaw('browser as name, count(*) as total')
-            ->orderBy('total', 'desc')
-            ->get();
-        $data['device_type'] = ShortURLVisit::where('short_url_id', $data['short']->id)
-            ->groupBy('device_type')
-            ->selectRaw('device_type as name, count(*) as total')
-            ->orderBy('total', 'desc')
-            ->get();
-        $data['operating_system'] = ShortURLVisit::where('short_url_id', $data['short']->id)
-            ->groupBy('operating_system')
-            ->selectRaw('operating_system as name, count(*) as total')
-            ->orderBy('total', 'desc')
+
+        $data['operating_system'] = $this->getVisitData($data['short']->id, 'operating_system');
+        $data['device_type']      = $this->getVisitData($data['short']->id, 'device_type');
+        $data['browser']          = $this->getVisitData($data['short']->id, 'browser');
+
+        $data['views'] = ShortURLVisit::query()
+            ->select(DB::raw('Date(visited_at) as x'), DB::raw('count(*) as y'))
+            ->where('short_url_id', $data['short']->id)
+            ->where('visited_at', '>', now()->subDays(30))
+            ->groupBy(DB::raw('Date(visited_at)'))
             ->get();
 
         return view('panel.links-detail', $data);
@@ -74,5 +72,15 @@ class LinkController extends Controller
         ShortModel::find($id)->delete();
 
         return redirect('links');
+    }
+
+    public function getVisitData($id, $type) : Collection
+    {
+        return ShortURLVisit::query()
+            ->where('short_url_id', $id)
+            ->groupBy($type)
+            ->selectRaw($type . ' as name, count(*) as total')
+            ->orderBy('total', 'desc')
+            ->get();
     }
 }
