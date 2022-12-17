@@ -22,10 +22,7 @@ class Handler extends WebhookHandler
     public function isAuthenticated(): bool
     {
         $chat = TelegraphChat::query()->where('chat_id', $this->chat['chat_id'])->first();
-        //  todo: involve bot
         if (!$chat || is_null($chat->user_id)) {
-            $this->chat->message("Not Allowed \nPlease Authenticate with valid token\nUse /start to take a token")->send();
-
             return false;
         }
         return true;
@@ -54,9 +51,9 @@ class Handler extends WebhookHandler
     public function keyboard_handler()
     {
         $actionList = [
-            'channel_confirm'      => ForChannel::class,
-            'channel_edit' => ForChannel::class,
-            'channel_dismiss'      => ForChannel::class,
+            'channel_confirm' => ForChannel::class,
+            'channel_edit'    => ForChannel::class,
+            'channel_dismiss' => ForChannel::class,
         ];
 
         $actionName = $this->data->get('action_name');
@@ -82,7 +79,10 @@ class Handler extends WebhookHandler
 
     protected function handleChatMessage(Stringable $text): void
     {
-        if (!$this->isAuthenticated()) {
+        if ($this->chat['chat_id'] > 0) {
+            return;
+        } else if (!$this->isAuthenticated()) {
+            $this->chat->message("Not Allowed \nPlease Authenticate with valid token\nUse /start to take a token")->send();
             return;
         }
 

@@ -12,8 +12,8 @@
                     <thead>
                     <tr>
                         <th scope="col">id</th>
-                        <th scope="col" colspan="3">url / os - osv - browser</th>
-                        <th scope="col" colspan="2">short / bv - device</th>
+                        <th scope="col" colspan="4">url / os - osv - browser - bv</th>
+                        <th scope="col">short / device</th>
                         <th scope="col">ip / visit</th>
                     </tr>
                     </thead>
@@ -23,10 +23,10 @@
                             <td rowspan="2">
                                 {{ $log->id }}
                             </td>
-                            <td colspan="3">
+                            <td colspan="4">
                                 {{ $log->shortURL->destination_url }}
                             </td>
-                            <td colspan="2">
+                            <td>
                                 {{ $log->shortURL->default_short_url }}
                             </td>
                             <td>

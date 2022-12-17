@@ -3,28 +3,24 @@
 @section('title','Hi !')
 
 @section('content')
-    <div class="px-5 py-5 p-lg-0">
-        <div class="d-flex justify-content-center">
-            <div class="col-12 col-md-9 col-lg-7 min-h-screen d-flex flex-column justify-content-center position-relative">
-                <div class="row">
-                    <div class="col-xl-5 col-lg-10 col-md-9 mx-auto">
-                        <div class="text-center">
-                            <a class="navbar-brand" href="https://mahdi.majidzadeh.ir">
-                                <img src="{{ asset('favicon.png') }}" class="w-12">
-                            </a>
-                            <div class="py-7">
-                                <h1 class="ls-tight font-bolder h2">
-                                    Hi !
-                                </h1>
-                                <p class="my-3">
-                                    My name is Mahdi and you are in wrong place
-                                </p>
-                                <p class="">
-                                    <a href="https://mahdi.majidzadeh.ir" class="btn btn-block btn-primary">Visit My
-                                        Blog</a>
-                                </p>
-                            </div>
-                        </div>
+    <div class="bg-surface-secondary min-h-full min-h-screen d-flex align-items-center">
+        <div class="container-fluid">
+            <div class="row align-items-center justify-content-center">
+                <div class="col-lg-8 text-center">
+                    <!-- Title -->
+                    <h1 class="ls-tight font-bolder display-3 mb-7">
+                        Hi <span class="text-primary">everyone</span>
+                    </h1>
+                    <!-- Text -->
+                    <p class="lead px-lg-16 mb-10">
+                        Plan, build and launch beautiful and consistent user interfaces for the web that drives
+                        meaningful engagement and growth for your brand.
+                    </p>
+                    <!-- Buttons -->
+                    <div class="mx-n2">
+                        <a href="#" class="btn btn-lg btn-light shadow-sm mx-2 px-lg-8">
+                            Learn more
+                        </a>
                     </div>
                 </div>
             </div>

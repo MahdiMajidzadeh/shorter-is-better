@@ -5,6 +5,7 @@
 @section('header','All Setting')
 
 @section('page')
+    @include('template.msg')
     <div class="row mb-10 px-16">
         <div class="col-lg-4 mb-5 mb-lg-0 pe-lg-16">
             <h4 class="font-semibold mb-2">Telegram Bot</h4>
@@ -45,35 +46,105 @@
         </div>
         <div class="col-lg-8">
             <div class="card shadow border-0">
-                <div class="card-body">
-                    <div class="row align-items-center mb-3">
-                        <div class="col-md-4">
-                            <h6 class="mb-0 font-semibold">Has Channel Signature:</h6>
+                <form method="post" action="{{ url('settings') }}">
+                    @csrf
+                    <div class="card-body">
+                        <div class="row align-items-center mb-3">
+                            <div class="col-md-4">
+                                <h6 class="mb-0 font-semibold">Has Channel Signature:</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <a class="btn btn-neutral btn-sm" href="#">Active</a>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <a class="btn btn-neutral btn-sm" href="#">Active</a>
+                        <div class="row align-items-center mb-3">
+                            <div class="col-md-4">
+                                <h6 class="mb-0 font-semibold">Channel Username:</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" name="channel_username"
+                                       value="{{ setting('channel.username', '') }}">
+                            </div>
+                        </div>
+                        <div class="row align-items-center mb-3">
+                            <div class="col-md-4">
+                                <h6 class="mb-0 font-semibold">Channel Id:</h6>
+                                <p class="text-muted text-sm">for send message to channel</p>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" name="channel_id"
+                                       value="{{ setting('channel.id', '') }}">
+                            </div>
                         </div>
                     </div>
-                    <div class="row align-items-center mb-3">
-                        <div class="col-md-4">
-                            <h6 class="mb-0 font-semibold">Channel Username:</h6>
+                    <div class="card-footer pt-0">
+                        <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-10 px-16">
+        <div class="col-lg-4 mb-5 mb-lg-0 pe-lg-16">
+            <h4 class="font-semibold mb-2">Home Setting</h4>
+            <p class="text-sm">How Your Home Page Show</p>
+        </div>
+        <div class="col-lg-8">
+            <div class="card shadow border-0">
+                <form method="post" action="{{ url('settings') }}">
+                    @csrf
+                    <div class="card-body">
+                        <div class="row align-items-center mb-3">
+                            <div class="col-md-4">
+                                <h6 class="mb-0 font-semibold">Title:</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" name="channel_username"
+                                       value="{{ setting('home.title', '') }}">
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control" name="channel_username"
-                                   value="{{ setting('channel.username', '') }}">
+                        <div class="row align-items-center mb-3">
+                            <div class="col-md-4">
+                                <h6 class="mb-0 font-semibold">Title Accent:</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" name="channel_username"
+                                       value="{{ setting('home.title-accent', '') }}">
+                            </div>
+                        </div>
+                        <div class="row align-items-center mb-3">
+                            <div class="col-md-4">
+                                <h6 class="mb-0 font-semibold">Subtitle:</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" name="channel_username"
+                                       value="{{ setting('home.subtitle', '') }}">
+                            </div>
+                        </div>
+                        <div class="row align-items-center mb-3">
+                            <div class="col-md-4">
+                                <h6 class="mb-0 font-semibold">CTA Title:</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" name="channel_username"
+                                       value="{{ setting('home.cta-title', '') }}">
+                            </div>
+                        </div>
+                        <div class="row align-items-center mb-3">
+                            <div class="col-md-4">
+                                <h6 class="mb-0 font-semibold">CTA URL:</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" name="channel_username"
+                                       value="{{ setting('home.cta-url', '') }}">
+                            </div>
                         </div>
                     </div>
-                    <div class="row align-items-center mb-3">
-                        <div class="col-md-4">
-                            <h6 class="mb-0 font-semibold">Channel Id:</h6>
-                            <p class="text-muted text-sm">for send message to channel</p>
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control" name="channel_id"
-                                   value="{{ setting('channel.id', '') }}">
-                        </div>
+                    <div class="card-footer pt-0">
+                        <button type="submit" class="btn btn-primary btn-sm">Save</button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
@@ -81,7 +152,7 @@
     <div class="row mb-10 px-16">
         <div class="col-lg-4 mb-5 mb-lg-0 pe-lg-16">
             <h4 class="font-semibold mb-2">Telescope</h4>
-            <p class="text-sm">For debugging</p>
+            <p class="text-sm">For Debugging</p>
         </div>
         <div class="col-lg-8">
             <div class="card shadow border-0">
@@ -91,84 +162,6 @@
                             <a class="btn btn-neutral btn-sm" href="#">Active</a>
                             <a class="btn btn-neutral btn-sm" href="#">Purge</a>
                             <a class="btn btn-neutral btn-sm" href="#">Open</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="">
-        <div class="container py-7">
-            <div class="row">
-                <div class="col-lg-10 mx-auto">
-                    @include('template.msg')
-                    <form method="post" action="{{ url('settings') }}">
-                        @csrf
-                        <div class="row align-items-center my-3">
-                            <div class="col-md-4">
-                                <h6 class="mb-0 font-semibold">Has Channel</h6>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="channel_has"
-                                           id="switch_make_public" @if(setting('channel.has', false)) checked @endif>
-                                    <label class="form-check-label ms-2" for="switch_make_public"></label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row align-items-center my-3">
-                            <div class="col-md-4">
-                                <h6 class="mb-0 font-semibold">Channel Username</h6>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="">
-                                    <input type="text" class="form-control" name="channel_username"
-                                           value="{{ setting('channel.username', '') }}">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row align-items-center my-3">
-                            <div class="col-md-4">
-                                <h6 class="mb-0 font-semibold">Channel Id</h6>
-                                <p class="text-muted text-sm">for send message to channel</p>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="">
-                                    <input type="text" class="form-control" name="channel_id"
-                                           value="{{ setting('channel.id', '') }}">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="text-end">
-                            <button type="submit" class="btn btn-primary">Save</button>
-                        </div>
-                    </form>
-                    <hr class="my-6"/>
-                    <div class="row align-items-center my-3">
-                        <div class="col-md-4">
-                            <h6 class="mb-0 font-semibold">Bot: </h6>
-                        </div>
-                        <div class="col-md-6">
-                            @if(!is_null($bot))
-                                bot active: {{ $bot->name }}
-                            @else
-                                bot inactive:
-                                <a href="{{ url('settings/bots/create') }}" class="btn btn-primary btn-sm">
-                                    Create Bot
-                                </a>
-                            @endif
-                        </div>
-                    </div>
-                    <hr class="my-6"/>
-                    <div class="row align-items-center my-3">
-                        <div class="col-md-4">
-                            <h6 class="mb-0 font-semibold">Telescope: </h6>
-                        </div>
-                        <div class="col-md-6">
-                            <a href="{{ url('telescope') }}" class="btn btn-info rounded-pill btn-sm">
-                                Open Dashboard
-                            </a>
                         </div>
                     </div>
                 </div>
