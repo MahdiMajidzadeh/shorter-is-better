@@ -5,7 +5,11 @@
 @section('header','All Setting')
 
 @section('page')
-    @include('template.msg')
+    <div class="row mb-10 px-16">
+        <div class="col-12">
+            @include('template.msg')
+        </div>
+    </div>
     <div class="row mb-10 px-16">
         <div class="col-lg-4 mb-5 mb-lg-0 pe-lg-16">
             <h4 class="font-semibold mb-2">Telegram Bot</h4>
@@ -46,7 +50,7 @@
         </div>
         <div class="col-lg-8">
             <div class="card shadow border-0">
-                <form method="post" action="{{ url('settings') }}">
+                <form method="post" action="{{ url('settings/channel') }}">
                     @csrf
                     <div class="card-body">
                         <div class="row align-items-center mb-3">
@@ -54,7 +58,15 @@
                                 <h6 class="mb-0 font-semibold">Has Channel Signature:</h6>
                             </div>
                             <div class="col-md-6">
-                                <a class="btn btn-neutral btn-sm" href="#">Active</a>
+                                <input type="radio" class="btn-check" name="channel_has" id="success-outlined" autocomplete="off"
+                                       @if(setting('channel.has', "off") == 'on') checked @endif
+                                >
+                                <label class="btn btn-outline-info btn-sm" for="success-outlined" value="on">Active</label>
+
+                                <input type="radio" class="btn-check" name="channel_has" id="danger-outlined" autocomplete="off"
+                                       @if(setting('channel.has', "off") == 'off') checked @endif
+                                >
+                                <label class="btn btn-outline-info btn-sm" for="danger-outlined">Inactive</label>
                             </div>
                         </div>
                         <div class="row align-items-center mb-3">
@@ -125,6 +137,7 @@
                         <div class="row align-items-center mb-3">
                             <div class="col-md-4">
                                 <h6 class="mb-0 font-semibold">CTA Title:</h6>
+                                <p class="text-sm">CTA is necessary</p>
                             </div>
                             <div class="col-md-6">
                                 <input type="text" class="form-control" name="cta-title"
@@ -134,6 +147,7 @@
                         <div class="row align-items-center mb-3">
                             <div class="col-md-4">
                                 <h6 class="mb-0 font-semibold">CTA URL:</h6>
+                                <p class="text-sm">CTA URL is necessary, too</p>
                             </div>
                             <div class="col-md-6">
                                 <input type="text" class="form-control" name="cta-url"

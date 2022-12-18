@@ -9,17 +9,17 @@
                 <div class="col-lg-8 text-center">
                     <!-- Title -->
                     <h1 class="ls-tight font-bolder display-3 mb-7">
-                        Hi <span class="text-primary">everyone</span>
+                        {{ setting('home.title', 'Hi') }}
+                        <span class="text-primary">{{ setting('home.title-accent', 'everyone') }}</span>
                     </h1>
                     <!-- Text -->
                     <p class="lead px-lg-16 mb-10">
-                        Plan, build and launch beautiful and consistent user interfaces for the web that drives
-                        meaningful engagement and growth for your brand.
+                        {{ setting('home.subtitle') }}
                     </p>
                     <!-- Buttons -->
                     <div class="mx-n2">
-                        <a href="#" class="btn btn-lg btn-light shadow-sm mx-2 px-lg-8">
-                            Learn more
+                        <a href="{{ setting('home.cta-url', 'https://github.com/MahdiMajidzadeh/shorter-is-better') }}" class="btn btn-lg btn-light shadow-sm mx-2 px-lg-8">
+                            {{ setting('home.cta-title', 'See Github Ripo') }}
                         </a>
                     </div>
                 </div>
