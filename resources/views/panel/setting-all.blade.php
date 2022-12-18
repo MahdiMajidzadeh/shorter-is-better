@@ -173,9 +173,10 @@
                 <div class="card-body">
                     <div class="row g-5">
                         <div class="col-md-12">
-                            <a class="btn btn-neutral btn-sm" href="#">Active</a>
+                            <a class="btn btn-neutral btn-sm" href="{{ url('settings/telescope/resume') }}">Active</a>
+                            <a class="btn btn-neutral btn-sm" href="{{ url('settings/telescope/pause') }}">Pause</a>
                             <a class="btn btn-neutral btn-sm" href="#">Purge</a>
-                            <a class="btn btn-neutral btn-sm" href="#">Open</a>
+                            <a class="btn btn-neutral btn-sm" href="{{ url('telescope') }}" target="_blank">Open</a>
                         </div>
                     </div>
                 </div>

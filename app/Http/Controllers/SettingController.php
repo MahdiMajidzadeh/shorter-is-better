@@ -72,5 +72,18 @@ class SettingController extends Controller
 
     public function telescopeAction(Request $request, $action): RedirectResponse
     {
+        switch ($action) {
+            case 'pause':
+                if (!cache()->get('telescope:pause-recording')) {
+                    cache()->put('telescope:pause-recording', true, now()->addDays(30));
+                }
+                return redirect('settings')->with('msg-ok', 'Telescoped Paused');
+
+            case 'resume':
+                if (cache()->get('telescope:pause-recording')) {
+                    cache()->forget('telescope:pause-recording');
+                }
+                return redirect('settings')->with('msg-ok', 'Telescoped Resumed');
+        }
     }
 }
