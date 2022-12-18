@@ -92,7 +92,7 @@
         </div>
         <div class="col-lg-8">
             <div class="card shadow border-0">
-                <form method="post" action="{{ url('settings') }}">
+                <form method="post" action="{{ url('settings/home') }}">
                     @csrf
                     <div class="card-body">
                         <div class="row align-items-center mb-3">
@@ -100,7 +100,7 @@
                                 <h6 class="mb-0 font-semibold">Title:</h6>
                             </div>
                             <div class="col-md-6">
-                                <input type="text" class="form-control" name="channel_username"
+                                <input type="text" class="form-control" name="title"
                                        value="{{ setting('home.title', '') }}">
                             </div>
                         </div>
@@ -109,7 +109,7 @@
                                 <h6 class="mb-0 font-semibold">Title Accent:</h6>
                             </div>
                             <div class="col-md-6">
-                                <input type="text" class="form-control" name="channel_username"
+                                <input type="text" class="form-control" name="title-accent"
                                        value="{{ setting('home.title-accent', '') }}">
                             </div>
                         </div>
@@ -118,7 +118,7 @@
                                 <h6 class="mb-0 font-semibold">Subtitle:</h6>
                             </div>
                             <div class="col-md-6">
-                                <input type="text" class="form-control" name="channel_username"
+                                <input type="text" class="form-control" name="subtitle"
                                        value="{{ setting('home.subtitle', '') }}">
                             </div>
                         </div>
@@ -127,7 +127,7 @@
                                 <h6 class="mb-0 font-semibold">CTA Title:</h6>
                             </div>
                             <div class="col-md-6">
-                                <input type="text" class="form-control" name="channel_username"
+                                <input type="text" class="form-control" name="cta-title"
                                        value="{{ setting('home.cta-title', '') }}">
                             </div>
                         </div>
@@ -136,7 +136,7 @@
                                 <h6 class="mb-0 font-semibold">CTA URL:</h6>
                             </div>
                             <div class="col-md-6">
-                                <input type="text" class="form-control" name="channel_username"
+                                <input type="text" class="form-control" name="cta-url"
                                        value="{{ setting('home.cta-url', '') }}">
                             </div>
                         </div>

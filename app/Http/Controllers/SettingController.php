@@ -17,6 +17,19 @@ class SettingController extends Controller
         return view('panel.setting-all', $data);
     }
 
+    public function homeSubmit(Request $request): RedirectResponse
+    {
+        setting([
+            'home.title'      => $request->get('title'),
+            'home.title-accent' => $request->get('title-accent'),
+            'home.subtitle'       => $request->get('subtitle'),
+            'home.cta-title'       => $request->get('cta-title'),
+            'home.cta-url'       => $request->get('cta-url'),
+        ])->save();
+
+        return redirect('settings');
+    }
+
     public function indexSubmit(Request $request): RedirectResponse
     {
         $chat = TelegraphChat::where('chat_id', $request->get('channel_id'))->first();
@@ -54,6 +67,6 @@ class SettingController extends Controller
         $bot->registerWebhook()->send();
         $bot->registerCommands(bot_commands())->send();
 
-        return redirect()->back();
+        return redirect('settings');
     }
 }
