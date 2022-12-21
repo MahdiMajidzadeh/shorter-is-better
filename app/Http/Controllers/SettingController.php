@@ -75,7 +75,7 @@ class SettingController extends Controller
         switch ($action) {
             case 'pause':
                 if (!cache()->get('telescope:pause-recording')) {
-                    cache()->put('telescope:pause-recording', true, now()->addDays(30));
+                    cache()->put('telescope:pause-recording', true, now()->addDays(180));
                 }
                 return redirect('settings')->with('msg-ok', 'Telescoped Paused');
 

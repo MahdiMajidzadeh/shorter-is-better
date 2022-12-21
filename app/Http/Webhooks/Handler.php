@@ -79,7 +79,7 @@ class Handler extends WebhookHandler
 
     protected function handleChatMessage(Stringable $text): void
     {
-        if ($this->chat['chat_id'] > 0) {
+        if ($this->chat['chat_id'] < 0) {
             return;
         } else if (!$this->isAuthenticated()) {
             $this->chat->message("Not Allowed \nPlease Authenticate with valid token\nUse /start to take a token")->send();
