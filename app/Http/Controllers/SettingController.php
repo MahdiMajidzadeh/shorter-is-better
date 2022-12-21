@@ -7,12 +7,14 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use DefStudio\Telegraph\Models\TelegraphBot;
 use DefStudio\Telegraph\Models\TelegraphChat;
+use Laravel\Telescope\Contracts\PrunableRepository;
 
 class SettingController extends Controller
 {
     public function index(Request $request): View
     {
-        $data['bot'] = TelegraphBot::query()->first();
+        $data['bot']              = TelegraphBot::query()->first();
+        $data['telescope_active'] = cache()->get('telescope:pause-recording');
 
         return view('panel.setting-all', $data);
     }
@@ -70,7 +72,7 @@ class SettingController extends Controller
         return redirect('settings');
     }
 
-    public function telescopeAction(Request $request, $action): RedirectResponse
+    public function telescopeAction(Request $request, $action, PrunableRepository $repo): RedirectResponse
     {
         switch ($action) {
             case 'pause':
@@ -84,6 +86,12 @@ class SettingController extends Controller
                     cache()->forget('telescope:pause-recording');
                 }
                 return redirect('settings')->with('msg-ok', 'Telescoped Resumed');
+            case 'prune':
+                $repo->prune(now()->addHours(48));
+                return redirect('settings')->with('msg-ok', 'Telescoped Pruned');
+            case 'prune-all':
+                $repo->prune(now());
+                return redirect('settings')->with('msg-ok', 'Telescoped Pruned All');
         }
     }
 }

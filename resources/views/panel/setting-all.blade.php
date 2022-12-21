@@ -5,12 +5,12 @@
 @section('header','All Setting')
 
 @section('page')
-    <div class="row mb-10 px-16">
+    <div class="row mb-10 px-md-16">
         <div class="col-12">
             @include('template.msg')
         </div>
     </div>
-    <div class="row mb-10 px-16">
+    <div class="row mb-10 px-md-16">
         <div class="col-lg-4 mb-5 mb-lg-0 pe-lg-16">
             <h4 class="font-semibold mb-2">Telegram Bot</h4>
             <p class="text-sm">Add Telegram bot for handy shorter</p>
@@ -43,7 +43,7 @@
         </div>
     </div>
 
-    <div class="row mb-10 px-16">
+    <div class="row mb-10 px-md-16">
         <div class="col-lg-4 mb-5 mb-lg-0 pe-lg-16">
             <h4 class="font-semibold mb-2">Telegram Channel</h4>
             <p class="text-sm">To integrate with Telegram Channel </p>
@@ -97,7 +97,7 @@
         </div>
     </div>
 
-    <div class="row mb-10 px-16">
+    <div class="row mb-10 px-md-16">
         <div class="col-lg-4 mb-5 mb-lg-0 pe-lg-16">
             <h4 class="font-semibold mb-2">Home Setting</h4>
             <p class="text-sm">How Your Home Page Show</p>
@@ -163,7 +163,7 @@
         </div>
     </div>
 
-    <div class="row mb-10 px-16">
+    <div class="row mb-10 px-md-16">
         <div class="col-lg-4 mb-5 mb-lg-0 pe-lg-16">
             <h4 class="font-semibold mb-2">Telescope</h4>
             <p class="text-sm">For Debugging</p>
@@ -173,9 +173,13 @@
                 <div class="card-body">
                     <div class="row g-5">
                         <div class="col-md-12">
+                            @if($telescope_active)
                             <a class="btn btn-neutral btn-sm" href="{{ url('settings/telescope/resume') }}">Active</a>
+                            @else
                             <a class="btn btn-neutral btn-sm" href="{{ url('settings/telescope/pause') }}">Pause</a>
-                            <a class="btn btn-neutral btn-sm" href="#">Purge</a>
+                            @endif
+                            <a class="btn btn-neutral btn-sm" href="{{ url('settings/telescope/prune') }}">Prune</a>
+                            <a class="btn btn-neutral btn-sm" href="{{ url('settings/telescope/prune-all') }}">Prune All</a>
                             <a class="btn btn-neutral btn-sm" href="{{ url('telescope') }}" target="_blank">Open</a>
                         </div>
                     </div>
