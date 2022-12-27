@@ -44,7 +44,7 @@ class ForChannel extends StateManager
 
     public function handleStep3()
     {
-        $action   = str_replace('channel_', '',$this->message);
+        $action   = str_replace('channel_', '', $this->message);
         $funcName = "handleStep3" . $action;
         $this->$funcName();
 
@@ -62,7 +62,7 @@ class ForChannel extends StateManager
             $this->chat->storage()->get('data.messageText')
         );
 
-        if (isset($data['image'])) {
+        if (isset($data['image']) && strlen($data['image']) > 1) {
             $msg = $msg->photo($data['image']);
         }
 
@@ -91,7 +91,7 @@ class ForChannel extends StateManager
     {
         $channel = TelegraphChat::where('chat_id', setting('channel.id'))->latest()->first();
         $data    = $this->chat->storage()->get('data.link_data');
-        $msg = $channel->markdown($this->message);
+        $msg     = $channel->markdown($this->message);
 
         if (isset($data['image'])) {
             $msg = $msg->photo($data['image']);
