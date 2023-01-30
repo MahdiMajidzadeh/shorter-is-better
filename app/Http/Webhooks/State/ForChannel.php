@@ -70,7 +70,9 @@ class ForChannel extends StateManager
             Button::make('Read Article')->url(
                 $this->chat->storage()->get('data.url_short')
             ),
-        ]))->send();
+        ]))
+            ->withoutPreview()
+            ->send();
 
         $this->done();
     }
@@ -93,7 +95,7 @@ class ForChannel extends StateManager
         $data    = $this->chat->storage()->get('data.link_data');
         $msg     = $channel->markdown($this->message);
 
-        if (isset($data['image'])) {
+        if (isset($data['image']) && strlen($data['image']) > 1) {
             $msg = $msg->photo($data['image']);
         }
 
@@ -101,7 +103,9 @@ class ForChannel extends StateManager
             Button::make('Read Article')->url(
                 $this->chat->storage()->get('data.url_short')
             ),
-        ]))->send();
+        ]))
+            ->withoutPreview()
+            ->send();
 
         $this->done();
     }
