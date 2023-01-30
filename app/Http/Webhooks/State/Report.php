@@ -30,7 +30,7 @@ class Report extends StateManager
         $text = "7 Days Top Url:\n\n";
 
         foreach ($urls as $url) {
-            $text .= "original: ".$url->destination_url . "\nshort: " . $url->default_short_url . "\nviews: " . $url->views . "\n\n";
+            $text .= 'original: '.$url->destination_url."\nshort: ".$url->default_short_url."\nviews: ".$url->views."\n\n";
         }
 
         return $text;
@@ -48,10 +48,9 @@ class Report extends StateManager
         $text = "Non Bot Data:\n\n";
 
         foreach ($views as $view) {
-            $text .= $view->date . ': ' . $view->views . "\n";
+            $text .= $view->date.': '.$view->views."\n";
         }
 
         return $text;
     }
-
 }

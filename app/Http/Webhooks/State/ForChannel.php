@@ -21,8 +21,9 @@ class ForChannel extends StateManager
     {
         $this->chat->storage()->set('data.url', $this->message);
 
-        if (!$this->isUrl($this->message)) {
+        if (! $this->isUrl($this->message)) {
             $this->chat->message('url is not valid')->send();
+
             return;
         }
 
@@ -44,8 +45,8 @@ class ForChannel extends StateManager
 
     public function handleStep3()
     {
-        $action   = str_replace('channel_', '', $this->message);
-        $funcName = "handleStep3" . $action;
+        $action = str_replace('channel_', '', $this->message);
+        $funcName = 'handleStep3'.$action;
         $this->$funcName();
 
         $this->chat->deleteKeyboard(
@@ -56,7 +57,7 @@ class ForChannel extends StateManager
     public function handleStep3confirm()
     {
         $channel = TelegraphChat::where('chat_id', setting('channel.id'))->latest()->first();
-        $data    = $this->chat->storage()->get('data.link_data');
+        $data = $this->chat->storage()->get('data.link_data');
 
         $msg = $channel->markdown(
             $this->chat->storage()->get('data.messageText')
@@ -92,8 +93,8 @@ class ForChannel extends StateManager
     public function handleStep4()
     {
         $channel = TelegraphChat::where('chat_id', setting('channel.id'))->latest()->first();
-        $data    = $this->chat->storage()->get('data.link_data');
-        $msg     = $channel->markdown($this->message);
+        $data = $this->chat->storage()->get('data.link_data');
+        $msg = $channel->markdown($this->message);
 
         if (isset($data['image']) && strlen($data['image']) > 1) {
             $msg = $msg->photo($data['image']);
@@ -112,10 +113,10 @@ class ForChannel extends StateManager
 
     protected function timeRead($url): int
     {
-        $client  = new Client();
+        $client = new Client();
         $crawler = $client->request('GET', $url);
 
-        $text = $crawler->filter('p')->each(function($node) {
+        $text = $crawler->filter('p')->each(function ($node) {
             return $node->text();
         });
 
@@ -124,7 +125,7 @@ class ForChannel extends StateManager
 
     private function getOpenGraph()
     {
-        $og     = new OpenGraph();
+        $og = new OpenGraph();
         $ogData = $og->fetch($this->chat->storage()->get('data.url'));
 
         $data = [
@@ -140,10 +141,10 @@ class ForChannel extends StateManager
     {
         $data = $this->chat->storage()->get('data.link_data');
 
-        return ("*" . $data['title'] . "*\n\n" .
-            "_" . $this->timeRead($this->chat->storage()->get('data.url')) . " min read_\n\n" .
-            "" . $data['description'] . "\n\n" .
-            "`" . $this->chat->storage()->get('data.url_short') . "`\n" .
-            setting('channel.username'));
+        return '*'.$data['title']."*\n\n".
+            '_'.$this->timeRead($this->chat->storage()->get('data.url'))." min read_\n\n".
+            ''.$data['description']."\n\n".
+            '`'.$this->chat->storage()->get('data.url_short')."`\n".
+            setting('channel.username');
     }
 }

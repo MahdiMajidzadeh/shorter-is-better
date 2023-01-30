@@ -13,7 +13,7 @@ class SettingController extends Controller
 {
     public function index(Request $request): View
     {
-        $data['bot']              = TelegraphBot::query()->first();
+        $data['bot'] = TelegraphBot::query()->first();
         $data['telescope_active'] = cache()->get('telescope:pause-recording');
 
         return view('panel.setting-all', $data);
@@ -36,7 +36,7 @@ class SettingController extends Controller
     {
         $chat = TelegraphChat::where('chat_id', $request->get('channel_id'))->first();
 
-        if (!$chat) {
+        if (! $chat) {
             $chat = TelegraphBot::first()->chats()->create([
                 'chat_id' => $request->get('channel_id'),
                 'name'    => $request->get('channel_id'),
@@ -76,21 +76,25 @@ class SettingController extends Controller
     {
         switch ($action) {
             case 'pause':
-                if (!cache()->get('telescope:pause-recording')) {
+                if (! cache()->get('telescope:pause-recording')) {
                     cache()->put('telescope:pause-recording', true, now()->addDays(180));
                 }
+
                 return redirect('settings')->with('msg-ok', 'Telescoped Paused');
 
             case 'resume':
                 if (cache()->get('telescope:pause-recording')) {
                     cache()->forget('telescope:pause-recording');
                 }
+
                 return redirect('settings')->with('msg-ok', 'Telescoped Resumed');
             case 'prune':
                 $repo->prune(now()->addHours(48));
+
                 return redirect('settings')->with('msg-ok', 'Telescoped Pruned');
             case 'prune-all':
                 $repo->prune(now());
+
                 return redirect('settings')->with('msg-ok', 'Telescoped Pruned All');
         }
     }

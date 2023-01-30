@@ -46,7 +46,7 @@ class LinkController extends Controller
 //        $shortURLObject = $builder->destinationUrl('https://destination.com')->singleUse()->make();
 //        $shortURL = $shortURLObject->default_short_url;
 
-        return redirect('links/' . $shorted['url_key']);
+        return redirect('links/'.$shorted['url_key']);
     }
 
     public function detail(Request $request, $short)
@@ -54,8 +54,8 @@ class LinkController extends Controller
         $data['short'] = ShortModel::findByKey($short);
 
         $data['operating_system'] = $this->getVisitData($data['short']->id, 'operating_system');
-        $data['device_type']      = $this->getVisitData($data['short']->id, 'device_type');
-        $data['browser']          = $this->getVisitData($data['short']->id, 'browser');
+        $data['device_type'] = $this->getVisitData($data['short']->id, 'device_type');
+        $data['browser'] = $this->getVisitData($data['short']->id, 'browser');
 
         $data['views'] = ShortURLVisit::query()
             ->select(DB::raw('Date(visited_at) as x'), DB::raw('count(*) as y'))
@@ -91,7 +91,7 @@ class LinkController extends Controller
 
         foreach ($output_array[0] as $url) {
             $short = ShortURL::destinationUrl($url)->make();
-            $text  = str_replace($url, $short->default_short_url, $text);
+            $text = str_replace($url, $short->default_short_url, $text);
         }
 
         return redirect('links/bulk')->with('converted_text', $text);
@@ -112,7 +112,7 @@ class LinkController extends Controller
         return ShortURLVisit::query()
             ->where('short_url_id', $id)
             ->groupBy($type)
-            ->selectRaw($type . ' as name, count(*) as total')
+            ->selectRaw($type.' as name, count(*) as total')
             ->orderBy('total', 'desc')
             ->get();
     }

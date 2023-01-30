@@ -20,15 +20,16 @@ class Stat extends StateManager
     {
         $short = ShortURL::query()->where('default_short_url', $this->message)->first();
 
-        if (!$short) {
+        if (! $short) {
             $this->chat->message('url not fount')->send();
+
             return;
         }
 
         $this->nonBotData($short->id);
         $this->visitSummaryData($short->id, 'browser', 'Browsers');
         $this->visitSummaryData($short->id, 'device_type', 'Device Type');
-        $this->visitSummaryData($short->id, 'operating_system','Operating System');
+        $this->visitSummaryData($short->id, 'operating_system', 'Operating System');
         $this->done();
     }
 
@@ -36,7 +37,7 @@ class Stat extends StateManager
     {
         $browserStat = ShortURLVisit::where('short_url_id', $id)
             ->groupBy($dataType)
-            ->selectRaw($dataType. ' as name, count(*) as num')
+            ->selectRaw($dataType.' as name, count(*) as num')
             ->whereNot('device_type', 'robot')
             ->orderBy('num', 'desc')
             ->get();
@@ -69,6 +70,6 @@ class Stat extends StateManager
             ]);
         }
 
-        $this->chat->markdown('```' . $builder->renderTable() . '```')->send();
+        $this->chat->markdown('```'.$builder->renderTable().'```')->send();
     }
 }

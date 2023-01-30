@@ -2,7 +2,7 @@
 
 use DefStudio\Telegraph\Models\TelegraphBot;
 
-if (!function_exists('chart_data_line')) {
+if (! function_exists('chart_data_line')) {
     function chart_data_line($data, $label, $col, $chartLabel)
     {
         return [
@@ -15,8 +15,8 @@ if (!function_exists('chart_data_line')) {
     }
 }
 
-if (!function_exists('bot_commands')) {
-    function bot_commands() : array
+if (! function_exists('bot_commands')) {
+    function bot_commands(): array
     {
         $commands['short_key'] = 'short url with custom key';
 
@@ -33,7 +33,7 @@ if (!function_exists('bot_commands')) {
     }
 }
 
-if (!function_exists('bot_update')) {
+if (! function_exists('bot_update')) {
     function bot_update()
     {
         $bots = TelegraphBot::all();

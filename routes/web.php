@@ -5,19 +5,19 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'index');
 
-Route::group(['prefix' => 'auth'], function() {
+Route::group(['prefix' => 'auth'], function () {
     Route::get('/', [C\AuthController::class, 'login'])->name('login');
     Route::post('/', [C\AuthController::class, 'loginSubmit']);
     Route::post('/logout', [C\AuthController::class, 'logout']);
 });
 
-Route::group(['middleware' => 'auth'], function() {
+Route::group(['middleware' => 'auth'], function () {
     Route::get('auth/bot/{hash}', [C\AuthController::class, 'hash']);
-    Route::group(['prefix' => 'panel'], function() {
+    Route::group(['prefix' => 'panel'], function () {
         Route::get('/', [C\PanelController::class, 'index']);
     });
 
-    Route::group(['prefix' => 'links'], function() {
+    Route::group(['prefix' => 'links'], function () {
         Route::get('/', [C\LinkController::class, 'all']);
         Route::get('/create', [C\LinkController::class, 'create']);
         Route::post('/create', [C\LinkController::class, 'createSubmit']);
@@ -28,7 +28,7 @@ Route::group(['middleware' => 'auth'], function() {
         Route::get('/{short}', [C\LinkController::class, 'detail']);
     });
 
-    Route::group(['prefix' => 'settings'], function() {
+    Route::group(['prefix' => 'settings'], function () {
         Route::get('/', [C\SettingController::class, 'index']);
         Route::post('/channel', [C\SettingController::class, 'channelSubmit']);
         Route::post('/home', [C\SettingController::class, 'homeSubmit']);

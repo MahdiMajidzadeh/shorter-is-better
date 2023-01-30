@@ -3,32 +3,33 @@
 namespace App\Http\Webhooks;
 
 use Exception;
-use DefStudio\Telegraph\DTO\Message;
-use DefStudio\Telegraph\Models\TelegraphChat;
 use AshAllenDesign\ShortURL\Facades\ShortURL;
+use DefStudio\Telegraph\Models\TelegraphChat;
 
 class StateManager
 {
     public TelegraphChat $chat;
+
     public string $message;
+
     public int $step;
 
     public function __construct($chat, $message)
     {
-        $this->chat    = $chat;
+        $this->chat = $chat;
         $this->message = $message;
-        $this->step    = $chat->storage()->get('step');
+        $this->step = $chat->storage()->get('step');
     }
 
     public function handle()
     {
-        $funcName = "handleStep" . $this->step;
+        $funcName = 'handleStep'.$this->step;
         $this->$funcName();
     }
 
     protected function isUrl($url): bool
     {
-        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+        if (! filter_var($url, FILTER_VALIDATE_URL)) {
             return false;
         }
 
@@ -39,7 +40,7 @@ class StateManager
     {
         $shortURLObject = ShortURL::destinationUrl($url);
 
-        if (!is_null($key)) {
+        if (! is_null($key)) {
             $shortURLObject->urlKey($key);
         }
 

@@ -11,7 +11,7 @@ return [
     | is registered for the short URL route.
     |
     */
-    'prefix' => 's',
+    'prefix'                => 's',
 
     /*
     |--------------------------------------------------------------------------
@@ -21,7 +21,7 @@ return [
     | Define any middleware that the default short URL route will use.
     |
     */
-    'middleware' => [
+    'middleware'            => [
         //
     ],
 
@@ -53,7 +53,7 @@ return [
     | eg: https://yoursite.com/short/xxx?a=b => https://destination.com/page?a=b
     |
     */
-    'forward_query_params' => false,
+    'forward_query_params'  => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -66,7 +66,7 @@ return [
     | method.
     |
     */
-    'enforce_https' => false,
+    'enforce_https'         => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -86,7 +86,7 @@ return [
     |       used, a 4 character long key will be created.
     |
     */
-    'key_length' => 5,
+    'key_length'            => 5,
 
     /*
     |--------------------------------------------------------------------------
@@ -98,7 +98,7 @@ return [
     | generated keys are unique.
     |
     */
-    'key_salt' => 'MyNameIsMajid@babe',
+    'key_salt'              => 'MyNameIsMajid@babe',
 
     /*
     |--------------------------------------------------------------------------
@@ -110,7 +110,7 @@ return [
     | and cannot contain spaces.
     |
     */
-    'alphabet' => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
+    'alphabet'              => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
 
     /*
     |--------------------------------------------------------------------------
@@ -123,10 +123,10 @@ return [
     | be overridden when creating a short URL.
     |
     */
-    'tracking' => [
+    'tracking'              => [
         'default_enabled' => true,
 
-        'fields' => [
+        'fields'          => [
             'ip_address'               => true,
             'operating_system'         => true,
             'operating_system_version' => true,
@@ -147,5 +147,5 @@ return [
     | safe to use.
     |
     */
-    'validate_config' => false,
+    'validate_config'       => false,
 ];
