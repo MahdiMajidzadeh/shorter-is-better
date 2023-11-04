@@ -21,8 +21,12 @@ class ForChannel extends StateManager
     {
         $this->chat->storage()->set('data.url', $this->message);
 
-        if (! $this->isUrl($this->message)) {
+        if (!$this->isUrl($this->message)) {
             $this->chat->message('url is not valid')->send();
+
+            return;
+        } else if ($this->doesUrlRedirect($this->message)) {
+            $this->chat->message('url is redirected, send original url')->send();
 
             return;
         }
@@ -46,7 +50,7 @@ class ForChannel extends StateManager
     public function handleStep3()
     {
         $action = str_replace('channel_', '', $this->message);
-        $funcName = 'handleStep3'.$action;
+        $funcName = 'handleStep3' . $action;
         $this->$funcName();
 
         $this->chat->deleteKeyboard(
@@ -129,9 +133,9 @@ class ForChannel extends StateManager
         $ogData = $og->fetch($this->chat->storage()->get('data.url'));
 
         $data = [
-            'title'       => $ogData['title'] ?? '',
+            'title' => $ogData['title'] ?? '',
             'description' => $ogData['description'] ?? '',
-            'image'       => $ogData['image'] ?? '',
+            'image' => $ogData['image'] ?? '',
         ];
 
         $this->chat->storage()->set('data.link_data', $data);
@@ -141,10 +145,20 @@ class ForChannel extends StateManager
     {
         $data = $this->chat->storage()->get('data.link_data');
 
-        return '*'.$data['title']."*\n\n".
-            '_'.$this->timeRead($this->chat->storage()->get('data.url'))." min read_\n\n".
-            ''.$data['description']."\n\n".
-            '`'.$this->chat->storage()->get('data.url_short')."`\n".
+        return '*' . $data['title'] . "*\n\n" .
+            '_' . $this->timeRead($this->chat->storage()->get('data.url')) . " min read_\n\n" .
+            '' . $data['description'] . "\n\n" .
+            '`' . $this->chat->storage()->get('data.url_short') . "`\n" .
             setting('channel.username');
+    }
+
+    private function doesUrlRedirect($url): bool
+    {
+        $headers = get_headers($url, 1);
+        if (!empty($headers['Location'])) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
