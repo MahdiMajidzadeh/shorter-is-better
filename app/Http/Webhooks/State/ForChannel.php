@@ -117,14 +117,16 @@ class ForChannel extends StateManager
 
     protected function timeRead($url): int
     {
-        $client = new Client();
-        $crawler = $client->request('GET', $url);
+//        $client = new Client();
+//        $crawler = $client->request('GET', $url);
+//
+//        $text = $crawler->filter('p')->each(function ($node) {
+//            return $node->text();
+//        });
+//
+//        return round(count(explode(' ', implode("\n", $text))) / 160);
 
-        $text = $crawler->filter('p')->each(function ($node) {
-            return $node->text();
-        });
-
-        return round(count(explode(' ', implode("\n", $text))) / 160);
+        return 5;
     }
 
     private function getOpenGraph()
@@ -146,7 +148,7 @@ class ForChannel extends StateManager
         $data = $this->chat->storage()->get('data.link_data');
 
         return '*'.$data['title']."*\n\n".
-            '_'.$this->timeRead($this->chat->storage()->get('data.url'))." min read_\n\n".
+//            '_'.$this->timeRead($this->chat->storage()->get('data.url'))." min read_\n\n".
             ''.$data['description']."\n\n".
             '`'.$this->chat->storage()->get('data.url_short')."`\n".
             setting('channel.username');
