@@ -5,27 +5,27 @@
     "keywords": ["framework", "laravel"],
     "license": "MIT",
     "require": {
-        "php": "^8.0.2",
+        "php": "^8.2",
         "anlutro/l4-settings": "^1.1",
         "ashallendesign/short-url": "^8.0",
         "defstudio/telegraph": "^1.9",
-        "symfony/browser-kit": "^7.0",
+        "symfony/browser-kit": "^8.0",
         "guzzlehttp/guzzle": "^7.2",
-        "laravel/framework": "^12.0",
+        "laravel/framework": "^13.0",
         "laravel/telescope": "^5.5",
-        "laravel/tinker": "^2.7",
+        "laravel/tinker": "^3.0",
         "malios/php-to-ascii-table": "^3.0",
         "sentry/sentry-laravel": "^4.0",
         "shweshi/opengraph": "^1.1"
     },
     "require-dev": {
-        "barryvdh/laravel-debugbar": "^3.16",
+        "barryvdh/laravel-debugbar": "^4.0",
         "fakerphp/faker": "^1.9.1",
         "laravel/pint": "^1.0",
         "laravel/sail": "^1.0.1",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^8.0",
-        "phpunit/phpunit": "^11.0",
+        "phpunit/phpunit": "^13.0",
         "spatie/laravel-ignition": "^2.0"
     },
     "autoload": {
