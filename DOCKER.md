@@ -71,10 +71,31 @@ generating a throwaway one that would invalidate every session on restart.
 **8080**. Dokploy's Traefik terminates TLS; the container trusts the
 `X-Forwarded-*` headers it sends (see `app/Http/Middleware/TrustProxies.php`).
 
-**5. Wire up auto-deploy.** Copy the webhook URL from the application's
-*Deployments* tab into a GitHub Actions secret named `DOKPLOY_WEBHOOK_URL`. The
-workflow's `deploy` job calls it after a successful push; without the secret the
-job logs a notice and passes, so the build still works unconfigured.
+**5. Wire up auto-deploy.** The webhook URL from the application's
+*Deployments* tab is stored as the GitHub Actions secret
+`DOKPLOY_WEBHOOK_URL` — never inline it in the workflow, since this repository
+is public and the URL is a live deploy trigger. Rotate it in Dokploy and
+re-set it with:
+
+```bash
+gh secret set DOKPLOY_WEBHOOK_URL --repo MahdiMajidzadeh/shorter-is-better
+```
+
+The workflow's `deploy` job calls it after a successful push **to `main`**
+only; without the secret the job logs a notice and passes, so the build still
+works unconfigured.
+
+### Release flow
+
+| Trigger | Image tags published | Dokploy |
+| --- | --- | --- |
+| Push to `main` | `latest`, `main`, `sha-<commit>` | Redeployed via webhook |
+| Push tag `v1.2.3` | `1.2.3`, `1.2`, `sha-<commit>` | Untouched — set `APP_IMAGE` to the pinned tag to roll forward or back |
+| Pull request | none (build only) | Untouched |
+
+`:latest` is mutable, so the three app services set `pull_policy: always`.
+Without it a redeploy reuses the copy already cached on the host and quietly
+ships the previous build.
 
 ## Operating notes
 

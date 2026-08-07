@@ -76,7 +76,10 @@ jobs:
   deploy:
     name: Trigger Dokploy
     needs: build
-    if: github.event_name == 'push'
+    # Only main moves the `:latest` tag that Dokploy pulls. A version tag
+    # publishes a pinned image without redeploying — point APP_IMAGE at it in
+    # Dokploy when you want to roll to (or back to) a specific release.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
 
     steps:

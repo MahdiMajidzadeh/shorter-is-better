@@ -9,6 +9,10 @@
 
 x-app-image: &app-image ${APP_IMAGE:-ghcr.io/mahdimajidzadeh/shorter-is-better:latest}
 
+# `:latest` is a mutable tag, so a redeploy would otherwise reuse the copy
+# already cached on the host and silently ship the previous build.
+x-pull: &pull always
+
 # Shared by app, worker and scheduler — they are the same image with different
 # commands, so they must agree on every connection setting.
 x-app-env: &app-env
@@ -49,6 +53,7 @@ x-datastores: &datastores
 services:
   app:
     image: *app-image
+    pull_policy: *pull
     restart: unless-stopped
     environment:
       <<: *app-env
@@ -63,6 +68,7 @@ services:
   # Processes queued work (Telegraph bot dispatches, notifications).
   worker:
     image: *app-image
+    pull_policy: *pull
     restart: unless-stopped
     command: php artisan queue:work --tries=3 --max-time=3600 --sleep=3
     environment:
@@ -75,6 +81,7 @@ services:
   # Runs the Laravel scheduler (currently: nightly telescope:prune).
   scheduler:
     image: *app-image
+    pull_policy: *pull
     restart: unless-stopped
     command: php artisan schedule:work
     environment:
