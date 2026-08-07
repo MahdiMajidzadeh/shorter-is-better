@@ -28,10 +28,9 @@ process, so there is no nginx, php-fpm or supervisor to configure.
 - `AUTO_MIGRATE=false` disables migrations on boot if you'd rather run them by
   hand.
 
-Frontend assets are not built in the image: `public/index.css` and the Telescope
-assets are committed, and `webpack.mix.js` currently compiles an empty
-`resources/css/app.css` that no view references. Add a Node build stage if that
-changes.
+Frontend assets are not built in the image: `public/index.css` is committed, and
+`webpack.mix.js` currently compiles an empty `resources/css/app.css` that no
+view references. Add a Node build stage if that changes.
 
 ## Run it locally
 
@@ -121,9 +120,9 @@ ships the previous build.
   homepage copy and channel settings — losing that volume loses those settings.
 - **Sessions and cache** use Redis, so the `app` service can be scaled to more
   than one replica. `mariadb` and `redis` cannot.
-- **Telescope** is off by default (`TELESCOPE_ENABLED=false`); it records every
-  request and will grow the database quickly. The scheduler prunes entries
-  older than 72h when it is on.
+- **The scheduler idles.** `App\Console\Kernel::schedule()` has been empty since
+  Telescope was removed. The service is kept so that adding a scheduled task
+  needs no deployment change; drop it from `compose.yaml` to save the container.
 - **Artisan on a running stack:**
   ```bash
   docker compose exec app php artisan migrate:status

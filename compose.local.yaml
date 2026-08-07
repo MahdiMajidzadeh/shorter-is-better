@@ -31,8 +31,6 @@ x-app-env: &app-env
   # No TLS in front of the container locally.
   SESSION_SECURE_COOKIE: "false"
 
-  TELESCOPE_ENABLED: ${TELESCOPE_ENABLED:-true}
-
 x-datastores: &datastores
   mariadb:
     condition: service_healthy

@@ -59,7 +59,9 @@ services:
       - app-storage:/app/storage
     depends_on: *datastores
 
-  # Runs the Laravel scheduler (currently: nightly telescope:prune).
+  # Runs the Laravel scheduler. App\Console\Kernel::schedule() is empty since
+  # Telescope was removed, so this currently idles — kept so that adding a
+  # scheduled task is a one-line change rather than a deployment change.
   scheduler:
     image: *app-image
     pull_policy: *pull

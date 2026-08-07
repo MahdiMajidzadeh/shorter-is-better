@@ -162,29 +162,4 @@
             </div>
         </div>
     </div>
-
-    <div class="row mb-10 px-md-16">
-        <div class="col-lg-4 mb-5 mb-lg-0 pe-lg-16">
-            <h4 class="font-semibold mb-2">Telescope</h4>
-            <p class="text-sm">For Debugging</p>
-        </div>
-        <div class="col-lg-8">
-            <div class="card shadow border-0">
-                <div class="card-body">
-                    <div class="row g-5">
-                        <div class="col-md-12">
-                            @if($telescope_active)
-                            <a class="btn btn-neutral btn-sm" href="{{ url('settings/telescope/resume') }}">Active</a>
-                            @else
-                            <a class="btn btn-neutral btn-sm" href="{{ url('settings/telescope/pause') }}">Pause</a>
-                            @endif
-                            <a class="btn btn-neutral btn-sm" href="{{ url('settings/telescope/prune') }}">Prune</a>
-                            <a class="btn btn-neutral btn-sm" href="{{ url('settings/telescope/prune-all') }}">Prune All</a>
-                            <a class="btn btn-neutral btn-sm" href="{{ url('telescope') }}" target="_blank">Open</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 @endsection

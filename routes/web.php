@@ -32,7 +32,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/', [C\SettingController::class, 'index']);
         Route::post('/channel', [C\SettingController::class, 'channelSubmit']);
         Route::post('/home', [C\SettingController::class, 'homeSubmit']);
-        Route::get('/telescope/{action}', [C\SettingController::class, 'telescopeAction']);
         Route::get('/bots/create', [C\SettingController::class, 'botsCreate']);
         Route::post('/bots/create', [C\SettingController::class, 'botsCreateSubmit']);
     });
