@@ -1,0 +1,103 @@
+name: Docker
+
+# Builds the production image and pushes it to GitHub Container Registry, then
+# asks Dokploy to redeploy. Pull requests build only (no push) so a broken
+# Dockerfile is caught before it reaches main.
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and push
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Derive tags and labels
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: runtime
+          # amd64 only: nearly every Dokploy host is x86, and cross-building
+          # PHP extensions for arm64 under QEMU adds ~20 minutes. Add
+          # `,linux/arm64` here if you deploy to Ampere/Graviton.
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Trigger Dokploy
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call Dokploy deployment webhook
+        env:
+          WEBHOOK_URL: ${{ secrets.DOKPLOY_WEBHOOK_URL }}
+        run: |
+          if [ -z "${WEBHOOK_URL}" ]; then
+            echo "::notice::DOKPLOY_WEBHOOK_URL secret is not set — skipping deploy."
+            echo "Add it under Settings > Secrets and variables > Actions."
+            echo "The URL comes from the Dokploy application's Deployments tab."
+            exit 0
+          fi
+
+          echo "Requesting redeploy…"
+          status=$(curl --silent --show-error --location \
+            --output /dev/stderr --write-out '%{http_code}' \
+            --request POST "${WEBHOOK_URL}")
+
+          echo "Dokploy responded with HTTP ${status}"
+          case "${status}" in
+            2*) ;;
+            *) exit 1 ;;
+          esac

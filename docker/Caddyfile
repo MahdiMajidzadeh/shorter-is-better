@@ -1,0 +1,35 @@
+{
+	{$CADDY_GLOBAL_OPTIONS}
+
+	frankenphp {
+		{$FRANKENPHP_CONFIG}
+	}
+
+	# Dokploy's Traefik terminates TLS in front of this container.
+	auto_https off
+
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
+{$CADDY_EXTRA_CONFIG}
+
+{$SERVER_NAME::8080} {
+	log {
+		format filter {
+			wrap console
+			fields {
+				request>headers>Authorization delete
+				request>headers>Cookie delete
+			}
+		}
+	}
+
+	root {$SERVER_ROOT:public/}
+	encode zstd gzip
+
+	php_server {
+		index index.php
+	}
+}

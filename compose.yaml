@@ -1,0 +1,120 @@
+# Deployment stack for Dokploy (Docker Compose application type).
+#
+# It runs the pre-built image published by .github/workflows/docker-publish.yml
+# rather than building on the server. Copy the variables from
+# .env.docker.example into Dokploy's Environment tab, then point a domain at the
+# `app` service on port 8080.
+#
+# For building and running locally instead, see compose.local.yaml.
+
+x-app-image: &app-image ${APP_IMAGE:-ghcr.io/mahdimajidzadeh/shorter-is-better:latest}
+
+# Shared by app, worker and scheduler — they are the same image with different
+# commands, so they must agree on every connection setting.
+x-app-env: &app-env
+  APP_NAME: ${APP_NAME:-Shorter}
+  APP_ENV: production
+  APP_DEBUG: "false"
+  APP_KEY: ${APP_KEY:?required - generate with `docker run --rm <image> php artisan key:generate --show`}
+  APP_URL: ${APP_URL:?required - the public https URL of the site}
+  LOG_CHANNEL: stderr
+  LOG_LEVEL: ${LOG_LEVEL:-warning}
+
+  DB_CONNECTION: mysql
+  DB_HOST: mysql
+  DB_PORT: "3306"
+  DB_DATABASE: ${DB_DATABASE:-shorter}
+  DB_USERNAME: ${DB_USERNAME:-shorter}
+  DB_PASSWORD: ${DB_PASSWORD:?required}
+
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  REDIS_PASSWORD: "null"
+
+  CACHE_DRIVER: redis
+  SESSION_DRIVER: redis
+  QUEUE_CONNECTION: redis
+  SESSION_SECURE_COOKIE: "true"
+
+  TELESCOPE_ENABLED: ${TELESCOPE_ENABLED:-false}
+  SENTRY_LARAVEL_DSN: ${SENTRY_LARAVEL_DSN:-}
+  SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-}
+
+x-datastores: &datastores
+  mysql:
+    condition: service_healthy
+  redis:
+    condition: service_healthy
+
+services:
+  app:
+    image: *app-image
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+      CONTAINER_ROLE: app
+    volumes:
+      # settings.json (anlutro/l4-settings) and uploaded files live here.
+      - app-storage:/app/storage
+    expose:
+      - "8080"
+    depends_on: *datastores
+
+  # Processes queued work (Telegraph bot dispatches, notifications).
+  worker:
+    image: *app-image
+    restart: unless-stopped
+    command: php artisan queue:work --tries=3 --max-time=3600 --sleep=3
+    environment:
+      <<: *app-env
+      CONTAINER_ROLE: worker
+    volumes:
+      - app-storage:/app/storage
+    depends_on: *datastores
+
+  # Runs the Laravel scheduler (currently: nightly telescope:prune).
+  scheduler:
+    image: *app-image
+    restart: unless-stopped
+    command: php artisan schedule:work
+    environment:
+      <<: *app-env
+      CONTAINER_ROLE: scheduler
+    volumes:
+      - app-storage:/app/storage
+    depends_on: *datastores
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-shorter}
+      MYSQL_USER: ${DB_USERNAME:-shorter}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?required}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?required}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --save 60 1 --appendonly no
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  app-storage:
+  mysql-data:
+  redis-data:

@@ -10,9 +10,14 @@ class TrustProxies extends Middleware
     /**
      * The trusted proxies for this application.
      *
+     * The container is only ever reachable through a reverse proxy (Caddy in
+     * the image, Traefik in front of it), so the X-Forwarded-* headers it sees
+     * are always proxy-generated. Without this, Laravel builds http:// URLs
+     * and marks TLS requests as insecure.
+     *
      * @var array<int, string>|string|null
      */
-    protected $proxies;
+    protected $proxies = '*';
 
     /**
      * The headers that should be used to detect proxies.

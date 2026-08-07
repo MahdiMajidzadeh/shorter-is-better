@@ -1,5 +1,9 @@
 * text=auto
 
+# Shell scripts run inside Linux containers; CRLF would break the shebang.
+*.sh text eol=lf
+docker/Caddyfile text eol=lf
+
 *.blade.php diff=html
 *.css diff=css
 *.html diff=html

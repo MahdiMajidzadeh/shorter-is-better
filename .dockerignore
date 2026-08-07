@@ -1,0 +1,50 @@
+# Everything that must never end up in the build context / image.
+
+.git
+.github
+.idea
+.vscode
+.claude
+
+# Installed inside the image instead
+vendor
+node_modules
+
+# Secrets & local state
+.env
+.env.*
+!.env.example
+!.env.docker.example
+storage/settings.json
+storage/*.key
+
+# Generated at runtime
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/framework/testing/*
+bootstrap/cache/*
+public/hot
+public/storage
+
+# Dev-only tooling & docs
+tests
+phpunit.xml
+.phpunit.cache
+.phpunit.result.cache
+.styleci.yml
+.editorconfig
+pint.json
+webpack.mix.js
+package.json
+package-lock.json
+short-data.md
+DOCKER.md
+
+# Docker's own files (docker/ is copied explicitly by the Dockerfile)
+compose.yaml
+compose.local.yaml
+docker-compose.yml
+Dockerfile
+.dockerignore
