@@ -3,10 +3,12 @@ name: Docker
 # Builds the production image and pushes it to GitHub Container Registry, then
 # asks Dokploy to redeploy. Pull requests build only (no push) so a broken
 # Dockerfile is caught before it reaches main.
+#
+# Tags only. Pushing a commit and its tag together matched both the branch and
+# the tag filter, so every release built twice on the same commit.
 
 on:
   push:
-    branches: [main]
     tags: ["v*.*.*"]
   pull_request:
     branches: [main]
@@ -49,13 +51,16 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # `latest` moves with the tag, not with main: is_default_branch is
+          # false on a tag push, which would leave the `:latest` Dokploy pulls
+          # stale forever now that pushes to main no longer build.
           tags: |
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha,prefix=sha-,format=short
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -76,10 +81,10 @@ jobs:
   deploy:
     name: Trigger Dokploy
     needs: build
-    # Only main moves the `:latest` tag that Dokploy pulls. A version tag
-    # publishes a pinned image without redeploying — point APP_IMAGE at it in
-    # Dokploy when you want to roll to (or back to) a specific release.
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    # A version tag is what moves the `:latest` tag Dokploy pulls, so a tag push
+    # is what redeploys. Pin APP_IMAGE to a `1.2.3` tag in Dokploy when you want
+    # to roll back to a specific release instead.
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
 
     steps:

@@ -1,8 +1,8 @@
 # Deployment stack for Dokploy (Docker Compose application type).
 #
 # It runs the pre-built image published by .github/workflows/docker-publish.yml
-# rather than building on the server. Point a domain at the `app` service on
-# port 8080.
+# (on a v*.*.* tag push) rather than building on the server. Point a domain at
+# the `app` service on port 8080.
 #
 # CONFIGURATION LIVES IN DOKPLOY, NOT HERE. Everything the application reads
 # comes from the Environment Settings tab: Dokploy writes that tab to a `.env`

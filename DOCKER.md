@@ -53,9 +53,9 @@ docker compose -f compose.local.yaml --env-file .env.docker up --build
 
 ## Deploy to Dokploy
 
-**1. Publish the image.** Push to `main` and the `Docker` workflow builds
-`ghcr.io/<owner>/shorter-is-better` and tags it `latest`, `main`,
-`sha-<commit>`, plus `v<x.y.z>` for tags matching `v*.*.*`. Make the package
+**1. Publish the image.** Push a `v*.*.*` tag and the `Docker` workflow builds
+`ghcr.io/<owner>/shorter-is-better` and tags it `latest`, `<x.y.z>`, `<x.y>` and
+`sha-<commit>`. Pushes to `main` build nothing. Make the package
 public in GitHub (*Packages → Package settings → Change visibility*), or add a
 GHCR registry credential in Dokploy if you keep it private.
 
@@ -89,17 +89,26 @@ re-set it with:
 gh secret set DOKPLOY_WEBHOOK_URL --repo MahdiMajidzadeh/shorter-is-better
 ```
 
-The workflow's `deploy` job calls it after a successful push **to `main`**
-only; without the secret the job logs a notice and passes, so the build still
-works unconfigured.
+The workflow's `deploy` job calls it after a successful **tag** build only;
+without the secret the job logs a notice and passes, so the build still works
+unconfigured.
 
 ### Release flow
 
 | Trigger | Image tags published | Dokploy |
 | --- | --- | --- |
-| Push to `main` | `latest`, `main`, `sha-<commit>` | Redeployed via webhook |
-| Push tag `v1.2.3` | `1.2.3`, `1.2`, `sha-<commit>` | Untouched — set `APP_IMAGE` to the pinned tag to roll forward or back |
+| Push tag `v1.2.3` | `latest`, `1.2.3`, `1.2`, `sha-<commit>` | Redeployed via webhook |
+| Push to `main` | none — the workflow does not run | Untouched |
 | Pull request | none (build only) | Untouched |
+
+Releasing is therefore one command:
+
+```bash
+git tag v1.2.3 && git push origin v1.2.3
+```
+
+To roll back, point `APP_IMAGE` at a pinned tag (`...:1.2.2`) in Dokploy's
+Environment Settings and redeploy.
 
 `:latest` is mutable, so the three app services set `pull_policy: always`.
 Without it a redeploy reuses the copy already cached on the host and quietly
