@@ -1,51 +1,32 @@
 # Deployment stack for Dokploy (Docker Compose application type).
 #
 # It runs the pre-built image published by .github/workflows/docker-publish.yml
-# rather than building on the server. Copy the variables from
-# .env.docker.example into Dokploy's Environment tab, then point a domain at the
-# `app` service on port 8080.
+# rather than building on the server. Point a domain at the `app` service on
+# port 8080.
+#
+# CONFIGURATION LIVES IN DOKPLOY, NOT HERE. Everything the application reads
+# comes from the Environment Settings tab: Dokploy writes that tab to a `.env`
+# file beside this compose file, which is both interpolated into `${...}` below
+# and handed to the containers wholesale via `env_file`. Nothing is defaulted
+# here, so what you see in that tab is exactly what the app runs with.
+# Start from .env.docker.example — it lists every variable, including the two
+# (DB_HOST, REDIS_HOST) that must match the service names below.
 #
 # For building and running locally instead, see compose.local.yaml.
 
-x-app-image: &app-image ${APP_IMAGE:-ghcr.io/mahdimajidzadeh/shorter-is-better:latest}
+x-app-image: &app-image ${APP_IMAGE}
 
 # `:latest` is a mutable tag, so a redeploy would otherwise reuse the copy
 # already cached on the host and silently ship the previous build.
 x-pull: &pull always
 
-# Shared by app, worker and scheduler — they are the same image with different
-# commands, so they must agree on every connection setting.
+# The full Environment tab, verbatim. app, worker and scheduler are the same
+# image with different commands, so they must agree on every setting.
 x-app-env: &app-env
-  APP_NAME: ${APP_NAME:-Shorter}
-  APP_ENV: production
-  APP_DEBUG: "false"
-  APP_KEY: ${APP_KEY:?required - generate with `docker run --rm <image> php artisan key:generate --show`}
-  APP_URL: ${APP_URL:?required - the public https URL of the site}
-  LOG_CHANNEL: stderr
-  LOG_LEVEL: ${LOG_LEVEL:-warning}
-
-  DB_CONNECTION: mysql
-  DB_HOST: mysql
-  DB_PORT: "3306"
-  DB_DATABASE: ${DB_DATABASE:-shorter}
-  DB_USERNAME: ${DB_USERNAME:-shorter}
-  DB_PASSWORD: ${DB_PASSWORD:?required}
-
-  REDIS_HOST: redis
-  REDIS_PORT: "6379"
-  REDIS_PASSWORD: "null"
-
-  CACHE_DRIVER: redis
-  SESSION_DRIVER: redis
-  QUEUE_CONNECTION: redis
-  SESSION_SECURE_COOKIE: "true"
-
-  TELESCOPE_ENABLED: ${TELESCOPE_ENABLED:-false}
-  SENTRY_LARAVEL_DSN: ${SENTRY_LARAVEL_DSN:-}
-  SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-}
+  - .env
 
 x-datastores: &datastores
-  mysql:
+  mariadb:
     condition: service_healthy
   redis:
     condition: service_healthy
@@ -55,8 +36,8 @@ services:
     image: *app-image
     pull_policy: *pull
     restart: unless-stopped
+    env_file: *app-env
     environment:
-      <<: *app-env
       CONTAINER_ROLE: app
     volumes:
       # settings.json (anlutro/l4-settings) and uploaded files live here.
@@ -71,8 +52,8 @@ services:
     pull_policy: *pull
     restart: unless-stopped
     command: php artisan queue:work --tries=3 --max-time=3600 --sleep=3
+    env_file: *app-env
     environment:
-      <<: *app-env
       CONTAINER_ROLE: worker
     volumes:
       - app-storage:/app/storage
@@ -84,26 +65,29 @@ services:
     pull_policy: *pull
     restart: unless-stopped
     command: php artisan schedule:work
+    env_file: *app-env
     environment:
-      <<: *app-env
       CONTAINER_ROLE: scheduler
     volumes:
       - app-storage:/app/storage
     depends_on: *datastores
 
-  mysql:
-    image: mysql:8.4
+  # The MARIADB_* names are what this image reads; they are mapped from the
+  # DB_* variables the application uses so the tab has one name per setting.
+  mariadb:
+    image: mariadb:11.4
     restart: unless-stopped
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-shorter}
-      MYSQL_USER: ${DB_USERNAME:-shorter}
-      MYSQL_PASSWORD: ${DB_PASSWORD:?required}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?required}
+      MARIADB_DATABASE: ${DB_DATABASE:?required}
+      MARIADB_USER: ${DB_USERNAME:?required}
+      MARIADB_PASSWORD: ${DB_PASSWORD:?required}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?required}
     volumes:
-      - mysql-data:/var/lib/mysql
+      - mariadb-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${DB_ROOT_PASSWORD}"]
+      # Ships with the image and needs no credentials, unlike a mysqladmin ping.
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -123,5 +107,5 @@ services:
 
 volumes:
   app-storage:
-  mysql-data:
+  mariadb-data:
   redis-data:

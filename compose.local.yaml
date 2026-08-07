@@ -14,8 +14,8 @@ x-app-env: &app-env
   LOG_CHANNEL: stderr
   LOG_LEVEL: ${LOG_LEVEL:-debug}
 
-  DB_CONNECTION: mysql
-  DB_HOST: mysql
+  DB_CONNECTION: mariadb
+  DB_HOST: mariadb
   DB_PORT: "3306"
   DB_DATABASE: ${DB_DATABASE:-shorter}
   DB_USERNAME: ${DB_USERNAME:-shorter}
@@ -34,7 +34,7 @@ x-app-env: &app-env
   TELESCOPE_ENABLED: ${TELESCOPE_ENABLED:-true}
 
 x-datastores: &datastores
-  mysql:
+  mariadb:
     condition: service_healthy
   redis:
     condition: service_healthy
@@ -81,19 +81,20 @@ services:
       app:
         condition: service_started
 
-  mysql:
-    image: mysql:8.4
+  mariadb:
+    image: mariadb:11.4
     restart: unless-stopped
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-shorter}
-      MYSQL_USER: ${DB_USERNAME:-shorter}
-      MYSQL_PASSWORD: ${DB_PASSWORD:?required}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?required}
+      MARIADB_DATABASE: ${DB_DATABASE:-shorter}
+      MARIADB_USER: ${DB_USERNAME:-shorter}
+      MARIADB_PASSWORD: ${DB_PASSWORD:?required}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?required}
     volumes:
-      - mysql-data:/var/lib/mysql
+      - mariadb-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${DB_ROOT_PASSWORD}"]
+      # Ships with the image and needs no credentials, unlike a mysqladmin ping.
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -110,5 +111,5 @@ services:
 
 volumes:
   app-storage:
-  mysql-data:
+  mariadb-data:
   redis-data:

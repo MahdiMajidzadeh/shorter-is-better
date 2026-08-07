@@ -35,18 +35,32 @@ if [ -z "${APP_KEY}" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Wait for the database. Dokploy starts containers in parallel and MySQL is
-# usually the slower of the two.
+# Wait for the database. Dokploy starts containers in parallel and the database
+# is usually the slower of the two.
+#
+# The PDO driver name is not always Laravel's connection name: MariaDB is a
+# first-class connection in Laravel but PDO only knows `mysql:`. Building the
+# DSN from DB_CONNECTION verbatim would make every probe throw "could not find
+# driver", and the container would exit after the full timeout with a message
+# blaming the network.
 # ---------------------------------------------------------------------------
+pdo_driver() {
+	case "${DB_CONNECTION:-mysql}" in
+		mariadb) echo "mysql" ;;
+		*) echo "${DB_CONNECTION:-mysql}" ;;
+	esac
+}
+
 wait_for_database() {
 	timeout="${DB_WAIT_TIMEOUT:-60}"
 	elapsed=0
+	driver="$(pdo_driver)"
 
 	while [ "${elapsed}" -lt "${timeout}" ]; do
-		if php -r '
+		if PDO_DRIVER="${driver}" php -r '
 			$dsn = sprintf(
 				"%s:host=%s;port=%s",
-				getenv("DB_CONNECTION") ?: "mysql",
+				getenv("PDO_DRIVER"),
 				getenv("DB_HOST") ?: "127.0.0.1",
 				getenv("DB_PORT") ?: "3306"
 			);
@@ -65,7 +79,7 @@ wait_for_database() {
 		sleep 2
 	done
 
-	log "FATAL: database not reachable after ${timeout}s (DB_HOST=${DB_HOST:-127.0.0.1})"
+	log "FATAL: database not reachable after ${timeout}s (DB_HOST=${DB_HOST:-127.0.0.1} DB_PORT=${DB_PORT:-3306} DB_USERNAME=${DB_USERNAME:-})"
 	exit 1
 }
 

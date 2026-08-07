@@ -63,9 +63,17 @@ GHCR registry credential in Dokploy if you keep it private.
 it at this repository, and set the compose file to `compose.yaml`.
 
 **3. Set the environment.** Paste the contents of `.env.docker.example` into the
-application's *Environment* tab and fill in the blanks. `APP_KEY` and `APP_URL`
-are required — the container refuses to start without a key rather than
-generating a throwaway one that would invalidate every session on restart.
+application's *Environment Settings* tab and fill in the blanks. Dokploy writes
+that tab to a `.env` file beside the compose file, which `compose.yaml` both
+interpolates and passes to the containers via `env_file` — so that tab is the
+only place configuration lives. **`compose.yaml` defines no defaults**: a
+variable missing from the tab is a variable the container does not have.
+
+`APP_KEY` and `APP_URL` are required — the container refuses to start without a
+key rather than generating a throwaway one that would invalidate every session
+on restart. `DB_HOST` and `REDIS_HOST` must match the service names in
+`compose.yaml` (`mariadb` and `redis`); they are the two values in that tab
+that describe the stack's own topology rather than your preferences.
 
 **4. Add the domain.** Attach your domain to the **`app`** service on port
 **8080**. Dokploy's Traefik terminates TLS; the container trusts the
@@ -103,7 +111,7 @@ ships the previous build.
   `storage/settings.json`, which is where `anlutro/l4-settings` keeps the
   homepage copy and channel settings — losing that volume loses those settings.
 - **Sessions and cache** use Redis, so the `app` service can be scaled to more
-  than one replica. `mysql` and `redis` cannot.
+  than one replica. `mariadb` and `redis` cannot.
 - **Telescope** is off by default (`TELESCOPE_ENABLED=false`); it records every
   request and will grow the database quickly. The scheduler prunes entries
   older than 72h when it is on.
