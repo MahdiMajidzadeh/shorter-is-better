@@ -53,6 +53,8 @@ class LinkController extends Controller
     {
         $data['short'] = ShortModel::findByKey($short);
 
+        abort_if(! $data['short'], 404);
+
         $data['operating_system'] = $this->getVisitData($data['short']->id, 'operating_system');
         $data['device_type'] = $this->getVisitData($data['short']->id, 'device_type');
         $data['browser'] = $this->getVisitData($data['short']->id, 'browser');
@@ -84,6 +86,10 @@ class LinkController extends Controller
 
     public function bulkSubmit(Request $request)
     {
+        $request->validate([
+            'text' => 'required|string',
+        ]);
+
         $text = $request->get('text');
         preg_match_all(
             '/[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\-\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/',

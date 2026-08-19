@@ -56,7 +56,7 @@ class AuthController extends Controller
         $chat = TelegraphChat::where('hash', $hash)->first();
 
         if (! $chat) {
-            return abort();
+            abort(404);
         }
 
         $chat->user_id = auth()->id();
