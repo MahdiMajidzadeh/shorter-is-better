@@ -12,6 +12,7 @@
         "guzzlehttp/guzzle": "^8.0",
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",
+        "livewire/flux": "^2.17",
         "malios/php-to-ascii-table": "^3.0",
         "sentry/sentry-laravel": "^4.0",
         "shweshi/opengraph": "^1.1",

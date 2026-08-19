@@ -1,0 +1,23 @@
+@import 'tailwindcss';
+@import '../../vendor/livewire/flux/dist/flux.css';
+
+@source '../views';
+@source '../../vendor/livewire/flux/stubs/resources/views';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+    --color-accent: var(--color-blue-600);
+    --color-accent-content: var(--color-blue-600);
+    --color-accent-foreground: var(--color-white);
+}
+
+@layer theme {
+    .dark {
+        --color-accent: var(--color-blue-500);
+        --color-accent-content: var(--color-blue-400);
+        --color-accent-foreground: var(--color-white);
+    }
+}
