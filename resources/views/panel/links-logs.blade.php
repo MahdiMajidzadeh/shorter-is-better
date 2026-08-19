@@ -5,61 +5,44 @@
 @section('header','Visit Log')
 
 @section('page')
-    <div class="card">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover table-nowrap">
-                    <thead>
-                    <tr>
-                        <th scope="col">id</th>
-                        <th scope="col" colspan="4">url / os - osv - browser - bv</th>
-                        <th scope="col">short / device</th>
-                        <th scope="col">ip / visit</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($logs as $log)
-                        <tr>
-                            <td rowspan="2">
-                                {{ $log->id }}
-                            </td>
-                            <td colspan="4">
+    <flux:card class="!p-4">
+        <flux:table :paginate="$logs">
+            <flux:table.columns>
+                <flux:table.column>Id</flux:table.column>
+                <flux:table.column>Url</flux:table.column>
+                <flux:table.column>Short</flux:table.column>
+                <flux:table.column>OS</flux:table.column>
+                <flux:table.column>Browser</flux:table.column>
+                <flux:table.column>Device</flux:table.column>
+                <flux:table.column>Ip</flux:table.column>
+                <flux:table.column>Visited At</flux:table.column>
+            </flux:table.columns>
+            <flux:table.rows>
+                @foreach($logs as $log)
+                    <flux:table.row :key="$log->id">
+                        <flux:table.cell>{{ $log->id }}</flux:table.cell>
+                        <flux:table.cell class="max-w-xs truncate">
+                            <flux:link href="{{ $log->shortURL->destination_url }}" variant="subtle">
                                 {{ $log->shortURL->destination_url }}
-                            </td>
-                            <td>
+                            </flux:link>
+                        </flux:table.cell>
+                        <flux:table.cell>
+                            <flux:link href="{{ url('links/'. $log->shortURL->url_key) }}">
                                 {{ $log->shortURL->default_short_url }}
-                            </td>
-                            <td>
-                                {{ $log->ip_address }}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                {{ $log->operating_system }}
-                            </td>
-                            <td>
-                                {{ $log->operating_system_version }}
-                            </td>
-                            <td>
-                                {{ $log->browser }}
-                            </td>
-                            <td>
-                                {{ $log->browser_version }}
-                            </td>
-                            <td>
-                                {{ $log->device_type }}
-                            </td>
-                            <td>
-                                {{ $log->visited_at }}
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <div class="my-2">
-        {{ $logs->links() }}
-    </div>
+                            </flux:link>
+                        </flux:table.cell>
+                        <flux:table.cell>{{ trim($log->operating_system.' '.$log->operating_system_version) }}</flux:table.cell>
+                        <flux:table.cell>{{ trim($log->browser.' '.$log->browser_version) }}</flux:table.cell>
+                        <flux:table.cell>
+                            @if($log->device_type)
+                                <flux:badge size="sm">{{ $log->device_type }}</flux:badge>
+                            @endif
+                        </flux:table.cell>
+                        <flux:table.cell>{{ $log->ip_address }}</flux:table.cell>
+                        <flux:table.cell>{{ $log->visited_at }}</flux:table.cell>
+                    </flux:table.row>
+                @endforeach
+            </flux:table.rows>
+        </flux:table>
+    </flux:card>
 @endsection

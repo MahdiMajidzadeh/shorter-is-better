@@ -5,58 +5,38 @@
 @section('header','All Link')
 
 @section('page')
-    <div class="card">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover table-nowrap">
-                    <thead>
-                    <tr>
-                        <th scope="col" width="5%">id</th>
-                        <th scope="col" width="40%">url</th>
-                        <th scope="col" width="15%">link</th>
-{{--                        <th scope="col" width="35%">title</th>--}}
-                        <th width="5%"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($links as $link)
-                        <tr>
-                            <td>
-                                {{ $link->id }}
-                            </td>
-                            <td>
-                                <a class="text-current text-wrap" href="{{ $link->destination_url }}">
-                                    {{ $link->destination_url }}
-                                </a>
-                            </td>
-                            <td>
-                                <a class="text-current" href="{{ $link->default_short_url }}">
-                                    {{ $link->default_short_url }}
-                                </a>
-                            </td>
-{{--                            <td></td>--}}
-                            <td class="text-end">
-                                <a href="{{ url('links/'. $link->url_key)}}" class="btn btn-sm btn-neutral">
-                                    <i class="bi bi-eye"></i> View
-                                </a>
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <div class="my-2">
-        {{ $links->links() }}
-    </div>
+    <flux:card class="!p-4">
+        <flux:table :paginate="$links">
+            <flux:table.columns>
+                <flux:table.column>Id</flux:table.column>
+                <flux:table.column>Url</flux:table.column>
+                <flux:table.column>Link</flux:table.column>
+                <flux:table.column></flux:table.column>
+            </flux:table.columns>
+            <flux:table.rows>
+                @foreach($links as $link)
+                    <flux:table.row :key="$link->id">
+                        <flux:table.cell>{{ $link->id }}</flux:table.cell>
+                        <flux:table.cell class="max-w-md truncate">
+                            <flux:link href="{{ $link->destination_url }}" variant="subtle">
+                                {{ $link->destination_url }}
+                            </flux:link>
+                        </flux:table.cell>
+                        <flux:table.cell>
+                            <flux:link href="{{ $link->default_short_url }}">
+                                {{ $link->default_short_url }}
+                            </flux:link>
+                        </flux:table.cell>
+                        <flux:table.cell align="end">
+                            <flux:button href="{{ url('links/'. $link->url_key) }}" size="sm" icon="eye">View</flux:button>
+                        </flux:table.cell>
+                    </flux:table.row>
+                @endforeach
+            </flux:table.rows>
+        </flux:table>
+    </flux:card>
 @endsection
 
 @section('header-actions')
-    <a href="{{ url('links/create') }}" class="btn d-inline-flex btn-sm btn-primary border-base mx-1">
-        <span class=" pe-2">
-            <i class="bi bi-plus-lg"></i>
-        </span>
-        <span>create link</span>
-    </a>
+    <flux:button href="{{ url('links/create') }}" variant="primary" size="sm" icon="plus">Create link</flux:button>
 @endsection

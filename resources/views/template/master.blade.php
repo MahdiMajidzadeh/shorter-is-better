@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="{{ asset('index.css') }}" rel="stylesheet">
     <title>@yield('title') - Shorter Is Better</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet">
+    <link href="{{ asset('index.css') }}" rel="stylesheet">
     <link rel="icon" href="{{ asset('favicon-2.png') }}" type="image/x-icon"/>
+    @fluxAppearance
     @stack('css')
 </head>
-<body>
+<body class="min-h-screen bg-white antialiased dark:bg-zinc-800">
 @yield('content')
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8" crossorigin="anonymous"></script>
+@fluxScripts
 @stack('js')
 </body>
 </html>

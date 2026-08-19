@@ -1,92 +1,62 @@
 @extends('template.master')
 
 @section('content')
-    <div class="d-flex flex-column flex-lg-row h-lg-full">
-        <!-- Vertical Navbar -->
-        <nav class="navbar show navbar-vertical h-lg-screen navbar-expand-lg px-0 py-3 py-lg-0 border-end-lg  navbar-dark bg-dark" id="navbarVertical">
-            <div class="container-fluid">
-                <!-- Toggler -->
-                <button class="navbar-toggler ms-n2" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarCollapse" aria-controls="sidebarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <!-- Brand -->
-                <a class="navbar-brand py-lg-5 mb-lg-5 px-lg-6 me-0" href="{{ url('/panel') }}">
-                    <img src="{{ asset('logo-2.png') }}" alt="...">
-                </a>
-                <!-- Collapse -->
-                <div class="collapse navbar-collapse" id="sidebarCollapse">
-                    <!-- Navigation -->
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url('/panel') }}">
-                                <i class="bi bi-house"></i> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url('/links') }}">
-                                <i class="bi bi-link"></i> Links
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url('/links/bulk') }}">
-                                <i class="bi bi-list-ul"></i> Bulk Link
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url('/links/logs') }}">
-                                <i class="bi bi-body-text"></i> Visit Logs
-                            </a>
-                        </li>
-                    </ul>
-                    <!-- Divider -->
-                    <hr class="navbar-divider my-5 opacity-20">
-                    <!-- Navigation -->
-                    <ul class="navbar-nav mb-md-4">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url('settings') }}">
-                                <i class="bi bi-gear"></i> Setting
-                            </a>
-                        </li>
-                    </ul>
-                    <!-- Push content down -->
-                    <div class="mt-auto"></div>
-                    <!-- User (md) -->
-                    <ul class="navbar-nav mb-5">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url('auth/logout') }}">
-                                <i class="bi bi-box-arrow-left"></i> Logout
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-        <!-- Main content -->
-        <div class="h-screen flex-grow-1 overflow-y-lg-auto">
-            <header class="bg-surface-primary border-bottom py-6">
-                <div class="container-fluid">
-                    <div class="mb-npx">
-                        <div class="row align-items-center">
-                            <div class="col-sm-6 col-12">
-                                <!-- Title -->
-                                <h1 class="h2 ls-tight">@yield('header')</h1>
-                            </div>
-                            <!-- Actions -->
-                            <div class="col-sm-6 col-12 text-sm-end">
-                                <div class="mx-n1">
-                                    @yield('header-actions')
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-            <main class="py-10 bg-surface-secondary min-h-full">
-                <!-- Container -->
-                <div class="container-fluid">
-                    @yield('page')
-                </div>
-            </main>
+    <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+        <flux:sidebar.header>
+            <flux:sidebar.brand
+                href="{{ url('/panel') }}"
+                logo="{{ asset('logo.png') }}"
+                logo:dark="{{ asset('logo-2.png') }}"
+                name="Shorter"
+            />
+        </flux:sidebar.header>
+
+        <flux:sidebar.nav>
+            <flux:sidebar.item icon="home" href="{{ url('/panel') }}" :current="request()->is('panel')">
+                Dashboard
+            </flux:sidebar.item>
+            <flux:sidebar.item icon="link" href="{{ url('/links') }}" :current="request()->is('links*') && ! request()->is('links/bulk', 'links/logs')">
+                Links
+            </flux:sidebar.item>
+            <flux:sidebar.item icon="queue-list" href="{{ url('/links/bulk') }}" :current="request()->is('links/bulk')">
+                Bulk Link
+            </flux:sidebar.item>
+            <flux:sidebar.item icon="document-text" href="{{ url('/links/logs') }}" :current="request()->is('links/logs')">
+                Visit Logs
+            </flux:sidebar.item>
+        </flux:sidebar.nav>
+
+        <flux:sidebar.spacer/>
+
+        <flux:sidebar.nav>
+            <flux:sidebar.item icon="cog-6-tooth" href="{{ url('settings') }}" :current="request()->is('settings*')">
+                Setting
+            </flux:sidebar.item>
+        </flux:sidebar.nav>
+
+        <div class="flex items-center gap-2 px-2 pb-2">
+            <form method="post" action="{{ url('auth/logout') }}" class="flex-1">
+                @csrf
+                <flux:button type="submit" variant="subtle" icon="arrow-right-start-on-rectangle" size="sm" class="w-full !justify-start">
+                    Logout
+                </flux:button>
+            </form>
+            <flux:button x-data x-on:click="$flux.dark = ! $flux.dark" variant="subtle" size="sm" icon="moon" aria-label="Toggle dark mode"/>
         </div>
-    </div>
+    </flux:sidebar>
+
+    <flux:header class="lg:hidden">
+        <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left"/>
+        <flux:spacer/>
+    </flux:header>
+
+    <flux:main container>
+        <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+            <flux:heading size="xl" level="1">@yield('header')</flux:heading>
+            <div class="flex items-center gap-2">
+                @yield('header-actions')
+            </div>
+        </div>
+        @yield('page')
+    </flux:main>
 @endsection

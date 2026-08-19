@@ -5,33 +5,27 @@
 @section('header','Dashboard')
 
 @section('page')
-    @if (session('msg-ok'))
-        <div class="alert alert-success" role="alert">
-            <div class="d-flex align-items-center">
-                <div class="w-8 text-lg">
-                    <i class="bi bi-check-circle-fill"></i>
-                </div>
-                <span class="font-bold">{{ session('msg-ok') }}</span>
-            </div>
-        </div>
-    @endif
-    <div class="card">
-        <div class="card-header">
-            <h5>Daily Visits</h5>
-        </div>
-        <div class="card-body">
-            <div id="view-chart"></div>
-        </div>
-    </div>
+    @include('template.msg')
+
+    <flux:card>
+        <flux:heading size="lg">Daily Visits</flux:heading>
+        <flux:text class="mt-1">Non-bot views over the last 30 days</flux:text>
+        <div id="view-chart" class="mt-6"></div>
+    </flux:card>
 @endsection
 
 @push('js')
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>
-        options = {
+        var options = {
             chart: {
                 type: 'bar',
-                height: 400
+                height: 400,
+                background: 'transparent',
+                fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif'
+            },
+            theme: {
+                mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light'
             },
             plotOptions: {
                 bar: {
@@ -39,6 +33,7 @@
                 }
             },
             series: [{
+                name: 'views',
                 data: @json($views)
             }]
         }
@@ -47,4 +42,3 @@
         chart.render();
     </script>
 @endpush
-

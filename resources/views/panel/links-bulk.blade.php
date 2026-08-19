@@ -5,49 +5,33 @@
 @section('header','Bulk Link')
 
 @section('page')
-    <div class="row">
-        <div class="col-lg-7 mx-auto">
-            @if (session('converted_text'))
-                <div class="card shadow border-0 mb-10">
-                    <div class="card-body">
-                        <div class="mb-7">
-                            <h4 class="font-semibold mb-1">Converted Text</h4>
-                        </div>
-                        <div class="row g-5">
-                            <div class="col-md-12">
-                                <div class="">
-                                    <label class="form-label" for="text">Text:</label>
-                                    <textarea class="form-control" id="text" name="text"
-                                              rows="10">{{ session('converted_text') }}</textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <div class="mx-auto max-w-2xl space-y-8">
+        @if (session('converted_text'))
+            <flux:card>
+                <flux:heading size="lg">Converted Text</flux:heading>
+                <flux:text class="mt-1">Every url below has been replaced with its short version</flux:text>
+                <div class="mt-6">
+                    <flux:textarea rows="10" readonly>{{ session('converted_text') }}</flux:textarea>
                 </div>
-            @endif
-            <div class="card shadow border-0 mb-10">
-                @include('template.msg')
-                <form method="post" action="{{ url('links/bulk') }}">
-                    @csrf
-                    <div class="card-body">
-                        <div class="mb-7">
-                            <h4 class="font-semibold mb-1">Create Bulk Link</h4>
-                            <p class="text-sm text-muted">you can short all link form texts</p>
-                        </div>
-                        <div class="row g-5">
-                            <div class="col-md-12">
-                                <div class="">
-                                    <label class="form-label" for="text">Text:</label>
-                                    <textarea class="form-control" id="text" name="text" rows="10"></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-footer text-end py-4">
-                        <button type="submit" class="btn btn-sm btn-primary">Save</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+            </flux:card>
+        @endif
+
+        @include('template.msg')
+
+        <flux:card>
+            <form method="post" action="{{ url('links/bulk') }}">
+                @csrf
+                <flux:heading size="lg">Create Bulk Link</flux:heading>
+                <flux:text class="mt-1">You can shorten all links found in a text</flux:text>
+
+                <div class="mt-6">
+                    <flux:textarea label="Text" name="text" rows="10">{{ old('text') }}</flux:textarea>
+                </div>
+
+                <div class="mt-8 flex justify-end">
+                    <flux:button type="submit" variant="primary" size="sm">Save</flux:button>
+                </div>
+            </form>
+        </flux:card>
     </div>
 @endsection

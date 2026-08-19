@@ -5,161 +5,70 @@
 @section('header','All Setting')
 
 @section('page')
-    <div class="row mb-10 px-md-16">
-        <div class="col-12">
-            @include('template.msg')
-        </div>
-    </div>
-    <div class="row mb-10 px-md-16">
-        <div class="col-lg-4 mb-5 mb-lg-0 pe-lg-16">
-            <h4 class="font-semibold mb-2">Telegram Bot</h4>
-            <p class="text-sm">Add Telegram bot for handy shorter</p>
-        </div>
-        <div class="col-lg-8">
-            <div class="card shadow border-0">
-                <div class="card-body">
-                    <div class="row g-5">
-                        <div class="col-md-12">
-                            <div class="text-black">
-                                @if(!is_null($bot))
-                                    bot name: {{ $bot->name }}
-                                @else
-                                    no bot registered
-                                @endif
-                            </div>
-                        </div>
-                        <hr>
-                        <div class="col-md-12 m-0">
-                            @if(!is_null($bot))
-                                <a class="btn btn-neutral btn-sm" href="#">Add bot</a>
-                            @else
-                                <a class="btn btn-neutral btn-sm" href="#">Edit bot</a>
-                            @endif
+    <div class="mx-auto max-w-4xl">
+        @include('template.msg')
 
-                        </div>
-                    </div>
-                </div>
+        <div class="grid gap-6 lg:grid-cols-3">
+            <div>
+                <flux:heading size="lg">Telegram Bot</flux:heading>
+                <flux:text class="mt-1">Add a Telegram bot for handy shorter</flux:text>
             </div>
+            <flux:card class="lg:col-span-2">
+                <flux:text>
+                    @if(! is_null($bot))
+                        Bot name: <strong>{{ $bot->name }}</strong>
+                    @else
+                        No bot registered
+                    @endif
+                </flux:text>
+                <flux:separator class="my-4"/>
+                <flux:button href="{{ url('settings/bots/create') }}" size="sm" icon="plus">Add bot</flux:button>
+            </flux:card>
         </div>
-    </div>
 
-    <div class="row mb-10 px-md-16">
-        <div class="col-lg-4 mb-5 mb-lg-0 pe-lg-16">
-            <h4 class="font-semibold mb-2">Telegram Channel</h4>
-            <p class="text-sm">To integrate with Telegram Channel </p>
-        </div>
-        <div class="col-lg-8">
-            <div class="card shadow border-0">
-                <form method="post" action="{{ url('settings/channel') }}">
+        <flux:separator class="my-10"/>
+
+        <div class="grid gap-6 lg:grid-cols-3">
+            <div>
+                <flux:heading size="lg">Telegram Channel</flux:heading>
+                <flux:text class="mt-1">To integrate with a Telegram channel</flux:text>
+            </div>
+            <flux:card class="lg:col-span-2">
+                <form method="post" action="{{ url('settings/channel') }}" class="space-y-6">
                     @csrf
-                    <div class="card-body">
-                        <div class="row align-items-center mb-3">
-                            <div class="col-md-4">
-                                <h6 class="mb-0 font-semibold">Has Channel Signature:</h6>
-                            </div>
-                            <div class="col-md-6">
-                                <input type="radio" class="btn-check" name="channel_has" id="success-outlined" autocomplete="off"
-                                       @if(setting('channel.has', "off") == 'on') checked @endif
-                                >
-                                <label class="btn btn-outline-info btn-sm" for="success-outlined" value="on">Active</label>
-
-                                <input type="radio" class="btn-check" name="channel_has" id="danger-outlined" autocomplete="off"
-                                       @if(setting('channel.has', "off") == 'off') checked @endif
-                                >
-                                <label class="btn btn-outline-info btn-sm" for="danger-outlined">Inactive</label>
-                            </div>
-                        </div>
-                        <div class="row align-items-center mb-3">
-                            <div class="col-md-4">
-                                <h6 class="mb-0 font-semibold">Channel Username:</h6>
-                            </div>
-                            <div class="col-md-6">
-                                <input type="text" class="form-control" name="channel_username"
-                                       value="{{ setting('channel.username', '') }}">
-                            </div>
-                        </div>
-                        <div class="row align-items-center mb-3">
-                            <div class="col-md-4">
-                                <h6 class="mb-0 font-semibold">Channel Id:</h6>
-                                <p class="text-muted text-sm">for send message to channel</p>
-                            </div>
-                            <div class="col-md-6">
-                                <input type="text" class="form-control" name="channel_id"
-                                       value="{{ setting('channel.id', '') }}">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-footer pt-0">
-                        <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                    <flux:radio.group label="Has Channel Signature" name="channel_has" variant="segmented" size="sm">
+                        <flux:radio label="Active" value="on" :checked="setting('channel.has', 'off') == 'on'"/>
+                        <flux:radio label="Inactive" value="off" :checked="setting('channel.has', 'off') == 'off'"/>
+                    </flux:radio.group>
+                    <flux:input label="Channel Username" name="channel_username" value="{{ setting('channel.username', '') }}"/>
+                    <flux:input label="Channel Id" description="For sending messages to the channel" name="channel_id" value="{{ setting('channel.id', '') }}"/>
+                    <div class="flex justify-end">
+                        <flux:button type="submit" variant="primary" size="sm">Save</flux:button>
                     </div>
                 </form>
-            </div>
+            </flux:card>
         </div>
-    </div>
 
-    <div class="row mb-10 px-md-16">
-        <div class="col-lg-4 mb-5 mb-lg-0 pe-lg-16">
-            <h4 class="font-semibold mb-2">Home Setting</h4>
-            <p class="text-sm">How Your Home Page Show</p>
-        </div>
-        <div class="col-lg-8">
-            <div class="card shadow border-0">
-                <form method="post" action="{{ url('settings/home') }}">
+        <flux:separator class="my-10"/>
+
+        <div class="grid gap-6 lg:grid-cols-3">
+            <div>
+                <flux:heading size="lg">Home Setting</flux:heading>
+                <flux:text class="mt-1">How your home page shows</flux:text>
+            </div>
+            <flux:card class="lg:col-span-2">
+                <form method="post" action="{{ url('settings/home') }}" class="space-y-6">
                     @csrf
-                    <div class="card-body">
-                        <div class="row align-items-center mb-3">
-                            <div class="col-md-4">
-                                <h6 class="mb-0 font-semibold">Title:</h6>
-                            </div>
-                            <div class="col-md-6">
-                                <input type="text" class="form-control" name="title"
-                                       value="{{ setting('home.title', '') }}">
-                            </div>
-                        </div>
-                        <div class="row align-items-center mb-3">
-                            <div class="col-md-4">
-                                <h6 class="mb-0 font-semibold">Title Accent:</h6>
-                            </div>
-                            <div class="col-md-6">
-                                <input type="text" class="form-control" name="title-accent"
-                                       value="{{ setting('home.title-accent', '') }}">
-                            </div>
-                        </div>
-                        <div class="row align-items-center mb-3">
-                            <div class="col-md-4">
-                                <h6 class="mb-0 font-semibold">Subtitle:</h6>
-                            </div>
-                            <div class="col-md-6">
-                                <input type="text" class="form-control" name="subtitle"
-                                       value="{{ setting('home.subtitle', '') }}">
-                            </div>
-                        </div>
-                        <div class="row align-items-center mb-3">
-                            <div class="col-md-4">
-                                <h6 class="mb-0 font-semibold">CTA Title:</h6>
-                                <p class="text-sm">CTA is necessary</p>
-                            </div>
-                            <div class="col-md-6">
-                                <input type="text" class="form-control" name="cta-title"
-                                       value="{{ setting('home.cta-title', '') }}">
-                            </div>
-                        </div>
-                        <div class="row align-items-center mb-3">
-                            <div class="col-md-4">
-                                <h6 class="mb-0 font-semibold">CTA URL:</h6>
-                                <p class="text-sm">CTA URL is necessary, too</p>
-                            </div>
-                            <div class="col-md-6">
-                                <input type="text" class="form-control" name="cta-url"
-                                       value="{{ setting('home.cta-url', '') }}">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-footer pt-0">
-                        <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                    <flux:input label="Title" name="title" value="{{ setting('home.title', '') }}"/>
+                    <flux:input label="Title Accent" name="title-accent" value="{{ setting('home.title-accent', '') }}"/>
+                    <flux:input label="Subtitle" name="subtitle" value="{{ setting('home.subtitle', '') }}"/>
+                    <flux:input label="CTA Title" description="CTA is necessary" name="cta-title" value="{{ setting('home.cta-title', '') }}"/>
+                    <flux:input label="CTA URL" description="CTA URL is necessary, too" name="cta-url" value="{{ setting('home.cta-url', '') }}"/>
+                    <div class="flex justify-end">
+                        <flux:button type="submit" variant="primary" size="sm">Save</flux:button>
                     </div>
                 </form>
-            </div>
+            </flux:card>
         </div>
     </div>
 @endsection

@@ -5,43 +5,28 @@
 @section('header','Bots')
 
 @section('page')
-    <div class="table-responsive">
-        <table class="table table-hover table-nowrap table-spaced">
-            <thead class="thead-light">
-            <tr>
-                <th scope="col">id</th>
-                <th scope="col">name</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach($bots as $bot)
-                <tr>
-                    <td>
-                        {{ $bot->id }}
-                    </td>
-                    <td data-label="Email">
-                        <span>
-                            {{ $bot->name }}
-                        </span>
-                    </td>
-                    <td class="text-end">
-                        <a class="btn p-0" href="#">
-                            <i class="bi bi-trash"></i>
-                        </a>
-                    </td>
-                </tr>
-            @endforeach
-            </tbody>
-        </table>
-    </div>
+    <flux:card class="!p-4">
+        <flux:table>
+            <flux:table.columns>
+                <flux:table.column>Id</flux:table.column>
+                <flux:table.column>Name</flux:table.column>
+                <flux:table.column></flux:table.column>
+            </flux:table.columns>
+            <flux:table.rows>
+                @foreach($bots as $bot)
+                    <flux:table.row :key="$bot->id">
+                        <flux:table.cell>{{ $bot->id }}</flux:table.cell>
+                        <flux:table.cell>{{ $bot->name }}</flux:table.cell>
+                        <flux:table.cell align="end">
+                            <flux:button size="sm" variant="ghost" icon="trash" aria-label="Delete bot"/>
+                        </flux:table.cell>
+                    </flux:table.row>
+                @endforeach
+            </flux:table.rows>
+        </flux:table>
+    </flux:card>
 @endsection
 
 @section('header-actions')
-    <a href="{{ url('settings/bots/create') }}" class="btn d-inline-flex btn-sm btn-primary border-base mx-1">
-        <span class=" pe-2">
-            <i class="bi bi-plus-lg"></i>
-        </span>
-        <span>create bot</span>
-    </a>
+    <flux:button href="{{ url('settings/bots/create') }}" variant="primary" size="sm" icon="plus">Create bot</flux:button>
 @endsection

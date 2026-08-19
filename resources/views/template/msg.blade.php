@@ -1,30 +1,11 @@
 @foreach ($errors->all() as $message)
-    <div class="alert alert-danger" role="alert">
-        <div class="ps-10">
-            {{ $message }}
-        </div>
-    </div>
+    <flux:callout variant="danger" icon="x-circle" heading="{{ $message }}" class="mb-4" />
 @endforeach
 @if (session('msg-error'))
-    <div class="alert alert-danger mb-3" role="alert">
-        <div class="d-flex align-items-center">
-            <div class="w-8 text-lg">
-                <i class="bi bi-check-circle-fill"></i>
-            </div>
-            <span class="font-bold">Error:</span>
-        </div>
-        <div class="ps-10">
-            {{ session('msg-error') }}
-        </div>
-    </div>
+    <flux:callout variant="danger" icon="x-circle" heading="Error" class="mb-4">
+        <flux:callout.text>{{ session('msg-error') }}</flux:callout.text>
+    </flux:callout>
 @endif
 @if (session('msg-ok'))
-    <div class="alert alert-success" role="alert">
-        <div class="d-flex align-items-center">
-            <div class="w-8 text-lg">
-                <i class="bi bi-check-circle-fill"></i>
-            </div>
-            <span class="font-bold">{{ session('msg-ok') }}</span>
-        </div>
-    </div>
+    <flux:callout variant="success" icon="check-circle" heading="{{ session('msg-ok') }}" class="mb-4" />
 @endif

@@ -5,39 +5,25 @@
 @section('header','Create Link')
 
 @section('page')
-    <div class="row">
-        <div class="col-lg-7 mx-auto">
-            <div class="card shadow border-0 mb-10">
-                @include('template.msg')
-                <form method="post" action="{{ url('links/create') }}">
-                    @csrf
-                    <div class="card-body">
-                        <div class="mb-7">
-                            <h4 class="font-semibold mb-1">Short Url</h4>
-                            <p class="text-sm text-muted">you can set custom key for your shorten url</p>
-                        </div>
-                        <div class="row g-5">
-                            <div class="col-md-12">
-                                <div class="">
-                                    <label class="form-label" for="url">Url:</label>
-                                    <input type="text" class="form-control" id="url" name="url" placeholder="https://">
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="">
-                                    <label class="form-label" for="key">key (optional)</label>
-                                    <input type="text" class="form-control" id="key" name="key">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-footer text-end py-4">
-                        <button type="button" class="btn btn-sm btn-neutral me-2">Cancel</button>
-                        <button type="submit" class="btn btn-sm btn-primary">Save</button>
-                    </div>
-                </form>
-            </div>
+    <div class="mx-auto max-w-2xl">
+        @include('template.msg')
 
-        </div>
+        <flux:card>
+            <form method="post" action="{{ url('links/create') }}">
+                @csrf
+                <flux:heading size="lg">Short Url</flux:heading>
+                <flux:text class="mt-1">You can set a custom key for your shortened url</flux:text>
+
+                <div class="mt-6 space-y-6">
+                    <flux:input label="Url" name="url" value="{{ old('url') }}" placeholder="https://"/>
+                    <flux:input label="Key (optional)" name="key" value="{{ old('key') }}"/>
+                </div>
+
+                <div class="mt-8 flex justify-end gap-2">
+                    <flux:button href="{{ url('links') }}" variant="ghost" size="sm">Cancel</flux:button>
+                    <flux:button type="submit" variant="primary" size="sm">Save</flux:button>
+                </div>
+            </form>
+        </flux:card>
     </div>
 @endsection

@@ -5,41 +5,24 @@
 @section('header','Create Bots')
 
 @section('page')
-    <div class="">
-        <div class="container py-7">
-            <div class="row">
-                @include('template.msg')
-                <form method="post" action="{{ url('settings/bots/create') }}">
-                    @csrf
-                    <div class="col-lg-10 mx-auto">
-                        <div class="row align-items-center">
-                            <div class="col-md-4">
-                                <h6 class="mb-0 font-semibold">Name</h6>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="">
-                                    <input type="text" class="form-control" name="name">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row align-items-center my-3">
-                            <div class="col-md-4">
-                                <h6 class="mb-0 font-semibold">Token</h6>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="">
-                                    <input type="text" class="form-control" name="token">
-                                </div>
-                            </div>
-                        </div>
-                        <hr class="my-6"/>
+    <div class="mx-auto max-w-2xl">
+        @include('template.msg')
 
-                        <div class="text-end">
-                            <button type="submit" class="btn btn-primary">Save</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <flux:card>
+            <form method="post" action="{{ url('settings/bots/create') }}">
+                @csrf
+                <flux:heading size="lg">Telegram Bot</flux:heading>
+                <flux:text class="mt-1">Create a bot with @@BotFather and paste the token here — the webhook and command list are registered for you</flux:text>
+
+                <div class="mt-6 space-y-6">
+                    <flux:input label="Name" name="name" value="{{ old('name') }}"/>
+                    <flux:input label="Token" name="token" value="{{ old('token') }}" viewable type="password"/>
+                </div>
+
+                <div class="mt-8 flex justify-end">
+                    <flux:button type="submit" variant="primary" size="sm">Save</flux:button>
+                </div>
+            </form>
+        </flux:card>
     </div>
 @endsection
