@@ -174,7 +174,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-sm btn-neutral" data-bs-dismiss="modal">Cancel</button>
-                    <a href="{{ url('links/delete/'. $short->id) }}" class="btn btn-sm btn-danger">Delete MF</a>
+                    <form action="{{ url('links/delete/'. $short->id) }}" method="post" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-danger">Delete MF</button>
+                    </form>
                 </div>
             </div>
         </div>
