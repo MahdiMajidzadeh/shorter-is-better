@@ -7,7 +7,7 @@ Route::view('/', 'index');
 
 Route::group(['prefix' => 'auth'], function () {
     Route::get('/', [C\AuthController::class, 'login'])->name('login');
-    Route::post('/', [C\AuthController::class, 'loginSubmit']);
+    Route::post('/', [C\AuthController::class, 'loginSubmit'])->middleware('throttle:5,1');
     Route::post('/logout', [C\AuthController::class, 'logout']);
 });
 

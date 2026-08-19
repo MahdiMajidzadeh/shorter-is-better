@@ -31,10 +31,14 @@ class AuthController extends Controller
         if ($user && Hash::check($credentials['password'], $user->password)) {
             Auth::login($user, $remember = true);
 
+            $request->session()->regenerate();
+
             return redirect('panel');
         }
 
-        return back();
+        return back()
+            ->withErrors(['username' => 'Invalid username or password.'])
+            ->onlyInput('username');
     }
 
     public function logout(Request $request)

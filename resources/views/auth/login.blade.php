@@ -21,13 +21,14 @@
                                 </p>
                             </div>
                         </div>
+                        @include('template.msg')
                         <form action="{{ url('auth') }}" method="post">
                             @csrf
                             <div class="form-group-stacked mb-5">
                                 <div>
                                     <div class="">
                                         <label class="form-label visually-hidden" for="username">Username</label>
-                                        <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+                                        <input type="text" class="form-control" id="username" name="username" placeholder="Username" value="{{ old('username') }}" required>
                                     </div>
                                 </div>
                                 <div>
