@@ -43,8 +43,8 @@ class LinkController extends Controller
             return redirect()->back()->with('msg-error', $e->getMessage());
         }
 
-//        $shortURLObject = $builder->destinationUrl('https://destination.com')->singleUse()->make();
-//        $shortURL = $shortURLObject->default_short_url;
+        //        $shortURLObject = $builder->destinationUrl('https://destination.com')->singleUse()->make();
+        //        $shortURL = $shortURLObject->default_short_url;
 
         return redirect('links/'.$shorted['url_key']);
     }
