@@ -28,9 +28,9 @@ process, so there is no nginx, php-fpm or supervisor to configure.
 - `AUTO_MIGRATE=false` disables migrations on boot if you'd rather run them by
   hand.
 
-Frontend assets are not built in the image: `public/index.css` is committed, and
-`webpack.mix.js` currently compiles an empty `resources/css/app.css` that no
-view references. Add a Node build stage if that changes.
+Frontend assets are not built in the image: `public/index.css` is committed.
+Rebuild it with `npm run build` (Tailwind CSS 4 + Flux UI) and commit the
+result whenever views or `resources/css/app.css` change.
 
 ## Run it locally
 

@@ -8,7 +8,8 @@ handing your link data to a third party.
 Built with Laravel 13 / PHP 8.4 on top of
 [ashallendesign/short-url](https://github.com/ash-jc-allen/short-url) for the
 shortening and click tracking, and [defstudio/telegraph](https://github.com/defstudio/telegraph)
-for the bot.
+for the bot. The UI is [Flux UI](https://fluxui.dev) (free tier) on Tailwind
+CSS 4, with automatic light/dark mode.
 
 ## Features
 
@@ -153,5 +154,14 @@ php artisan test
 ```
 
 Code style is [Laravel Pint](https://laravel.com/docs/pint) with the rules in
-[pint.json](pint.json). The test suite is currently just the framework's example
-tests.
+[pint.json](pint.json). The test suite runs on an in-memory SQLite database and
+covers page rendering, auth redirects and the short-link redirect.
+
+`public/index.css` is committed, so Node is only needed when you change views
+or [resources/css/app.css](resources/css/app.css) — rebuild it with:
+
+```bash
+npm install && npm run build
+```
+
+(`npm run watch` rebuilds on change while you work.)
