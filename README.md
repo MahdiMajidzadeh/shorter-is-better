@@ -84,8 +84,9 @@ Point the `DB_*` variables in `.env` at your database, then:
 php artisan migrate --seed
 ```
 
-The seeder creates one admin account — **change the password immediately**, it is
-hardcoded in [AdminSeed.php](database/seeders/AdminSeed.php).
+The seeder creates one admin account (username `admin`). Set `ADMIN_PASSWORD` in
+`.env` before seeding to pick its password; left empty, the seeder generates a
+random one and prints it once in the seed output.
 
 ```bash
 php artisan serve
