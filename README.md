@@ -157,11 +157,14 @@ Code style is [Laravel Pint](https://laravel.com/docs/pint) with the rules in
 [pint.json](pint.json). The test suite runs on an in-memory SQLite database and
 covers page rendering, auth redirects and the short-link redirect.
 
-`public/index.css` is committed, so Node is only needed when you change views
-or [resources/css/app.css](resources/css/app.css) — rebuild it with:
+`public/index.css` is committed for non-Docker local development, so Node is
+only needed when you change views or
+[resources/css/app.css](resources/css/app.css) — rebuild it with:
 
 ```bash
 npm install && npm run build
 ```
 
-(`npm run watch` rebuilds on change while you work.)
+(`npm run watch` rebuilds on change while you work.) The production image does
+not use the committed file: its `assets` stage runs the same build, so the
+shipped CSS always matches the shipped views.

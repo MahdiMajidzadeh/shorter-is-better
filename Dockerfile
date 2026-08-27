@@ -57,6 +57,26 @@ COPY artisan ./artisan
 RUN composer dump-autoload --no-dev --optimize --no-scripts --no-interaction
 
 # ---------------------------------------------------------------------------
+# assets — Tailwind CSS build (no Vite here; public/index.css is the only
+# artifact). vendor/ must exist first: resources/css/app.css @imports Flux's
+# stylesheet and @sources its Blade views from vendor/livewire/flux, so the
+# stage copies vendor from the composer stage above. The build needs no network
+# beyond npm ci — no fonts or other assets are fetched at build time.
+# ---------------------------------------------------------------------------
+FROM node:22-alpine AS assets
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN --mount=type=cache,target=/root/.npm npm ci --ignore-scripts
+
+COPY resources ./resources
+COPY public ./public
+COPY --from=vendor /app/vendor ./vendor
+
+RUN npm run build
+
+# ---------------------------------------------------------------------------
 # runtime — the published image.
 # ---------------------------------------------------------------------------
 FROM base AS runtime
@@ -71,6 +91,10 @@ ENV APP_ENV=production \
 # few paths below are made writable.
 COPY . .
 COPY --from=vendor /app/vendor ./vendor
+# Overwrites the committed public/index.css, which only exists for non-Docker
+# local development (`php artisan serve`) — the image always ships CSS built
+# from the sources in this build context.
+COPY --from=assets /app/public/index.css ./public/index.css
 
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint
 RUN chmod +x /usr/local/bin/entrypoint

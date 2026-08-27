@@ -1,78 +1,68 @@
 # Deployment stack for Dokploy (Docker Compose application type).
 #
-# It runs the pre-built image published by .github/workflows/docker-publish.yml
+# It runs the pre-built image published by .github/workflows/release.yml
 # (on a v*.*.* tag push) rather than building on the server. Point a domain at
 # the `app` service on port 8080.
 #
 # CONFIGURATION LIVES IN DOKPLOY, NOT HERE. Everything the application reads
 # comes from the Environment Settings tab: Dokploy writes that tab to a `.env`
 # file beside this compose file, which is both interpolated into `${...}` below
-# and handed to the containers wholesale via `env_file`. Nothing is defaulted
-# here, so what you see in that tab is exactly what the app runs with.
-# Start from .env.docker.example — it lists every variable, including the two
-# (DB_HOST, REDIS_HOST) that must match the service names below.
+# and handed to the containers wholesale via `env_file`. Apart from IMAGE_TAG
+# nothing is defaulted here, so what you see in that tab is exactly what the
+# app runs with. Start from .env.docker.example — it lists every variable,
+# including the two (DB_HOST, REDIS_HOST) that must match the service names
+# below.
 #
 # For building and running locally instead, see compose.local.yaml.
 
-x-app-image: &app-image ${APP_IMAGE}
-
-# `:latest` is a mutable tag, so a redeploy would otherwise reuse the copy
-# already cached on the host and silently ship the previous build.
-x-pull: &pull always
-
-# The full Environment tab, verbatim. app, worker and scheduler are the same
-# image with different commands, so they must agree on every setting.
-x-app-env: &app-env
-  - .env
-
-x-datastores: &datastores
-  mariadb:
-    condition: service_healthy
-  redis:
-    condition: service_healthy
+x-app: &app
+  # Dokploy pulls :latest on redeploy; pin IMAGE_TAG to e.g. 1.2.3 to roll back.
+  image: ghcr.io/mahdimajidzadeh/shorter-is-better:${IMAGE_TAG:-latest}
+  # `:latest` is a mutable tag, so a redeploy would otherwise reuse the copy
+  # already cached on the host and silently ship the previous build.
+  pull_policy: always
+  restart: unless-stopped
+  # The full Environment tab, verbatim. app and worker are the same image with
+  # different commands, so they must agree on every setting.
+  env_file: .env
+  volumes:
+    # settings.json (anlutro/l4-settings) and uploaded files live here.
+    - app-storage:/app/storage
+  networks:
+    # dokploy-network is where Dokploy's Traefik reaches the app; `default`
+    # stays private to this stack so the datastores are not exposed to (and
+    # their service names cannot collide with) other stacks on the shared
+    # network.
+    - dokploy-network
+    - default
 
 services:
   app:
-    image: *app-image
-    pull_policy: *pull
-    restart: unless-stopped
-    env_file: *app-env
+    <<: *app
     environment:
       CONTAINER_ROLE: app
-    volumes:
-      # settings.json (anlutro/l4-settings) and uploaded files live here.
-      - app-storage:/app/storage
+      RUN_MIGRATIONS: "true"
     expose:
       - "8080"
-    depends_on: *datastores
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   # Processes queued work (Telegraph bot dispatches, notifications).
   worker:
-    image: *app-image
-    pull_policy: *pull
-    restart: unless-stopped
+    <<: *app
     command: php artisan queue:work --tries=3 --max-time=3600 --sleep=3
-    env_file: *app-env
     environment:
       CONTAINER_ROLE: worker
-    volumes:
-      - app-storage:/app/storage
-    depends_on: *datastores
+      RUN_MIGRATIONS: "false"
+    depends_on:
+      app:
+        condition: service_healthy   # migrations have run
 
-  # Runs the Laravel scheduler. App\Console\Kernel::schedule() is empty since
-  # Telescope was removed, so this currently idles — kept so that adding a
-  # scheduled task is a one-line change rather than a deployment change.
-  scheduler:
-    image: *app-image
-    pull_policy: *pull
-    restart: unless-stopped
-    command: php artisan schedule:work
-    env_file: *app-env
-    environment:
-      CONTAINER_ROLE: scheduler
-    volumes:
-      - app-storage:/app/storage
-    depends_on: *datastores
+  # No scheduler service: App\Console\Kernel::schedule() is empty (see
+  # DOCKER.md for the ready-to-paste block if a scheduled task is ever added).
 
   # The MARIADB_* names are what this image reads; they are mapped from the
   # DB_* variables the application uses so the tab has one name per setting.
@@ -111,3 +101,7 @@ volumes:
   app-storage:
   mariadb-data:
   redis-data:
+
+networks:
+  dokploy-network:
+    external: true

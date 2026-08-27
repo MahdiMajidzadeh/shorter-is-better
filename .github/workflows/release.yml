@@ -1,0 +1,130 @@
+name: Release
+
+# tag push → build image → push to GHCR → webhook tells Dokploy to redeploy.
+# PRs build only (no push, no deploy) so a broken Dockerfile is caught pre-merge.
+#
+#   git tag v0.2.3 && git push origin v0.2.3
+# or, because bare tag pushes have not always produced push events reliably:
+#   gh release create v0.2.3 --generate-notes
+#
+# There is deliberately no branch trigger: pushing a commit and its tag together
+# once matched both the branch and the tag filter, so every release built twice
+# on the same commit.
+#
+# Secret: DOKPLOY_WEBHOOK_URL — the Dokploy service's Webhook URL (Deployments tab).
+
+on:
+  push:
+    tags:
+      # A digit must follow the "v": "v*" once matched the typo "v.0.2.5" and
+      # shipped an image under that name. Prereleases (v1.2.3-rc1) still match.
+      - "v[0-9]*.[0-9]*.[0-9]*"
+  release:
+    types: [published]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing git tag to (re)build and deploy"
+        required: true
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    name: Build and push image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # metadata-action lowercases the image name (GHCR rejects uppercase) and
+      # derives semver tags — no hand-rolled bash, no ${IMAGE,,} hack.
+      # `latest` is enabled explicitly rather than via {{is_default_branch}}:
+      # that flag is false on a tag push, which would leave the `:latest`
+      # Dokploy pulls stale forever, since pushes to main build nothing.
+      - name: Derive tags and labels
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-,format=short
+            type=raw,value=${{ inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=raw,value=latest,enable=${{ github.event_name != 'pull_request' }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: runtime
+          # amd64 only: the Dokploy host is x86 and cross-building PHP
+          # extensions under QEMU adds ~20 minutes.
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Summary
+        run: |
+          {
+            echo "### Image tags"
+            echo '```'
+            echo "${{ steps.meta.outputs.tags }}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Trigger Dokploy
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Dokploy webhook
+        env:
+          WEBHOOK: ${{ secrets.DOKPLOY_WEBHOOK_URL }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then
+            echo "::error::DOKPLOY_WEBHOOK_URL secret is not set"
+            exit 1
+          fi
+          # Dokploy answers 2xx as soon as the deployment is queued; the deploy
+          # log lives in the Dokploy UI, not here.
+          out=$(mktemp)
+          status=$(curl -sS --location --retry 3 --retry-delay 5 --retry-all-errors \
+            --max-time 60 -o "$out" -w '%{http_code}' -X POST "$WEBHOOK") || {
+            echo "::error::Could not reach the Dokploy webhook: $(cat "$out")"
+            exit 1
+          }
+          echo "HTTP $status $(cat "$out")"
+          if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
+            echo "::error::Dokploy refused the deployment (HTTP $status). A 404 usually means the webhook token was regenerated — update DOKPLOY_WEBHOOK_URL."
+            exit 1
+          fi

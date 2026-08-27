@@ -28,7 +28,8 @@ bootstrap/cache/*
 public/hot
 public/storage
 
-# Dev-only tooling & docs
+# Dev-only tooling & docs. package.json / package-lock.json stay IN the
+# context: the assets stage needs them to build public/index.css.
 tests
 phpunit.xml
 .phpunit.cache
@@ -36,8 +37,6 @@ phpunit.xml
 .styleci.yml
 .editorconfig
 pint.json
-package.json
-package-lock.json
 short-data.md
 DOCKER.md
 

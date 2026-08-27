@@ -60,24 +60,15 @@ services:
     environment:
       <<: *app-env
       CONTAINER_ROLE: worker
+      RUN_MIGRATIONS: "false"
     volumes:
       - app-storage:/app/storage
     depends_on:
       app:
-        condition: service_started
+        condition: service_healthy   # migrations have run
 
-  scheduler:
-    image: shorter-is-better:local
-    restart: unless-stopped
-    command: php artisan schedule:work
-    environment:
-      <<: *app-env
-      CONTAINER_ROLE: scheduler
-    volumes:
-      - app-storage:/app/storage
-    depends_on:
-      app:
-        condition: service_started
+  # No scheduler service: App\Console\Kernel::schedule() is empty (see
+  # DOCKER.md for the ready-to-paste block if a scheduled task is ever added).
 
   mariadb:
     image: mariadb:11.4

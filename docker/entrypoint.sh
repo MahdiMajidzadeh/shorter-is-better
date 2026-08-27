@@ -99,11 +99,11 @@ esac
 php artisan config:clear --no-interaction
 php artisan package:discover --ansi --no-interaction
 
-if [ "${ROLE}" = "app" ] && [ "${AUTO_MIGRATE:-true}" = "true" ]; then
+if [ "${ROLE}" = "app" ] && [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
 	log "running migrations"
 	php artisan migrate --force --no-interaction
 elif [ "${ROLE}" = "app" ]; then
-	log "AUTO_MIGRATE is not 'true', skipping migrations"
+	log "RUN_MIGRATIONS is not 'true', skipping migrations"
 fi
 
 php artisan config:cache --no-interaction
