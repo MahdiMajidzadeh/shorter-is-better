@@ -97,16 +97,17 @@ Sign in at <http://localhost:8000/auth> and the panel is at `/panel`.
 
 ### Docker
 
-A single-image FrankenPHP stack (PHP 8.4 + Caddy in one process) is ready to go:
+A single-image FrankenPHP setup (PHP 8.4 + Caddy in one process, supervisord
+running web + queue worker in one container) is ready to go. Create a
+gitignored `.env.docker` with `APP_KEY`, `DB_PASSWORD` and `DB_ROOT_PASSWORD`
+(the snippet is at the top of [compose.local.yaml](compose.local.yaml)), then:
 
 ```bash
-cp .env.docker.example .env.docker
 docker compose -f compose.local.yaml --env-file .env.docker up --build
 ```
 
-Fill in `APP_KEY`, `DB_PASSWORD` and `DB_ROOT_PASSWORD` first. Full details,
-including the GitHub Actions → Dokploy release pipeline, are in
-[DOCKER.md](DOCKER.md).
+Full details, including the GitHub Actions → Dokploy release pipeline and the
+production panel setup, are in [DOCKER.md](DOCKER.md).
 
 ## Connecting a Telegram bot
 

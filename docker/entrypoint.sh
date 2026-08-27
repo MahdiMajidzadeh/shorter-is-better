@@ -1,13 +1,10 @@
 #!/bin/sh
 set -e
 
-# CONTAINER_ROLE decides how much bootstrapping this container does:
-#   app       - waits for the DB, migrates, warms caches, then serves HTTP
-#   worker    - waits for the DB, then processes the queue
-#   scheduler - waits for the DB, then runs the scheduler
-# Only the `app` role touches the database schema, so scaling workers never
-# races on migrations.
-ROLE="${CONTAINER_ROLE:-app}"
+# Runs exactly once per container boot, before supervisord starts any program:
+# wait for the DB, migrate, build the Laravel caches from the RUNNING
+# environment (injected by the Dokploy panel) — never from build time, so the
+# image cannot freeze stale env values.
 
 log() { echo "[entrypoint] $*"; }
 
@@ -30,13 +27,14 @@ mkdir -p \
 if [ -z "${APP_KEY}" ]; then
 	log "FATAL: APP_KEY is not set."
 	log "Generate one with:  docker run --rm <image> php artisan key:generate --show"
-	log "then set it as an environment variable for this service."
+	log "then set it in the Dokploy Environment tab."
 	exit 1
 fi
 
 # ---------------------------------------------------------------------------
-# Wait for the database. Dokploy starts containers in parallel and the database
-# is usually the slower of the two.
+# Wait for the database. Dokploy starts containers in parallel (the panel
+# database is its own service) and the database is usually the slower to come
+# up, e.g. after a host reboot.
 #
 # The PDO driver name is not always Laravel's connection name: MariaDB is a
 # first-class connection in Laravel but PDO only knows `mysql:`. Building the
@@ -99,22 +97,19 @@ esac
 php artisan config:clear --no-interaction
 php artisan package:discover --ansi --no-interaction
 
-if [ "${ROLE}" = "app" ] && [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
+if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
 	log "running migrations"
 	php artisan migrate --force --no-interaction
-elif [ "${ROLE}" = "app" ]; then
+else
 	log "RUN_MIGRATIONS is not 'true', skipping migrations"
 fi
 
+# One container is the single writer of these caches, so there is no write
+# race to avoid — warm everything before any program starts.
 php artisan config:cache --no-interaction
 php artisan event:cache --no-interaction
+php artisan route:cache --no-interaction
+php artisan view:cache --no-interaction
 
-if [ "${ROLE}" = "app" ]; then
-	php artisan route:cache --no-interaction
-	# Compiled views land in the shared storage volume; only the HTTP role
-	# needs them, and warming from a single container avoids a write race.
-	php artisan view:cache --no-interaction
-fi
-
-log "role=${ROLE} ready, starting: $*"
+log "ready, starting: $*"
 exec "$@"

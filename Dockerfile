@@ -1,7 +1,9 @@
 # syntax=docker/dockerfile:1
 
-# FrankenPHP bundles PHP 8.4 and a Caddy web server in a single process, so the
-# runtime image needs no nginx, php-fpm or supervisor.
+# FrankenPHP bundles PHP 8.4 and a Caddy web server in a single process — no
+# nginx, no php-fpm. supervisord is PID 1 so this ONE container can also run
+# the queue worker (the repo deploys as a single Dokploy Application; see
+# docker/supervisord.conf).
 
 # ---------------------------------------------------------------------------
 # base — the PHP runtime every other stage builds on. Keeping extensions here
@@ -11,6 +13,12 @@
 FROM dunglas/frankenphp:1-php8.4-alpine AS base
 
 WORKDIR /app
+
+# bash: Alpine ships only busybox ash. bash makes `docker exec` sessions,
+# one-off scripts, and brace expansion behave as expected in production
+# containers (tv-time's old Dockerfile got bitten by ash's missing brace
+# expansion — this removes that class of surprise).
+RUN apk add --no-cache bash
 
 # bcmath/intl: string & URL handling in the short-url stack
 # pcntl: graceful shutdown for queue workers and the scheduler
@@ -81,11 +89,14 @@ RUN npm run build
 # ---------------------------------------------------------------------------
 FROM base AS runtime
 
+# supervisord is PID 1: web + worker in this single container.
+RUN apk add --no-cache supervisor
+
 ENV APP_ENV=production \
     APP_DEBUG=false \
     LOG_CHANNEL=stderr \
     SERVER_NAME=":8080" \
-    CONTAINER_ROLE=app
+    RUN_MIGRATIONS=true
 
 # Application code stays root-owned and read-only to the runtime user; only the
 # few paths below are made writable.
@@ -96,6 +107,7 @@ COPY --from=vendor /app/vendor ./vendor
 # from the sources in this build context.
 COPY --from=assets /app/public/index.css ./public/index.css
 
+COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint
 RUN chmod +x /usr/local/bin/entrypoint
 
@@ -125,4 +137,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
     CMD wget --quiet --tries=1 --spider http://127.0.0.1:8080/up || exit 1
 
 ENTRYPOINT ["entrypoint"]
-CMD ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile"]
+CMD ["supervisord", "-c", "/etc/supervisord.conf"]

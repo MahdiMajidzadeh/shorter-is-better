@@ -1,41 +1,17 @@
-# Local stack: builds the image from source instead of pulling it, and
-# publishes the app on http://localhost:8080.
+# LOCAL DEVELOPMENT ONLY — production runs as a single Dokploy Application
+# (one container from the published image, no compose file; see DOCKER.md).
+# This is the only place a database container and a local env file are allowed.
 #
-#   cp .env.docker.example .env.docker
-#   # fill in APP_KEY / DB_PASSWORD / DB_ROOT_PASSWORD
+#   cat > .env.docker <<'EOF'          # .env.docker is gitignored
+#   APP_KEY=        # php artisan key:generate --show
+#   DB_PASSWORD=secret
+#   DB_ROOT_PASSWORD=secret
+#   EOF
 #   docker compose -f compose.local.yaml --env-file .env.docker up --build
-
-x-app-env: &app-env
-  APP_NAME: ${APP_NAME:-Shorter}
-  APP_ENV: ${APP_ENV:-production}
-  APP_DEBUG: ${APP_DEBUG:-false}
-  APP_KEY: ${APP_KEY:?required - generate with `php artisan key:generate --show`}
-  APP_URL: ${APP_URL:-http://localhost:8080}
-  LOG_CHANNEL: stderr
-  LOG_LEVEL: ${LOG_LEVEL:-debug}
-
-  DB_CONNECTION: mariadb
-  DB_HOST: mariadb
-  DB_PORT: "3306"
-  DB_DATABASE: ${DB_DATABASE:-shorter}
-  DB_USERNAME: ${DB_USERNAME:-shorter}
-  DB_PASSWORD: ${DB_PASSWORD:?required}
-
-  REDIS_HOST: redis
-  REDIS_PORT: "6379"
-  REDIS_PASSWORD: "null"
-
-  CACHE_DRIVER: redis
-  SESSION_DRIVER: redis
-  QUEUE_CONNECTION: redis
-  # No TLS in front of the container locally.
-  SESSION_SECURE_COOKIE: "false"
-
-x-datastores: &datastores
-  mariadb:
-    condition: service_healthy
-  redis:
-    condition: service_healthy
+#
+# The app container runs supervisord exactly like production: web server and
+# queue worker in the one container, so what you exercise locally is the same
+# process model that ships.
 
 services:
   app:
@@ -45,30 +21,39 @@ services:
     image: shorter-is-better:local
     restart: unless-stopped
     environment:
-      <<: *app-env
-      CONTAINER_ROLE: app
+      APP_NAME: ${APP_NAME:-Shorter}
+      APP_ENV: ${APP_ENV:-production}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_KEY: ${APP_KEY:?required - generate with `php artisan key:generate --show`}
+      APP_URL: ${APP_URL:-http://localhost:8080}
+      LOG_CHANNEL: stderr
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+
+      DB_CONNECTION: mariadb
+      DB_HOST: mariadb
+      DB_PORT: "3306"
+      DB_DATABASE: ${DB_DATABASE:-shorter}
+      DB_USERNAME: ${DB_USERNAME:-shorter}
+      DB_PASSWORD: ${DB_PASSWORD:?required}
+
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: "null"
+
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      # No TLS in front of the container locally.
+      SESSION_SECURE_COOKIE: "false"
     volumes:
       - app-storage:/app/storage
     ports:
       - "${APP_PORT:-8080}:8080"
-    depends_on: *datastores
-
-  worker:
-    image: shorter-is-better:local
-    restart: unless-stopped
-    command: php artisan queue:work --tries=3 --max-time=3600 --sleep=3
-    environment:
-      <<: *app-env
-      CONTAINER_ROLE: worker
-      RUN_MIGRATIONS: "false"
-    volumes:
-      - app-storage:/app/storage
     depends_on:
-      app:
-        condition: service_healthy   # migrations have run
-
-  # No scheduler service: App\Console\Kernel::schedule() is empty (see
-  # DOCKER.md for the ready-to-paste block if a scheduled task is ever added).
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   mariadb:
     image: mariadb:11.4
@@ -101,4 +86,3 @@ services:
 volumes:
   app-storage:
   mariadb-data:
-  redis-data:

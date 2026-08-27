@@ -23,6 +23,8 @@ on:
     types: [published]
   pull_request:
     branches: [main]
+    paths-ignore:
+      - "**.md"
   workflow_dispatch:
     inputs:
       tag:
@@ -59,6 +61,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # The registry cache ref is ours to build (metadata-action only handles
+      # the image tags), and GHCR rejects uppercase — hence the ,, here.
+      - name: Derive registry cache ref
+        id: cache
+        run: echo "ref=${REGISTRY}/${IMAGE_NAME,,}:buildcache" >> "$GITHUB_OUTPUT"
+
       # metadata-action lowercases the image name (GHCR rejects uppercase) and
       # derives semver tags — no hand-rolled bash, no ${IMAGE,,} hack.
       # `latest` is enabled explicitly rather than via {{is_default_branch}}:
@@ -89,8 +97,14 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           provenance: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # Registry cache, NOT type=gha: GitHub's cache is scoped per ref, and
+          # this workflow builds on tag refs — so consecutive releases would
+          # almost never see each other's cache and every release would be a
+          # cold ~full rebuild. A :buildcache tag on GHCR is shared across all
+          # refs and events, so a release rebuilds only the layers that changed.
+          # PRs read the cache but can't write it (no GHCR login on PRs).
+          cache-from: type=registry,ref=${{ steps.cache.outputs.ref }}
+          cache-to: ${{ github.event_name != 'pull_request' && format('type=registry,ref={0},mode=max', steps.cache.outputs.ref) || '' }}
 
       - name: Summary
         run: |

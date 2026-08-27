@@ -2,36 +2,40 @@
 
 The app ships as a single self-contained image built on
 [FrankenPHP](https://frankenphp.dev) — PHP 8.4 and a Caddy web server in one
-process, so there is no nginx, php-fpm or supervisor to configure.
+process, no nginx, no php-fpm. Inside the container, **supervisord is PID 1**
+and runs the web server plus the queue worker, so production is exactly one
+Dokploy Application running one container.
 
 | File | Purpose |
 | --- | --- |
 | `Dockerfile` | Production image (`base` → `vendor` → `assets` → `runtime` stages) |
 | `docker/Caddyfile` | Web server config; listens on `:8080`, TLS handled upstream |
 | `docker/php.ini` | Production PHP + OPcache settings |
-| `docker/entrypoint.sh` | Boot sequence: wait for DB → migrate → warm caches |
-| `compose.yaml` | Deployment stack for Dokploy (pulls the published image) |
-| `compose.local.yaml` | Same stack, but builds from source and publishes port 8080 |
-| `.env.docker.example` | Every variable the stack needs |
+| `docker/supervisord.conf` | Process model: `web` + `worker` programs |
+| `docker/entrypoint.sh` | Boot sequence: wait for DB → migrate → warm caches → supervisord |
+| `compose.local.yaml` | Local development only — builds from source, self-hosts MariaDB/Redis |
 | `.github/workflows/release.yml` | Builds + pushes to GHCR, then pings Dokploy |
+
+There is **no production compose file**: Dokploy pulls the published image and
+runs it directly (Docker-image provider), and all configuration lives in the
+Application's Environment tab. No `.env` file exists anywhere in production —
+not committed, not in the image, not required at build time.
 
 ## Image layout
 
 - Serves `/app/public` on port **8080** as the unprivileged `www-data` user.
   Application code is root-owned and read-only at runtime; only `storage/` and
   `bootstrap/cache` are writable.
-- Configuration comes from **real environment variables** — there is no `.env`
-  inside the image, and `.env` is excluded from the build context. Laravel's
-  config/route/view/event caches are built by the entrypoint at container
-  start, never at build time, so the image cannot freeze build-time values.
-- `CONTAINER_ROLE` selects behaviour: `app` (default, serves HTTP and owns
-  migrations), `worker` (`queue:work`), `scheduler` (`schedule:work`). Only the
-  `app` role runs migrations, so workers can be scaled without racing.
+- Configuration comes from **real environment variables** injected by the
+  Dokploy panel. Laravel's config/route/view/event caches are built by the
+  entrypoint at container start, never at build time, so the image cannot
+  freeze build-time values — env changes take effect on redeploy.
 - `HEALTHCHECK` hits `GET /up`, which deliberately touches neither the database
   nor the cache — a datastore blip must not trigger a restart loop.
 - `RUN_MIGRATIONS=false` disables migrations on boot if you'd rather run them
-  by hand. (This variable was previously named `AUTO_MIGRATE` — rename it if
-  you had set it in Dokploy.)
+  by hand.
+- `bash` is installed (Alpine ships only busybox ash) so `docker exec`
+  sessions and one-off scripts behave as expected.
 
 Frontend assets are built **inside the image** by the `assets` stage: Tailwind
 CSS 4 compiles `resources/css/app.css` into `public/index.css`. The stage needs
@@ -43,110 +47,127 @@ non-Docker local development (`php artisan serve`); rebuild it with
 
 ## Process model
 
-One image, one process per container — no supervisord. The stack deploys as a
-single Dokploy Compose application, so each role is its own container: roles
-restart and scale independently, logs are per-role, and a dead queue worker can
-never hide behind a green web healthcheck.
+One image, **one container**, supervised programs — the repo deploys as a
+single Dokploy Application, so the background processes live inside the
+container under supervisord rather than as extra containers. (A previous
+compose-based, role-per-container layout was never adopted in the panel, which
+is why queue workers silently stopped running: production ran only the single
+Application container. This layout makes the deployed shape and the repo agree.)
 
-- **`app`** — serves HTTP, owns migrations.
+- **`web`** — `frankenphp run` (Caddy + PHP, the only process the healthcheck
+  probes).
 - **`worker`** — required: [Telegraph](https://defstudio.github.io/telegraph)
-  sends every bot API call through a queued job
-  (`SendRequestToTelegramJob`), and the stack runs `QUEUE_CONNECTION=redis`.
+  sends every bot API call through a queued job (`SendRequestToTelegramJob`),
+  and production runs `QUEUE_CONNECTION=redis`. Flags:
+  `--tries=3 --max-time=3600 --sleep=3`. Scale with `numprocs` in
+  `docker/supervisord.conf`, never with a second container.
 - **no `scheduler`** — `App\Console\Kernel::schedule()` is empty (has been
-  since Telescope was removed), so the container would idle. If you add a
-  scheduled task, add this service back to `compose.yaml`:
+  since Telescope was removed). If you add a scheduled task, add this program
+  to `docker/supervisord.conf`:
 
-  ```yaml
-  scheduler:
-    <<: *app
-    command: php artisan schedule:work
-    environment:
-      CONTAINER_ROLE: scheduler
-      RUN_MIGRATIONS: "false"
-    depends_on:
-      app:
-        condition: service_healthy
+  ```ini
+  [program:scheduler]
+  command=php artisan schedule:work
+  autorestart=true
+  priority=30
+  stdout_logfile=/dev/stdout
+  stdout_logfile_maxbytes=0
+  stderr_logfile=/dev/stderr
+  stderr_logfile_maxbytes=0
   ```
 
-## Run it locally
+Known tradeoff, accepted deliberately: the container healthcheck probes only
+the web server, so a crash-looping worker can hide behind a green tick.
+Mitigations: every program has `autorestart=true` and logs to stdout/stderr
+(`docker logs` interleaves all of them), and worker liveness is one command:
 
 ```bash
-cp .env.docker.example .env.docker
+docker exec <container> supervisorctl status
 ```
 
-Fill in `APP_KEY`, `DB_PASSWORD` and `DB_ROOT_PASSWORD`. Generate the key with:
+Every program must show `RUNNING`. If the queue ever grows real backlogs,
+schedule `php artisan queue:monitor` and alert on it.
 
-```bash
-php artisan key:generate --show
-```
+## Environment variables (the Dokploy panel is the single source of truth)
 
-Then bring the stack up on <http://localhost:8080>:
+Every key below is set in the Application's *Environment* tab. A key missing
+from the tab is a key the container does not have.
 
-```bash
-docker compose -f compose.local.yaml --env-file .env.docker up --build
-```
+| Key | Value / notes |
+| --- | --- |
+| `APP_NAME` | `Shorter` |
+| `APP_ENV` | `production` |
+| `APP_DEBUG` | `false` |
+| `APP_KEY` | **Required.** Generate once: `docker run --rm <image> php artisan key:generate --show`. Changing it invalidates every session and encrypted value — the container refuses to boot without one rather than generating a throwaway. |
+| `APP_URL` | **Required.** Public URL including scheme; short links are built from this. |
+| `LOG_CHANNEL` | `stderr` (so `docker logs` gets everything) |
+| `LOG_LEVEL` | `warning` |
+| `ADMIN_PASSWORD` | Password for the seeded `admin` account; empty = seeder generates one and prints it once. |
+| `DB_CONNECTION` | `mariadb` |
+| `DB_HOST` | Internal hostname of the **panel-managed database** on `dokploy-network` (from the database service's page in Dokploy). |
+| `DB_PORT` | `3306` |
+| `DB_DATABASE` / `DB_USERNAME` / `DB_PASSWORD` | As created in the panel database. |
+| `REDIS_HOST` | Internal hostname of the panel-managed Redis. |
+| `REDIS_PORT` | `6379` |
+| `REDIS_PASSWORD` | As created in the panel Redis (`null` if none). |
+| `CACHE_DRIVER` | `redis` |
+| `SESSION_DRIVER` | `redis` |
+| `QUEUE_CONNECTION` | `redis` — the supervised worker processes this queue. |
+| `SESSION_SECURE_COOKIE` | `true` (TLS is terminated by Dokploy's Traefik; the cookie must still be marked secure). |
+| `SENTRY_LARAVEL_DSN` | Optional error reporting. |
+| `SENTRY_TRACES_SAMPLE_RATE` | Optional. |
+| `RUN_MIGRATIONS` | Optional, default `true`. |
+| `DB_WAIT_TIMEOUT` | Optional, default `60` (seconds the entrypoint waits for the DB). |
 
-## Deploy to Dokploy
+## One-time Dokploy setup / migration from the compose stack
 
-**1. Publish the image.** Push a `v*.*.*` tag (a digit must follow the `v` —
-the workflow's tag filter rejects typos like `v.0.2.5`, which once shipped an
-image under that name) and the `Release` workflow builds
-`ghcr.io/<owner>/shorter-is-better` and tags it `latest`, `<x.y.z>`, `<x.y>` and
-`sha-<commit>`. Pushes to `main` build nothing; pull requests build the image
-without pushing it. Make the package public in GitHub (*Packages → Package
-settings → Change visibility*), or add a GHCR registry credential in Dokploy if
-you keep it private.
+The Application used to be a Compose stack self-hosting MariaDB and Redis.
+Converting it (do these in order — **data moves are manual, and nothing here
+deletes the old volumes**):
 
-**2. Create the application.** In Dokploy: *Create Application → Compose*, point
-it at this repository, and set the compose file to `compose.yaml`. The compose
-file joins the external `dokploy-network`, which is how Dokploy's Traefik
-reaches the `app` container; the datastores stay on the stack's private
-default network.
+1. **Create the panel datastores.** In Dokploy: *Create Database* → MariaDB,
+   and a Redis. Note their internal hostnames on `dokploy-network`.
+2. **Move the data** (MariaDB — the `mariadb-data` volume holds real
+   production data):
+   ```bash
+   # On the host, dump from the old compose stack's DB container:
+   docker exec <old-mariadb-container> \
+     mariadb-dump -u root -p"$DB_ROOT_PASSWORD" --databases shorter > shorter.sql
+   # Restore into the panel-managed database:
+   docker exec -i <panel-mariadb-container> \
+     mariadb -u root -p"<panel-root-password>" < shorter.sql
+   ```
+   Redis holds cache, sessions and the queue backlog — let the worker drain the
+   queue (`redis-cli llen queues:default` = 0) before switching; sessions and
+   cache rebuild themselves (users get logged out once).
+3. **Convert the Application.** Change it to (or recreate it as) a
+   **Docker-image provider** Application pointing at
+   `ghcr.io/mahdimajidzadeh/shorter-is-better:latest`, attached to
+   `dokploy-network`.
+4. **Environment tab:** every key from the table above, with `DB_HOST` /
+   `REDIS_HOST` pointing at the panel datastores. (`DB_ROOT_PASSWORD` is no
+   longer needed — that belonged to the compose-hosted MariaDB. `APP_IMAGE` /
+   `IMAGE_TAG` are gone too — the image is chosen in the provider settings.)
+5. **Mount:** a volume at `/app/storage`. It holds `storage/settings.json`
+   (anlutro/l4-settings: homepage copy and channel settings) and uploads —
+   copy the contents of the old `app-storage` volume into it.
+6. **Port / domain:** route the domain to container port **8080**. Traefik
+   terminates TLS; the container trusts its `X-Forwarded-*` headers (see
+   `app/Http/Middleware/TrustProxies.php`).
+7. **Stop timeout:** raise the container stop timeout to at least **90s** (the
+   worker's `stopwaitsecs`), or docker SIGKILLs supervisord ~10s into a
+   redeploy and a running job dies mid-flight.
+8. **Webhook:** copy the Application's Webhook URL (*Deployments* tab) into the
+   GitHub Actions secret — it is a live deploy trigger, never inline it in the
+   public workflow file:
+   ```bash
+   gh secret set DOKPLOY_WEBHOOK_URL --repo MahdiMajidzadeh/shorter-is-better
+   ```
+9. **Verify** the app works against the panel datastores (sign in, create a
+   link, check `supervisorctl status`), and only then stop the old compose
+   stack. Keep the old volumes until the new setup has survived a few days.
 
-**3. Set the environment.** Paste the contents of `.env.docker.example` into the
-application's *Environment Settings* tab and fill in the blanks. Dokploy writes
-that tab to a `.env` file beside the compose file, which `compose.yaml` both
-interpolates and passes to the containers via `env_file` — so that tab is the
-only place configuration lives. Apart from `IMAGE_TAG` (defaults to `latest`),
-**`compose.yaml` defines no defaults**: a variable missing from the tab is a
-variable the container does not have.
-
-`APP_KEY` and `APP_URL` are required — the container refuses to start without a
-key rather than generating a throwaway one that would invalidate every session
-on restart. `DB_HOST` and `REDIS_HOST` must match the service names in
-`compose.yaml` (`mariadb` and `redis`); they are the two values in that tab
-that describe the stack's own topology rather than your preferences.
-
-**4. Add the domain.** Attach your domain to the **`app`** service on port
-**8080**. Dokploy's Traefik terminates TLS; the container trusts the
-`X-Forwarded-*` headers it sends (see `app/Http/Middleware/TrustProxies.php`).
-
-**5. Wire up auto-deploy.** The webhook URL from the application's
-*Deployments* tab is stored as the GitHub Actions secret
-`DOKPLOY_WEBHOOK_URL` — never inline it in the workflow, since this repository
-is public and the URL is a live deploy trigger. Rotate it in Dokploy and
-re-set it with:
-
-```bash
-gh secret set DOKPLOY_WEBHOOK_URL --repo MahdiMajidzadeh/shorter-is-better
-```
-
-The workflow's `deploy` job calls it after every successful non-PR build and
-**fails loudly if the secret is missing or Dokploy refuses the call** — a
-worker on the old image while the app is on the new one must never hide behind
-a green tick. (A 404 from the webhook usually means the token was regenerated
-in Dokploy — update the secret.)
-
-### Upgrading an existing Dokploy deployment
-
-One-time changes in the Dokploy dashboard when rolling out this revision:
-
-1. In *Environment Settings*, delete `APP_IMAGE` (the image name is now pinned
-   in `compose.yaml`) and optionally add `IMAGE_TAG=latest`.
-2. If you had set `AUTO_MIGRATE`, rename it to `RUN_MIGRATIONS`.
-3. Nothing else changes: same webhook, same domain mapping, same volumes.
-
-### Release flow
+## Release flow
 
 | Trigger | Image tags published | Dokploy |
 | --- | --- | --- |
@@ -155,7 +176,8 @@ One-time changes in the Dokploy dashboard when rolling out this revision:
 | Push to `main` | none — the workflow does not run | Untouched |
 | Pull request | none (build only) | Untouched |
 
-Releasing is therefore one command:
+A digit must follow the `v` — the tag filter rejects typos like `v.0.2.5`,
+which once shipped an image under that name. Releasing is one command:
 
 ```bash
 git tag v1.2.3 && git push origin v1.2.3
@@ -167,23 +189,49 @@ or, because bare tag pushes have not always produced push events reliably:
 gh release create v1.2.3 --generate-notes
 ```
 
-To roll back, set `IMAGE_TAG` to a pinned release (e.g. `1.2.2`) in Dokploy's
-Environment Settings and redeploy.
+The `deploy` job **fails loudly if the webhook secret is missing or Dokploy
+refuses the call** — a silently-skipped deploy must never hide behind a green
+tick. (A 404 usually means the webhook token was regenerated — update the
+secret.)
 
-`:latest` is mutable, so the app services set `pull_policy: always`. Without it
-a redeploy reuses the copy already cached on the host and quietly ships the
-previous build.
+**Rollback:** point the Application's image at a pinned tag (e.g. `…:1.2.2`)
+in Dokploy and redeploy.
+
+**Build speed** is a feature: the workflow keeps a `:buildcache` ref on GHCR
+(shared across tag refs, unlike GitHub's per-ref action cache), so a release
+where only app code changed reuses the extension/composer/npm layers and takes
+minutes, not a cold fifteen. Keep expensive layers keyed on what they depend on
+and nothing more — `COPY . .` stays below all of them in the Dockerfile.
+A possible future improvement (not done yet): a shared prebuilt base image
+(`ghcr.io/mahdimajidzadeh/php-base:8.4` = FrankenPHP + bash + the union of the
+four repos' extensions), rebuilt weekly by its own tiny repo, would let all
+four repos skip extension compilation entirely even on a cold cache.
+
+## Run it locally
+
+Local development is the only place a database container and a local env file
+are allowed:
+
+```bash
+cat > .env.docker <<'EOF'
+APP_KEY=        # php artisan key:generate --show
+DB_PASSWORD=secret
+DB_ROOT_PASSWORD=secret
+EOF
+docker compose -f compose.local.yaml --env-file .env.docker up --build
+```
+
+The stack comes up on <http://localhost:8080>, running the same
+supervisord process model as production (web + worker in one container).
 
 ## Operating notes
 
-- **Persistent state.** `/app/storage` is a named volume. It holds
-  `storage/settings.json`, which is where `anlutro/l4-settings` keeps the
-  homepage copy and channel settings — losing that volume loses those settings.
-- **Sessions and cache** use Redis, so the `app` service can be scaled to more
-  than one replica. `mariadb` and `redis` cannot.
-- **Artisan on a running stack:**
+- **Persistent state.** `/app/storage` holds `storage/settings.json` — losing
+  that mount loses the homepage copy and channel settings. Back it up.
+- **Worker liveness:** `docker exec <container> supervisorctl status`.
+- **Artisan in the running container:**
   ```bash
-  docker compose exec app php artisan migrate:status
+  docker exec <container> php artisan migrate:status
   ```
 - **Architecture.** The workflow builds `linux/amd64` only. If you deploy to an
   arm64 host, add `linux/arm64` to `platforms` in the workflow — expect a much
