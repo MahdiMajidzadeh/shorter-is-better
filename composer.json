@@ -13,7 +13,6 @@
         "livewire/flux": "^2.17",
         "morilog/jalali": "^3.5",
         "nutgram/laravel": "^1.7",
-        "sentry/sentry-laravel": "^4.0",
         "whichbrowser/parser": "^2.1"
     },
     "require-dev": {

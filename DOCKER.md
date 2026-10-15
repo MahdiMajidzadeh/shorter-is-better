@@ -117,8 +117,6 @@ from the tab is a key the container does not have.
 | `SESSION_DRIVER` | `redis` |
 | `QUEUE_CONNECTION` | `redis` — the supervised worker processes this queue. |
 | `SESSION_SECURE_COOKIE` | `true` (TLS is terminated by Dokploy's Traefik; the cookie must still be marked secure). |
-| `SENTRY_LARAVEL_DSN` | Optional error reporting. |
-| `SENTRY_TRACES_SAMPLE_RATE` | Optional. |
 | `RUN_MIGRATIONS` | Optional, default `true`. |
 | `DB_WAIT_TIMEOUT` | Optional, default `60` (seconds the entrypoint waits for the DB). |
 

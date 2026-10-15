@@ -131,7 +131,6 @@ until the queue worker has fetched the page.
 | `TELEGRAM_TOKEN` | The bot token. The bot and the mini app refuse to run without it. |
 | `ADMIN_PASSWORD` | Password of the seeded admin. |
 | `SANCTUM_TOKEN_PREFIX` | Prefix of API keys, default `sib_`. |
-| `SENTRY_LARAVEL_DSN` | Optional error reporting. |
 
 Key length, alphabet and the title fetch timeout are in
 [config/shortener.php](config/shortener.php). Everything else (projects,
