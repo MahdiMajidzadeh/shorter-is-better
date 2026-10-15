@@ -3,10 +3,12 @@
 namespace App\Support;
 
 use SergiX44\Nutgram\Nutgram;
+use SergiX44\Nutgram\Telegram\Types\WebApp\WebAppInfo;
+use SergiX44\Nutgram\Telegram\Types\Command\MenuButtonWebApp;
 
 /**
  * Registers the webhook (with the secret token Nutgram expects in safe
- * mode) and the per-language command list. Used by the settings page and
+ * mode), the per-language command list and the mini app menu button. Used by the settings page and
  * `php artisan bot:update`.
  */
 class BotRegistrar
@@ -18,6 +20,11 @@ class BotRegistrar
         return rtrim(config('app.url'), '/').'/api/telegram/webhook';
     }
 
+    public static function miniAppUrl(): string
+    {
+        return rtrim(config('app.url'), '/').'/app';
+    }
+
     public function register(): void
     {
         $this->bot->setWebhook(
@@ -27,5 +34,11 @@ class BotRegistrar
         );
 
         $this->bot->registerMyCommands();
+
+        // The menu button next to the message box opens the mini app.
+        $this->bot->setChatMenuButton(menu_button: new MenuButtonWebApp(
+            text: __('miniapp.title'),
+            web_app: WebAppInfo::make(static::miniAppUrl()),
+        ));
     }
 }

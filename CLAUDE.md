@@ -65,6 +65,12 @@ Errors on `api/*` always render as `{"error": {"code", "message", "fields"?}}` f
 
 In tests, create a real key with `ApiKey::issue()` and send it with `withToken()`; call `$this->app['auth']->forgetGuards()` between requests because the sanctum request guard caches its user for the whole test (see `ApiTest::api()`).
 
+### Telegram mini app
+
+`GET /app` (primary domain) serves one Blade shell, `resources/views/miniapp/index.blade.php`: Alpine from a CDN, Telegram's `telegram-web-app.js`, theme colours from Telegram's CSS variables, the compiled `index.css` for utilities. It talks only to the JSON endpoints under `/app/api/*` (`MiniAppController`), sending Telegram's signed `initData` in the `X-Telegram-Init-Data` header. `AuthenticateMiniApp` (`miniapp` middleware) validates it with Nutgram against the bot token, rejects data older than a day, maps the Telegram user id to an `active` `BotChat`, and then sets the user, locale and the chat's active project exactly like the panel. No session or cookie; `app/api/*` is exempt from CSRF and uses the same JSON error shape as the API. All UI strings come from `lang/{fa,en}/miniapp.php` through `/app/api/me`, so the shell needs no server-side locale. Posting to a channel is two calls: `posts/preview` creates the short links and renders the template, `posts/publish` sends the text the user may have edited; buttons are always recomputed from the template server-side. `php artisan bot:update` registers the menu button that opens the app.
+
+Tests sign init data with `FakeNutgram::generateWebAppData()` (see `MiniAppTest::initData()`). The shell can be opened outside Telegram for a look by putting signed data in the url hash as `#tgWebAppData=…`, which Telegram's script reads.
+
 ### Telegram bot (Nutgram)
 
 One bot, token in `TELEGRAM_TOKEN`, webhook at `POST /api/telegram/webhook` (`TelegramWebhookController`, secret token enforced in production by Nutgram safe mode). Handlers live in `routes/telegram.php`:

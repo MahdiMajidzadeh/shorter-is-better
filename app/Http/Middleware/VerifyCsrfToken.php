@@ -12,6 +12,7 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        // Mini app calls carry Telegram's signed initData instead of a session.
+        'app/api/*',
     ];
 }

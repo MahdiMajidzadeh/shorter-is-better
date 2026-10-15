@@ -29,6 +29,9 @@ columns. All migrations are additive.
    bot links show under "not posted to a channel".
 7. Existing bot chats keep working if they were bound to a user; other chats
    must send /start and be approved under Bot access.
+8. The mini app refuses to run until `TELEGRAM_TOKEN` is set, and Telegram
+   only opens it over HTTPS, so it works on the deployed primary domain
+   only. The menu button that opens it is registered by step 3.
 
 ## Decisions taken from your answers
 
@@ -201,7 +204,7 @@ Each phase ends green on `php artisan test` and Pint, and is one commit.
   `/stat`. Referrer widget replaced by source and per-channel breakdown,
   since Telegram clicks carry no referer.
 
-### Phase 5: mini app
+### Phase 5: mini app (done)
 
 - `GET /app` on the primary domain, opened from the bot menu button.
 - A `telegram` auth guard validates `initData` with Nutgram's validator

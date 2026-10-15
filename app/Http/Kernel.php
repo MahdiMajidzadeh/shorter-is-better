@@ -12,6 +12,7 @@ use Illuminate\Auth\Middleware\Authorize;
 use App\Http\Middleware\EnsurePrimaryHost;
 use App\Http\Middleware\SetProjectContext;
 use Illuminate\Http\Middleware\HandleCors;
+use App\Http\Middleware\AuthenticateMiniApp;
 use App\Http\Middleware\SetApiProjectContext;
 use Illuminate\Auth\Middleware\RequirePassword;
 use Illuminate\Http\Middleware\SetCacheHeaders;
@@ -85,6 +86,7 @@ class Kernel extends HttpKernel
         'ability'          => CheckForAnyAbility::class,
         'admin'            => EnsureAdmin::class,
         'api.project'      => SetApiProjectContext::class,
+        'miniapp'          => AuthenticateMiniApp::class,
         'primary'          => EnsurePrimaryHost::class,
         'auth'             => Authenticate::class,
         'project'          => SetProjectContext::class,

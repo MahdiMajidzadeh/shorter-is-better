@@ -61,14 +61,14 @@ class Handler extends ExceptionHandler
         });
 
         $this->renderable(function (Throwable $e, Request $request) {
-            if ($request->is('api/*') && ! $request->is('api/telegram/*')) {
+            if (($request->is('api/*') && ! $request->is('api/telegram/*')) || $request->is('app/api/*')) {
                 return $this->renderApi($e);
             }
         });
     }
 
     /**
-     * One error shape for the API: {"error": {"code", "message", "fields"?}}.
+     * One error shape for the API and the mini app: {"error": {"code", "message", "fields"?}}.
      */
     protected function renderApi(Throwable $e): JsonResponse
     {

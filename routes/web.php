@@ -7,6 +7,23 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', C\RootController::class);
 Route::get(config('shortener.prefix').'/{key}', C\RedirectController::class)->where('key', '[A-Za-z0-9_-]+');
 
+// Telegram mini app: a static shell plus JSON endpoints signed with initData.
+Route::group(['prefix' => 'app', 'middleware' => 'primary'], function () {
+    Route::get('/', [C\MiniAppController::class, 'shell']);
+
+    Route::group(['prefix' => 'api', 'middleware' => 'miniapp'], function () {
+        Route::get('/me', [C\MiniAppController::class, 'me']);
+        Route::post('/project', [C\MiniAppController::class, 'switchProject']);
+        Route::get('/links', [C\MiniAppController::class, 'links']);
+        Route::post('/links', [C\MiniAppController::class, 'createLink']);
+        Route::post('/links/bulk', [C\MiniAppController::class, 'bulk']);
+        Route::get('/links/{key}/stats', [C\MiniAppController::class, 'stats']);
+        Route::get('/report', [C\MiniAppController::class, 'report']);
+        Route::post('/posts/preview', [C\MiniAppController::class, 'previewPost']);
+        Route::post('/posts/publish', [C\MiniAppController::class, 'publishPost']);
+    });
+});
+
 Route::group(['prefix' => 'auth', 'middleware' => 'primary'], function () {
     Route::get('/', [C\AuthController::class, 'login'])->name('login');
     Route::post('/', [C\AuthController::class, 'loginSubmit'])->middleware('throttle:5,1');
