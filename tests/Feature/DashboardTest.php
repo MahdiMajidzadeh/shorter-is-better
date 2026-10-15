@@ -4,10 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\User;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Hash;
-use AshAllenDesign\ShortURL\Facades\ShortURL;
-use AshAllenDesign\ShortURL\Models\ShortURLVisit;
+use App\Models\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DashboardTest extends TestCase
@@ -16,19 +13,14 @@ class DashboardTest extends TestCase
 
     private User $user;
 
+    private Project $project;
+
     protected function setUp(): void
     {
         parent::setUp();
 
-        $user = new User;
-        $user->name = 'Test';
-        $user->username = 'test';
-        $user->password = Hash::make('secret-password');
-        $user->is_admin = true;
-        $user->is_active = true;
-        $user->save();
-
-        $this->user = $user;
+        $this->user = $this->makeAdmin();
+        $this->project = $this->makeProject();
     }
 
     public function test_dashboard_shows_empty_state_without_links(): void
@@ -41,12 +33,12 @@ class DashboardTest extends TestCase
 
     public function test_dashboard_shows_stats_and_excludes_bots(): void
     {
-        $short = ShortURL::destinationUrl('https://example.com')->make();
+        $short = $this->makeLink($this->project);
 
-        $this->makeVisit($short->id, now(), 'desktop');
-        $this->makeVisit($short->id, now(), 'mobile', 'https://t.me/mychannel');
-        $this->makeVisit($short->id, now(), 'robot');
-        $this->makeVisit($short->id, now()->subDays(8), 'desktop');
+        $this->makeVisit($short, now(), 'desktop');
+        $this->makeVisit($short, now(), 'mobile', 'https://t.me/mychannel');
+        $this->makeVisit($short, now(), 'robot');
+        $this->makeVisit($short, now()->subDays(8), 'desktop');
 
         $response = $this->actingAs($this->user)->get('panel');
 
@@ -60,33 +52,40 @@ class DashboardTest extends TestCase
             ->assertSee('direct');
     }
 
+    public function test_visits_without_a_device_type_count_as_human(): void
+    {
+        $short = $this->makeLink($this->project);
+        $this->makeVisit($short, now(), null);
+
+        $this->actingAs($this->user)->get('panel')->assertViewHas('clicksToday', 1);
+    }
+
+    public function test_dashboard_is_scoped_to_the_current_project(): void
+    {
+        $other = $this->makeProject(['name' => 'Other', 'domain' => 'other.test']);
+        $this->makeVisit($this->makeLink($this->project));
+        $this->makeVisit($this->makeLink($other));
+        $this->makeVisit($this->makeLink($other));
+
+        $this->actingAs($this->user)->get('panel')->assertViewHas('totalClicks', 1);
+
+        $this->actingAs($this->user)->get('panel/project/'.$other->id)->assertRedirect();
+        $this->actingAs($this->user)->get('panel')->assertViewHas('totalClicks', 2)->assertViewHas('totalLinks', 2);
+    }
+
     public function test_referrers_are_grouped_by_host(): void
     {
-        $short = ShortURL::destinationUrl('https://example.com')->make();
+        $short = $this->makeLink($this->project);
 
-        $this->makeVisit($short->id, now(), 'desktop', 'https://t.me/channel-one');
-        $this->makeVisit($short->id, now(), 'desktop', 'https://t.me/channel-two');
-        $this->makeVisit($short->id, now(), 'mobile', 'https://x.com/post');
+        $this->makeVisit($short, now(), 'desktop', 'https://t.me/channel-one');
+        $this->makeVisit($short, now(), 'desktop', 'https://t.me/channel-two');
+        $this->makeVisit($short, now(), 'mobile', 'https://x.com/post');
 
         $response = $this->actingAs($this->user)->get('panel');
-
         $referrers = $response->viewData('referrers');
 
         $this->assertSame('t.me', $referrers->first()->host);
         $this->assertSame(2, $referrers->first()->views);
         $this->assertSame('x.com', $referrers->last()->host);
-    }
-
-    private function makeVisit(int $shortUrlId, Carbon $visitedAt, string $deviceType, ?string $referer = null): void
-    {
-        $visit = new ShortURLVisit;
-        $visit->short_url_id = $shortUrlId;
-        $visit->ip_address = '127.0.0.1';
-        $visit->operating_system = 'OS X';
-        $visit->browser = 'Firefox';
-        $visit->device_type = $deviceType;
-        $visit->referer_url = $referer;
-        $visit->visited_at = $visitedAt;
-        $visit->save();
     }
 }

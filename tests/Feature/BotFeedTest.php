@@ -3,15 +3,17 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
+use App\Models\Link;
 use App\Models\User;
+use App\Models\Channel;
 use ReflectionProperty;
+use App\Http\Webhooks\Handler;
 use App\Http\Webhooks\State\Feed;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use App\Http\Webhooks\State\ForChannel;
 use Illuminate\Support\Facades\Storage;
 use DefStudio\Telegraph\Facades\Telegraph;
-use AshAllenDesign\ShortURL\Models\ShortURL;
 use DefStudio\Telegraph\Models\TelegraphBot;
 use DefStudio\Telegraph\Models\TelegraphChat;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -31,32 +33,58 @@ class BotFeedTest extends TestCase
 
         Storage::fake('local');
         Telegraph::fake();
+        Http::fake(['*' => Http::response('<html><head><title>Fetched</title></head></html>')]);
 
-        $user = new User;
-        $user->name = 'Test';
-        $user->username = 'test';
-        $user->password = Hash::make('secret-password');
-        $user->is_admin = true;
-        $user->is_active = true;
-        $user->save();
+        $user = $this->makeAdmin();
+        $project = $this->makeProject();
+        $this->makeChannel($project);
 
         $bot = TelegraphBot::factory()->create();
         $this->chat = TelegraphChat::factory()->create(['telegraph_bot_id' => $bot->id, 'chat_id' => '1001']);
         $this->chat->user_id = $user->id;
         $this->chat->save();
         $this->channel = TelegraphChat::factory()->create(['telegraph_bot_id' => $bot->id, 'chat_id' => '-1001']);
-
-        setting()->set('channel.has', 'on');
-        setting()->set('channel.id', '-1001');
-        setting()->set('channel.username', '@pmfeed');
     }
 
-    public function test_feed_command_is_advertised_only_when_channel_is_enabled(): void
+    public function test_feed_command_is_advertised(): void
     {
         $this->assertArrayHasKey('feed', bot_commands());
+        $this->assertArrayHasKey('for_channel', bot_commands());
+    }
 
-        setting()->set('channel.has', 'off');
-        $this->assertArrayNotHasKey('feed', bot_commands());
+    public function test_disabled_and_deleted_users_lose_bot_access(): void
+    {
+        $handler = new class extends Handler
+        {
+            public function check(TelegraphChat $chat): bool
+            {
+                $this->chat = $chat;
+
+                return $this->isAuthenticated();
+            }
+        };
+
+        $this->assertTrue($handler->check($this->chat));
+
+        User::first()->update(['is_active' => false]);
+        $this->assertFalse($handler->check($this->chat));
+
+        User::first()->update(['is_active' => true]);
+        $this->assertTrue($handler->check($this->chat));
+
+        User::query()->delete();
+        $this->assertFalse($handler->check($this->chat));
+    }
+
+    public function test_for_channel_refuses_when_the_project_has_no_channel(): void
+    {
+        Channel::query()->delete();
+        $this->seedStorage(ForChannel::class, 1);
+
+        (new ForChannel($this->chat, ''))->handle();
+
+        $this->assertSame('this project has no channel yet', $this->sentTo($this->chat)->last()['data']['text']);
+        $this->assertNull($this->chat->storage()->get('state'));
     }
 
     public function test_feed_url_is_shortened_and_preview_is_sent(): void
@@ -67,10 +95,8 @@ class BotFeedTest extends TestCase
 
         $this->assertDatabaseHas('short_urls', ['destination_url' => 'https://feed.example.com/post/1']);
         $this->assertSame(4, $this->chat->storage()->get('step'));
-        $this->assertStringStartsWith(
-            config('app.url'),
-            $this->chat->storage()->get('data.feed_short')
-        );
+        $this->assertStringStartsWith('http://localhost/s/', $this->chat->storage()->get('data.feed_short'));
+        $this->assertSame('bot', Link::first()->source);
 
         $preview = $this->sentTo($this->chat)->last();
         $actions = collect($preview['data']['reply_markup']['inline_keyboard'])
@@ -90,7 +116,7 @@ class BotFeedTest extends TestCase
 
         (new Feed($this->chat, 'not a url'))->handle();
 
-        $this->assertSame(0, ShortURL::count());
+        $this->assertSame(0, Link::count());
         $this->assertSame(3, $this->chat->storage()->get('step'));
         $this->assertSame('feed url is not valid', $this->sentTo($this->chat)->last()['data']['text']);
     }

@@ -2,7 +2,7 @@
     <flux:callout variant="danger" icon="x-circle" heading="{{ $message }}" class="mb-4" />
 @endforeach
 @if (session('msg-error'))
-    <flux:callout variant="danger" icon="x-circle" heading="Error" class="mb-4">
+    <flux:callout variant="danger" icon="x-circle" heading="{{ __('Error') }}" class="mb-4">
         <flux:callout.text>{{ session('msg-error') }}</flux:callout.text>
     </flux:callout>
 @endif

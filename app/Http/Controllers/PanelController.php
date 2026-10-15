@@ -2,34 +2,36 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Link;
+use App\Models\Visit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use AshAllenDesign\ShortURL\Models\ShortURLVisit;
-use AshAllenDesign\ShortURL\Models\ShortURL as ShortModel;
 
 class PanelController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): View
     {
-        if (! ShortModel::exists()) {
+        $project = $this->project();
+
+        if (! Link::forProject($project)->exists()) {
             return view('panel.dashboard', ['hasLinks' => false]);
         }
 
         $clicksToday = $this->visits()->where('visited_at', '>=', today())->count();
         $clicksYesterday = $this->visits()->whereBetween('visited_at', [today()->subDay(), today()])->count();
-
         $clicksWeek = $this->visits()->where('visited_at', '>=', now()->subDays(7))->count();
         $clicksPrevWeek = $this->visits()->whereBetween('visited_at', [now()->subDays(14), now()->subDays(7)])->count();
 
         $topLinks = $this->visits()
             ->join('short_urls', 'short_urls.id', '=', 'short_url_visits.short_url_id')
             ->where('visited_at', '>=', now()->subDays(7))
-            ->groupBy('short_url_id', 'url_key', 'default_short_url', 'destination_url')
+            ->groupBy('short_url_id', 'url_key', 'default_short_url', 'destination_url', 'title')
             ->orderByDesc('views')
             ->take(5)
-            ->get(['short_url_id', 'url_key', 'default_short_url', 'destination_url', DB::raw('COUNT(*) as views')]);
+            ->get(['short_url_id', 'url_key', 'default_short_url', 'destination_url', 'title', DB::raw('COUNT(*) as views')]);
 
         return view('panel.dashboard', [
             'hasLinks'     => true,
@@ -37,20 +39,20 @@ class PanelController extends Controller
             'todayChange'  => $this->percentChange($clicksToday, $clicksYesterday),
             'clicksWeek'   => $clicksWeek,
             'weekChange'   => $this->percentChange($clicksWeek, $clicksPrevWeek),
-            'totalLinks'   => ShortModel::count(),
-            'newLinks'     => ShortModel::where('created_at', '>=', now()->subDays(7))->count(),
+            'totalLinks'   => Link::forProject($project)->count(),
+            'newLinks'     => Link::forProject($project)->where('created_at', '>=', now()->subDays(7))->count(),
             'totalClicks'  => $this->visits()->count(),
-            'firstLinkAt'  => Carbon::parse(ShortModel::min('created_at')),
+            'firstLinkAt'  => Carbon::parse(Link::forProject($project)->min('created_at')),
             'views'        => $this->dailyViews(),
             'topLinks'     => $topLinks,
             'referrers'    => $this->referrers(),
-            'recentVisits' => $this->visits()->with('shortURL')->orderByDesc('visited_at')->take(8)->get(),
+            'recentVisits' => $this->visits()->with('link')->orderByDesc('visited_at')->take(8)->get(),
         ]);
     }
 
     private function visits(): Builder
     {
-        return ShortURLVisit::query()->whereNot('device_type', 'robot');
+        return Visit::query()->forProject($this->project())->human();
     }
 
     private function dailyViews()

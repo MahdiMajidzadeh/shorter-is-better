@@ -7,7 +7,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'Vazirmatn', 'Inter', ui-sans-serif, system-ui, sans-serif;
 
     --color-accent: var(--color-blue-600);
     --color-accent-content: var(--color-blue-600);

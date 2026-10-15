@@ -4,222 +4,74 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "470e10130fa176432c833d298a6f2d4b",
+    "content-hash": "cb3d634a01dec6c1ba7dedc17e280473",
     "packages": [
         {
-            "name": "anlutro/l4-settings",
-            "version": "v1.4.3",
+            "name": "beberlei/assert",
+            "version": "v3.3.4",
             "source": {
                 "type": "git",
-                "url": "https://github.com/anlutro/laravel-settings.git",
-                "reference": "1962334769895798b51836adfd96fe77bb89e374"
+                "url": "https://github.com/beberlei/assert.git",
+                "reference": "f193f4613c7d7fbcee2c05e4daff4061d49c040e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/anlutro/laravel-settings/zipball/1962334769895798b51836adfd96fe77bb89e374",
-                "reference": "1962334769895798b51836adfd96fe77bb89e374",
+                "url": "https://api.github.com/repos/beberlei/assert/zipball/f193f4613c7d7fbcee2c05e4daff4061d49c040e",
+                "reference": "f193f4613c7d7fbcee2c05e4daff4061d49c040e",
                 "shasum": ""
             },
             "require": {
-                "illuminate/cache": "^4.2|^5|^6|^7|^8|^9|^10|^11|^12|^13",
-                "illuminate/support": "^4.2|^5|^6|^7|^8|^9|^10|^11|^12|^13"
+                "ext-ctype": "*",
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "ext-simplexml": "*",
+                "php": "^7.1 || ^8.0"
             },
             "require-dev": {
-                "laravel/framework": ">=5.7",
-                "mockery/mockery": "^1.2",
-                "phpunit/phpunit": "^8.0"
+                "friendsofphp/php-cs-fixer": "*",
+                "phpstan/phpstan": "*",
+                "phpunit/phpunit": ">=6.0.0",
+                "yoast/phpunit-polyfills": "^0.1.0"
             },
             "suggest": {
-                "illuminate/database": "Save settings to a database table.",
-                "illuminate/filesystem": "Save settings to a JSON file."
+                "ext-intl": "Needed to allow Assertion::count(), Assertion::isCountable(), Assertion::minCount(), and Assertion::maxCount() to operate on ResourceBundles"
             },
             "type": "library",
-            "extra": {
-                "laravel": {
-                    "aliases": {
-                        "Setting": "anlutro\\LaravelSettings\\Facade"
-                    },
-                    "providers": [
-                        "anlutro\\LaravelSettings\\ServiceProvider"
-                    ]
-                }
-            },
             "autoload": {
                 "files": [
-                    "src/helpers.php"
+                    "lib/Assert/functions.php"
                 ],
                 "psr-4": {
-                    "anlutro\\LaravelSettings\\": "src/"
+                    "Assert\\": "lib/Assert"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "MIT"
+                "BSD-2-Clause"
             ],
             "authors": [
                 {
-                    "name": "Andreas Lutro",
-                    "email": "anlutro@gmail.com"
-                }
-            ],
-            "description": "Persistent settings in Laravel.",
-            "support": {
-                "issues": "https://github.com/anlutro/laravel-settings/issues",
-                "source": "https://github.com/anlutro/laravel-settings/tree/v1.4.3"
-            },
-            "time": "2026-03-11T17:19:01+00:00"
-        },
-        {
-            "name": "ashallendesign/laravel-config-validator",
-            "version": "v2.10.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/ash-jc-allen/laravel-config-validator.git",
-                "reference": "3fb33e5728af55e369e3e3293aa0a1a0d238c13b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/ash-jc-allen/laravel-config-validator/zipball/3fb33e5728af55e369e3e3293aa0a1a0d238c13b",
-                "reference": "3fb33e5728af55e369e3e3293aa0a1a0d238c13b",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "illuminate/console": "^10.0|^11.0|^12.0|^13.0",
-                "illuminate/container": "^10.0|^11.0|^12.0|^13.0",
-                "illuminate/validation": "^10.0|^11.0|^12.0|^13.0",
-                "illuminate/view": "^10.0|^11.0|^12.0|^13.0",
-                "nunomaduro/termwind": "^1.6|^2.0",
-                "php": "^8.2"
-            },
-            "require-dev": {
-                "larastan/larastan": "^1.0|^2.0|^3.0",
-                "mockery/mockery": "^1.0",
-                "orchestra/testbench": "^8.0|^9.0|^10.0|^11.0",
-                "phpunit/phpunit": "^9.0|^10.5|^11.5.3|^12.5.12"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "aliases": {
-                        "ConfigValidator": "AshAllenDesign\\ConfigValidator\\Facades\\ConfigValidator"
-                    },
-                    "providers": [
-                        "AshAllenDesign\\ConfigValidator\\Providers\\ConfigValidatorProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "AshAllenDesign\\ConfigValidator\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
+                    "name": "Benjamin Eberlei",
+                    "email": "kontakt@beberlei.de",
+                    "role": "Lead Developer"
+                },
                 {
-                    "name": "Ash Allen",
-                    "email": "mail@ashallendesign.co.uk"
+                    "name": "Richard Quadling",
+                    "email": "rquadling@gmail.com",
+                    "role": "Collaborator"
                 }
             ],
-            "description": "A package for validating your Laravel app's config.",
-            "homepage": "https://github.com/ash-jc-allen/laravel-config-validator",
+            "description": "Thin assertion library for input validation in business models.",
             "keywords": [
-                "ashallendesign",
-                "config",
-                "laravel",
+                "assert",
+                "assertion",
                 "validation"
             ],
             "support": {
-                "issues": "https://github.com/ash-jc-allen/laravel-config-validator/issues",
-                "source": "https://github.com/ash-jc-allen/laravel-config-validator/tree/v2.10.0"
+                "issues": "https://github.com/beberlei/assert/issues",
+                "source": "https://github.com/beberlei/assert/tree/v3.3.4"
             },
-            "funding": [
-                {
-                    "url": "https://github.com/ash-jc-allen",
-                    "type": "github"
-                }
-            ],
-            "time": "2026-03-13T11:14:55+00:00"
-        },
-        {
-            "name": "ashallendesign/short-url",
-            "version": "v8.5.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/ash-jc-allen/short-url.git",
-                "reference": "5300f9667ed07a83eaa2d7f47cfd41f1e20f7e94"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/ash-jc-allen/short-url/zipball/5300f9667ed07a83eaa2d7f47cfd41f1e20f7e94",
-                "reference": "5300f9667ed07a83eaa2d7f47cfd41f1e20f7e94",
-                "shasum": ""
-            },
-            "require": {
-                "ashallendesign/laravel-config-validator": "^2.6.1",
-                "hashids/hashids": "^4.0|^5.0",
-                "illuminate/container": "^10.0|^11.0|^12.0|^13.0",
-                "illuminate/database": "^10.0|^11.0|^12.0|^13.0",
-                "nesbot/carbon": "^2.0|^3.0",
-                "php": "^8.2",
-                "whichbrowser/parser": "^2.1"
-            },
-            "require-dev": {
-                "larastan/larastan": "^2.0|^3.0",
-                "mockery/mockery": "^1.0",
-                "orchestra/testbench": "^8.0|^9.0|^10.0|^11.0",
-                "pestphp/pest-plugin-laravel": "^2.3|^3.0|^4.0",
-                "phpunit/phpunit": "^10.0|^11.0|^12.0"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "aliases": {
-                        "ShortURL": "AshAllenDesign\\ShortURL\\Facades\\ShortURL"
-                    },
-                    "providers": [
-                        "AshAllenDesign\\ShortURL\\Providers\\ShortURLProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "AshAllenDesign\\ShortURL\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Ash Allen",
-                    "email": "mail@ashallendesign.co.uk"
-                }
-            ],
-            "description": "A Laravel package for creating shortened URLs for your web apps.",
-            "homepage": "https://github.com/ash-jc-allen/short-url",
-            "keywords": [
-                "URL-Shortener",
-                "ashallendesign",
-                "laravel",
-                "laravel-package",
-                "short-urls"
-            ],
-            "support": {
-                "issues": "https://github.com/ash-jc-allen/short-url/issues",
-                "source": "https://github.com/ash-jc-allen/short-url/tree/v8.5.0"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/ash-jc-allen",
-                    "type": "github"
-                }
-            ],
-            "time": "2026-03-13T11:41:49+00:00"
+            "time": "2026-06-10T19:47:05+00:00"
         },
         {
             "name": "brick/math",
@@ -1349,75 +1201,6 @@
                 }
             ],
             "time": "2026-07-20T13:40:43+00:00"
-        },
-        {
-            "name": "hashids/hashids",
-            "version": "5.0.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/vinkla/hashids.git",
-                "reference": "197171016b77ddf14e259e186559152eb3f8cf33"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/vinkla/hashids/zipball/197171016b77ddf14e259e186559152eb3f8cf33",
-                "reference": "197171016b77ddf14e259e186559152eb3f8cf33",
-                "shasum": ""
-            },
-            "require": {
-                "ext-mbstring": "*",
-                "php": "^8.1"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^10.0"
-            },
-            "suggest": {
-                "ext-bcmath": "Required to use BC Math arbitrary precision mathematics (*).",
-                "ext-gmp": "Required to use GNU multiple precision mathematics (*)."
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "5.0-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Hashids\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Ivan Akimov",
-                    "email": "ivan@barreleye.com"
-                },
-                {
-                    "name": "Vincent Klaiber",
-                    "email": "hello@doubledip.se"
-                }
-            ],
-            "description": "Generate short, unique, non-sequential ids (like YouTube and Bitly) from numbers",
-            "homepage": "https://hashids.org/php",
-            "keywords": [
-                "bitly",
-                "decode",
-                "encode",
-                "hash",
-                "hashid",
-                "hashids",
-                "ids",
-                "obfuscate",
-                "youtube"
-            ],
-            "support": {
-                "issues": "https://github.com/vinkla/hashids/issues",
-                "source": "https://github.com/vinkla/hashids/tree/5.0.2"
-            },
-            "time": "2023-02-23T15:00:54+00:00"
         },
         {
             "name": "jean85/pretty-package-versions",
@@ -2750,6 +2533,71 @@
                 }
             ],
             "time": "2026-01-02T08:56:05+00:00"
+        },
+        {
+            "name": "morilog/jalali",
+            "version": "v3.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/morilog/jalali.git",
+                "reference": "40b906c405b72edd20e73797b40be1e650e872c1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/morilog/jalali/zipball/40b906c405b72edd20e73797b40be1e650e872c1",
+                "reference": "40b906c405b72edd20e73797b40be1e650e872c1",
+                "shasum": ""
+            },
+            "require": {
+                "beberlei/assert": "^3.0",
+                "nesbot/carbon": "^1.21 || ^2.0 || ^3.0",
+                "php": "^7.1 | ^8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": ">4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
+                "psr-4": {
+                    "Morilog\\Jalali\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Milad Rey",
+                    "email": "miladr@gmail.com"
+                },
+                {
+                    "name": "Morteza Parvini",
+                    "email": "m.parvini@outlook.com"
+                }
+            ],
+            "description": "This Package helps developers to easily work with Jalali (Shamsi or Iranian) dates in PHP applications, based on Jalali (Shamsi) DateTime class.",
+            "keywords": [
+                "Jalali",
+                "date",
+                "datetime",
+                "laravel",
+                "morilog"
+            ],
+            "support": {
+                "issues": "https://github.com/morilog/jalali/issues",
+                "source": "https://github.com/morilog/jalali/tree/v3.5.0"
+            },
+            "funding": [
+                {
+                    "url": "https://issuehunt.io/r/morilog",
+                    "type": "issuehunt"
+                }
+            ],
+            "time": "2025-12-25T07:12:28+00:00"
         },
         {
             "name": "nesbot/carbon",
@@ -4249,59 +4097,6 @@
             "time": "2026-07-15T14:47:03+00:00"
         },
         {
-            "name": "shweshi/opengraph",
-            "version": "v1.2.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/shweshi/OpenGraph.git",
-                "reference": "fb30f32085be87e696380616b34bd7048fed778b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/shweshi/OpenGraph/zipball/fb30f32085be87e696380616b34bd7048fed778b",
-                "reference": "fb30f32085be87e696380616b34bd7048fed778b",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/log": "^5.0|^6.0|^7.0|^8.0|^9.0|^10.0|^11.0|^12.0|^13.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "4.8.*"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "aliases": {
-                        "OpenGraph": "shweshi\\OpenGraph\\Facades\\OpenGraphFacade"
-                    },
-                    "providers": [
-                        "shweshi\\OpenGraph\\Providers\\OpenGraphProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "shweshi\\OpenGraph\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Shashi Prakash Gautam",
-                    "email": "contactmespg@gmail.com"
-                }
-            ],
-            "description": "A Laravel package to fetch website Open Graph metadata.",
-            "support": {
-                "issues": "https://github.com/shweshi/OpenGraph/issues",
-                "source": "https://github.com/shweshi/OpenGraph/tree/v1.2.1"
-            },
-            "time": "2026-05-25T15:20:52+00:00"
-        },
-        {
             "name": "spatie/laravel-package-tools",
             "version": "1.93.1",
             "source": {
@@ -4361,78 +4156,6 @@
                 }
             ],
             "time": "2026-05-19T14:06:37+00:00"
-        },
-        {
-            "name": "symfony/browser-kit",
-            "version": "v8.1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/browser-kit.git",
-                "reference": "f2ac86001ca9f487e8c6d0e11c8e33e6a9b8b2d5"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/browser-kit/zipball/f2ac86001ca9f487e8c6d0e11c8e33e6a9b8b2d5",
-                "reference": "f2ac86001ca9f487e8c6d0e11c8e33e6a9b8b2d5",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=8.4.1",
-                "symfony/dom-crawler": "^7.4|^8.0"
-            },
-            "require-dev": {
-                "symfony/css-selector": "^7.4|^8.0",
-                "symfony/http-client": "^7.4|^8.0",
-                "symfony/mime": "^7.4|^8.0",
-                "symfony/process": "^7.4|^8.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\BrowserKit\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Simulates the behavior of a web browser, allowing you to make requests, click on links and submit forms programmatically",
-            "homepage": "https://symfony.com",
-            "support": {
-                "source": "https://github.com/symfony/browser-kit/tree/v8.1.1"
-            },
-            "funding": [
-                {
-                    "url": "https://symfony.com/sponsor",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/fabpot",
-                    "type": "github"
-                },
-                {
-                    "url": "https://github.com/nicolas-grekas",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2026-06-09T10:54:51+00:00"
         },
         {
             "name": "symfony/clock",
@@ -4730,76 +4453,6 @@
             "homepage": "https://symfony.com",
             "support": {
                 "source": "https://github.com/symfony/deprecation-contracts/tree/v3.7.1"
-            },
-            "funding": [
-                {
-                    "url": "https://symfony.com/sponsor",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/fabpot",
-                    "type": "github"
-                },
-                {
-                    "url": "https://github.com/nicolas-grekas",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2026-06-05T06:23:12+00:00"
-        },
-        {
-            "name": "symfony/dom-crawler",
-            "version": "v8.1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/dom-crawler.git",
-                "reference": "1dfadd25537c8fcb6752cce5775f24647d976bdc"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/dom-crawler/zipball/1dfadd25537c8fcb6752cce5775f24647d976bdc",
-                "reference": "1dfadd25537c8fcb6752cce5775f24647d976bdc",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=8.4.1",
-                "symfony/polyfill-ctype": "^1.8",
-                "symfony/polyfill-mbstring": "^1.0"
-            },
-            "require-dev": {
-                "symfony/css-selector": "^7.4|^8.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\DomCrawler\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Eases DOM navigation for HTML and XML documents",
-            "homepage": "https://symfony.com",
-            "support": {
-                "source": "https://github.com/symfony/dom-crawler/tree/v8.1.1"
             },
             "funding": [
                 {

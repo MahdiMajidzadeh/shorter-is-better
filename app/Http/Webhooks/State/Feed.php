@@ -2,12 +2,9 @@
 
 namespace App\Http\Webhooks\State;
 
-use DefStudio\Telegraph\Keyboard\Button;
-use DefStudio\Telegraph\Keyboard\Keyboard;
-
 /**
- * Like ForChannel, but asks for a second "feed" url and publishes the channel
- * post with an extra "Read on PM Feed" button under "Read Article".
+ * Like ForChannel, but asks for a second "feed" url. The channel template
+ * decides how it shows up, usually as a second button under the article.
  */
 class Feed extends ForChannel
 {
@@ -47,14 +44,5 @@ class Feed extends ForChannel
     {
         $this->publish($this->message);
         $this->done();
-    }
-
-    protected function channelKeyboard(): Keyboard
-    {
-        return parent::channelKeyboard()->buttons([
-            Button::make('Read on PM Feed')->url(
-                $this->chat->storage()->get('data.feed_short')
-            ),
-        ]);
     }
 }

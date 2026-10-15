@@ -2,14 +2,21 @@
 
 namespace App\Http\Webhooks\State;
 
+use App\Models\Visit;
 use Illuminate\Support\Facades\DB;
 use App\Http\Webhooks\StateManager;
-use AshAllenDesign\ShortURL\Models\ShortURLVisit;
 
 class Report extends StateManager
 {
     public function handleStep1()
     {
+        if (! $this->project()) {
+            $this->chat->message('you have no project')->send();
+            $this->done();
+
+            return;
+        }
+
         $this->chat->message($this->urlList())->send();
         $this->chat->message($this->nonBotData())->send();
 
@@ -18,10 +25,11 @@ class Report extends StateManager
 
     private function urlList(): string
     {
-        $urls = ShortURLVisit::query()
+        $urls = Visit::query()
+            ->forProject($this->project())
             ->join('short_urls', 'short_urls.id', '=', 'short_url_visits.short_url_id')
             ->where('visited_at', '>=', now()->subDays(7))
-            ->whereNot('device_type', 'robot')
+            ->human()
             ->groupBy('short_url_id', 'destination_url', 'default_short_url')
             ->orderBy('views', 'desc')
             ->take(20)
@@ -38,10 +46,11 @@ class Report extends StateManager
 
     private function nonBotData(): string
     {
-        $views = ShortURLVisit::query()
+        $views = Visit::query()
+            ->forProject($this->project())
             ->select(DB::raw('Date(visited_at) as date'), DB::raw('count(*) as views'))
             ->where('visited_at', '>=', now()->subDays(7))
-            ->whereNot('device_type', 'robot')
+            ->human()
             ->groupBy(DB::raw('Date(visited_at)'))
             ->get();
 

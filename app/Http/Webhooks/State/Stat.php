@@ -2,11 +2,11 @@
 
 namespace App\Http\Webhooks\State;
 
+use App\Models\Link;
+use App\Models\Visit;
 use AsciiTable\Builder;
 use Illuminate\Support\Facades\DB;
 use App\Http\Webhooks\StateManager;
-use AshAllenDesign\ShortURL\Models\ShortURL;
-use AshAllenDesign\ShortURL\Models\ShortURLVisit;
 
 class Stat extends StateManager
 {
@@ -18,7 +18,8 @@ class Stat extends StateManager
 
     public function handleStep2()
     {
-        $short = ShortURL::query()->where('default_short_url', $this->message)->first();
+        $project = $this->project();
+        $short = $project ? Link::forProject($project)->where('default_short_url', trim($this->message))->first() : null;
 
         if (! $short) {
             $this->chat->message('url not fount')->send();
@@ -35,23 +36,23 @@ class Stat extends StateManager
 
     private function visitSummaryData($id, $dataType, $title)
     {
-        $browserStat = ShortURLVisit::where('short_url_id', $id)
+        $browserStat = Visit::where('short_url_id', $id)
             ->groupBy($dataType)
             ->selectRaw($dataType.' as name, count(*) as num')
-            ->whereNot('device_type', 'robot')
+            ->human()
             ->orderBy('num', 'desc')
             ->get();
 
-        $this->sendStat('Browsers', 'name', $browserStat);
+        $this->sendStat($title, 'name', $browserStat);
     }
 
     private function nonBotData($id)
     {
-        $views = ShortURLVisit::query()
+        $views = Visit::query()
             ->select(DB::raw('Date(visited_at) as name'), DB::raw('count(*) as num'))
             ->where('visited_at', '>=', now()->subDays(14))
             ->where('short_url_id', $id)
-            ->whereNot('device_type', 'robot')
+            ->human()
             ->groupBy(DB::raw('Date(visited_at)'))
             ->get();
 
@@ -60,7 +61,7 @@ class Stat extends StateManager
 
     private function sendStat($title, $row, $stats)
     {
-        $builder = new Builder();
+        $builder = new Builder;
         $builder->setTitle($title);
 
         foreach ($stats as $stat) {

@@ -2,8 +2,11 @@
 
 namespace App\Http\Webhooks;
 
-use Exception;
-use AshAllenDesign\ShortURL\Facades\ShortURL;
+use App\Models\Link;
+use App\Models\User;
+use App\Models\Project;
+use App\Services\Shortener;
+use App\Exceptions\ShortenerException;
 use DefStudio\Telegraph\Models\TelegraphChat;
 
 class StateManager
@@ -29,28 +32,36 @@ class StateManager
 
     protected function isUrl($url): bool
     {
-        if (! filter_var($url, FILTER_VALIDATE_URL)) {
-            return false;
-        }
+        return app(Shortener::class)->isValidUrl((string) $url);
+    }
 
-        return true;
+    protected function user(): ?User
+    {
+        return User::find($this->chat->user_id);
+    }
+
+    /**
+     * The project this chat works in. Until chats carry a project of their
+     * own, it is the first one the bound user can access.
+     */
+    protected function project(): ?Project
+    {
+        return $this->user()?->accessibleProjects()->first();
     }
 
     protected function makeShort($url, $key = null): string
     {
-        $shortURLObject = ShortURL::destinationUrl($url);
+        $project = $this->project();
 
-        if (! is_null($key)) {
-            $shortURLObject->urlKey($key);
+        if (! $project) {
+            return '_no_project';
         }
 
         try {
-            $shorted = $shortURLObject->make();
-        } catch (Exception $e) {
-            $shorted['default_short_url'] = '_not_valid_url';
+            return app(Shortener::class)->make($project, $this->user(), $url, Link::SOURCE_BOT, $key)->default_short_url;
+        } catch (ShortenerException $e) {
+            return '_not_valid_url';
         }
-
-        return $shorted['default_short_url'];
     }
 
     protected function nextStep()

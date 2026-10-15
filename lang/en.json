@@ -1,0 +1,12 @@
+{
+    "device.desktop": "Desktop",
+    "device.mobile": "Mobile",
+    "device.tablet": "Tablet",
+    "device.robot": "Robot",
+    "language.fa": "Persian",
+    "language.en": "English",
+    "source.panel": "Panel",
+    "source.bot": "Bot",
+    "source.api": "API",
+    "source.miniapp": "Mini app"
+}

@@ -2,8 +2,9 @@
 
 namespace App\Http\Webhooks\State;
 
-use Goutte\Client;
-use shweshi\OpenGraph\OpenGraph;
+use App\Models\Channel;
+use App\Services\PageMeta;
+use App\Services\PostComposer;
 use App\Http\Webhooks\StateManager;
 use DefStudio\Telegraph\Keyboard\Button;
 use DefStudio\Telegraph\Keyboard\Keyboard;
@@ -19,6 +20,13 @@ class ForChannel extends StateManager
 
     public function handleStep1()
     {
+        if (! $this->channel()) {
+            $this->chat->message('this project has no channel yet')->send();
+            $this->done();
+
+            return;
+        }
+
         $this->chat->message('send your url')->send();
         $this->nextStep();
     }
@@ -63,17 +71,17 @@ class ForChannel extends StateManager
         }
 
         $this->chat->storage()->set('data.url_short', $this->makeShort($this->message));
-        $this->getOpenGraph();
+        $this->chat->storage()->set('data.link_data', app(PageMeta::class)->fetch($this->message));
 
         return true;
     }
 
     protected function sendPreview(): void
     {
-        $messageText = $this->generateText();
-        $this->chat->storage()->set('data.messageText', $messageText);
+        $post = $this->composePost();
+        $this->chat->storage()->set('data.messageText', $post['text']);
 
-        $response = $this->chat->markdown($messageText)
+        $response = $this->chat->markdown($post['text'])
             ->keyboard(Keyboard::make()->buttons([
                 Button::make('Confirm')->action('keyboard_handler')->param('action_name', $this->actionPrefix.'confirm'),
                 Button::make('Edit')->action('keyboard_handler')->param('action_name', $this->actionPrefix.'edit'),
@@ -87,8 +95,8 @@ class ForChannel extends StateManager
     {
         // Read before dispatching: confirm/dismiss call done(), which clears data.
         $lastId = $this->chat->storage()->get('data.last_id');
-
         $action = str_replace($this->actionPrefix, '', $this->message);
+
         $this->$action();
 
         $this->chat->deleteKeyboard($lastId)->send();
@@ -114,78 +122,71 @@ class ForChannel extends StateManager
 
     protected function publish(string $text): void
     {
-        $channel = TelegraphChat::where('chat_id', setting('channel.id'))->latest()->first();
+        $channel = $this->channel();
+        $post = $this->composePost();
         $data = $this->chat->storage()->get('data.link_data');
-        $msg = $channel->markdown($text);
+
+        $msg = $this->channelChat($channel)->markdown($text);
 
         if (isset($data['image']) && strlen($data['image']) > 1) {
             $msg = $msg->photo($data['image']);
         }
 
-        $msg->keyboard($this->channelKeyboard())
+        $msg->keyboard($this->channelKeyboard($post['buttons']))
             ->withoutPreview()
             ->send();
+    }
+
+    /** The channel this post goes to: the project's default channel. */
+    protected function channel(): ?Channel
+    {
+        return $this->project()?->defaultChannel();
+    }
+
+    /**
+     * Telegraph can only send to chats it knows, so make sure the channel
+     * has a row bound to the bot that serves this chat.
+     */
+    protected function channelChat(Channel $channel): TelegraphChat
+    {
+        return TelegraphChat::firstOrCreate(
+            ['chat_id' => $channel->chat_id, 'telegraph_bot_id' => $this->chat->telegraph_bot_id],
+            ['name' => $channel->title],
+        );
+    }
+
+    /**
+     * @return array{text: string, buttons: list<array{label: string, url: string}>}
+     */
+    protected function composePost(): array
+    {
+        $data = $this->chat->storage()->get('data.link_data') ?? [];
+
+        return app(PostComposer::class)->compose($this->channel(), [
+            'title'        => $data['title'] ?? '',
+            'description'  => $data['description'] ?? '',
+            'short_url'    => $this->chat->storage()->get('data.url_short'),
+            'original_url' => $this->chat->storage()->get('data.url'),
+            'feed_url'     => $this->chat->storage()->get('data.feed_short'),
+        ]);
     }
 
     /**
      * Inline keyboard attached to the channel post. Every button goes on its
      * own row.
      */
-    protected function channelKeyboard(): Keyboard
+    protected function channelKeyboard(array $buttons): Keyboard
     {
-        return Keyboard::make()->buttons([
-            Button::make('Read Article')->url(
-                $this->chat->storage()->get('data.url_short')
-            ),
-        ]);
-    }
-
-    protected function timeRead($url): int
-    {
-        //        $client = new Client();
-        //        $crawler = $client->request('GET', $url);
-        //
-        //        $text = $crawler->filter('p')->each(function ($node) {
-        //            return $node->text();
-        //        });
-        //
-        //        return round(count(explode(' ', implode("\n", $text))) / 160);
-
-        return 5;
-    }
-
-    protected function getOpenGraph()
-    {
-        $og = new OpenGraph;
-        $ogData = $og->fetch($this->chat->storage()->get('data.url'));
-
-        $data = [
-            'title'       => $ogData['title'] ?? '',
-            'description' => $ogData['description'] ?? '',
-            'image'       => $ogData['image'] ?? '',
-        ];
-
-        $this->chat->storage()->set('data.link_data', $data);
-    }
-
-    protected function generateText(): string
-    {
-        $data = $this->chat->storage()->get('data.link_data');
-
-        return '*'.$data['title']."*\n\n".
-//            '_'.$this->timeRead($this->chat->storage()->get('data.url'))." min read_\n\n".
-            ''.$data['description']."\n\n".
-            '`'.$this->chat->storage()->get('data.url_short')."`\n".
-            setting('channel.username');
+        return Keyboard::make()->buttons(array_map(
+            fn (array $button) => Button::make($button['label'])->url($button['url']),
+            $buttons,
+        ));
     }
 
     protected function doesUrlRedirect($url): bool
     {
-        $headers = get_headers($url, 1);
-        if (! empty($headers['Location'])) {
-            return true;
-        } else {
-            return false;
-        }
+        $headers = @get_headers($url, true);
+
+        return ! empty($headers['Location']);
     }
 }

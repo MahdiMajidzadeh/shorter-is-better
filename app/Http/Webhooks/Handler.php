@@ -2,6 +2,7 @@
 
 namespace App\Http\Webhooks;
 
+use App\Models\User;
 use Illuminate\Support\Str;
 use App\Http\Webhooks\State\Feed;
 use App\Http\Webhooks\State\Stat;
@@ -23,11 +24,14 @@ class Handler extends WebhookHandler
     public function isAuthenticated(): bool
     {
         $chat = TelegraphChat::query()->where('chat_id', $this->chat['chat_id'])->first();
+
         if (! $chat || is_null($chat->user_id)) {
             return false;
         }
 
-        return true;
+        $user = User::find($chat->user_id);
+
+        return $user !== null && $user->is_active;
     }
 
     public function short_key()

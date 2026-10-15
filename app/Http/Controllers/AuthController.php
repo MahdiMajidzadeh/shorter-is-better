@@ -28,7 +28,7 @@ class AuthController extends Controller
 
         $user = User::where('username', $credentials['username'])->first();
 
-        if ($user && Hash::check($credentials['password'], $user->password)) {
+        if ($user && $user->is_active && Hash::check($credentials['password'], $user->password)) {
             Auth::login($user, $remember = true);
 
             $request->session()->regenerate();
@@ -37,7 +37,7 @@ class AuthController extends Controller
         }
 
         return back()
-            ->withErrors(['username' => 'Invalid username or password.'])
+            ->withErrors(['username' => __('Invalid username or password.')])
             ->onlyInput('username');
     }
 
@@ -62,6 +62,6 @@ class AuthController extends Controller
         $chat->user_id = auth()->id();
         $chat->save();
 
-        return redirect('panel')->with('msg-ok', 'Your Bot is Active now!');
+        return redirect('panel')->with('msg-ok', __('Your Telegram chat is now linked to this account.'));
     }
 }

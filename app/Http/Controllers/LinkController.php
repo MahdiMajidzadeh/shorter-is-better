@@ -2,123 +2,126 @@
 
 namespace App\Http\Controllers;
 
-use Exception;
+use App\Models\Link;
+use App\Models\Visit;
+use App\Services\Shortener;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use App\Exceptions\ShortenerException;
 use Illuminate\Database\Eloquent\Collection;
-use AshAllenDesign\ShortURL\Facades\ShortURL;
-use AshAllenDesign\ShortURL\Models\ShortURLVisit;
-use AshAllenDesign\ShortURL\Models\ShortURL as ShortModel;
 
 class LinkController extends Controller
 {
-    public function all(Request $request)
+    public function all(Request $request): View
     {
-        $data['links'] = ShortModel::orderBy('id', 'desc')->paginate(40);
+        $data['links'] = Link::forProject($this->project())
+            ->withCount(['visits as human_visits_count' => fn ($q) => $q->human()])
+            ->orderBy('id', 'desc')
+            ->paginate(40);
 
         return view('panel.links-all', $data);
     }
 
-    public function create(Request $request)
+    public function create(Request $request): View
     {
+        $this->project();
+
         return view('panel.links-create');
     }
 
-    public function createSubmit(Request $request)
+    public function createSubmit(Request $request, Shortener $shortener): RedirectResponse
     {
         $request->validate([
             'url' => 'required|url',
+            'key' => 'nullable|string|max:64',
         ]);
 
-        $shortURLObject = ShortURL::destinationUrl($request->get('url'));
-
-        if ($request->filled('key')) {
-            $shortURLObject->urlKey($request->get('key'));
-        }
-
         try {
-            $shorted = $shortURLObject->make();
-        } catch (Exception $e) {
-            return redirect()->back()->with('msg-error', $e->getMessage());
+            $link = $shortener->make(
+                $this->project(),
+                $request->user(),
+                $request->get('url'),
+                Link::SOURCE_PANEL,
+                $request->filled('key') ? $request->get('key') : null,
+            );
+        } catch (ShortenerException $e) {
+            return redirect()->back()->withInput()->with('msg-error', $e->getMessage());
         }
 
-        //        $shortURLObject = $builder->destinationUrl('https://destination.com')->singleUse()->make();
-        //        $shortURL = $shortURLObject->default_short_url;
-
-        return redirect('links/'.$shorted['url_key']);
+        return redirect('links/'.$link->url_key);
     }
 
-    public function detail(Request $request, $short)
+    public function detail(Request $request, string $short): View
     {
-        $data['short'] = ShortModel::findByKey($short);
+        $link = Link::findByKey($short);
 
-        abort_if(! $data['short'], 404);
+        abort_if(! $link || ! $request->user()->canAccessProject($link->project_id), 404);
 
-        $data['operating_system'] = $this->getVisitData($data['short']->id, 'operating_system');
-        $data['device_type'] = $this->getVisitData($data['short']->id, 'device_type');
-        $data['browser'] = $this->getVisitData($data['short']->id, 'browser');
-
-        $data['views'] = ShortURLVisit::query()
+        $data['short'] = $link;
+        $data['operating_system'] = $this->getVisitData($link->id, 'operating_system');
+        $data['device_type'] = $this->getVisitData($link->id, 'device_type');
+        $data['browser'] = $this->getVisitData($link->id, 'browser');
+        $data['views'] = Visit::query()
             ->select(DB::raw('Date(visited_at) as x'), DB::raw('count(*) as y'))
-            ->where('short_url_id', $data['short']->id)
+            ->where('short_url_id', $link->id)
+            ->human()
             ->where('visited_at', '>', now()->subDays(30))
             ->groupBy(DB::raw('Date(visited_at)'))
+            ->orderBy('x')
             ->get();
 
         return view('panel.links-detail', $data);
     }
 
-    public function deleteSubmit(Request $request, $id)
+    public function deleteSubmit(Request $request, int $id): RedirectResponse
     {
-        $short = ShortModel::findOrFail($id);
+        $link = Link::findOrFail($id);
 
-        ShortURLVisit::where('short_url_id', $short->id)->delete();
-        $short->delete();
+        abort_unless($request->user()->canAccessProject($link->project_id), 404);
 
-        return redirect('links');
+        $link->visits()->delete();
+        $link->delete();
+
+        return redirect('links')->with('msg-ok', __('Link deleted.'));
     }
 
     public function bulk(Request $request): View
     {
+        $this->project();
+
         return view('panel.links-bulk');
     }
 
-    public function bulkSubmit(Request $request)
+    public function bulkSubmit(Request $request, Shortener $shortener): RedirectResponse
     {
         $request->validate([
             'text' => 'required|string',
         ]);
 
-        $text = $request->get('text');
-        preg_match_all(
-            '/[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\-\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/',
-            $text,
-            $output_array
-        );
+        $result = $shortener->bulk($this->project(), $request->user(), $request->get('text'), Link::SOURCE_PANEL);
 
-        foreach ($output_array[0] as $url) {
-            $short = ShortURL::destinationUrl($url)->make();
-            $text = str_replace($url, $short->default_short_url, $text);
-        }
-
-        return redirect('links/bulk')->with('converted_text', $text);
+        return redirect('links/bulk')
+            ->with('converted_text', $result['text'])
+            ->with('converted_count', $result['links']->count());
     }
 
-    public function logs(Request $request)
+    public function logs(Request $request): View
     {
-        $data['logs'] = ShortURLVisit::query()
-            ->with('shortURL')
+        $data['logs'] = Visit::forProject($this->project())
+            ->with('link')
             ->orderBy('id', 'desc')
             ->paginate(40);
 
         return view('panel.links-logs', $data);
     }
 
-    private function getVisitData($id, $type): Collection
+    private function getVisitData(int $id, string $type): Collection
     {
-        return ShortURLVisit::query()
+        return Visit::query()
             ->where('short_url_id', $id)
+            ->human()
             ->groupBy($type)
             ->selectRaw($type.' as name, count(*) as total')
             ->orderBy('total', 'desc')

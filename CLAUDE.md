@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A self-hosted URL shortener (Laravel 13 / PHP 8.4) with a web panel and a Telegram bot front end. Shortening and click tracking come from `ashallendesign/short-url`; the bot is built on `defstudio/telegraph`. README.md covers user-facing setup; DOCKER.md covers the production image and the Dokploy release pipeline in depth.
+A personal, multi-project URL shortener (Laravel 13 / PHP 8.4) with a web panel and a Telegram bot front end. Shortening and click tracking are our own code (`app/Services`); the bot is built on `defstudio/telegraph` (being replaced by Nutgram in phase 2 of docs/PLAN.md). README.md covers user-facing setup; DOCKER.md covers the production image and the Dokploy release pipeline in depth. docs/PLAN.md is the approved transformation plan and records which phase is done.
 
 ## Commands
 
@@ -39,17 +39,23 @@ Laravel Pint with two non-default rules in `pint.json`: imports are sorted by **
 
 ### Data ownership
 
-The app defines only `User`. Short links and visits use the package models directly (`AshAllenDesign\ShortURL\Models\ShortURL` / `ShortURLVisit`), and bots/chats use `TelegraphBot` / `TelegraphChat`. Package tables are migrated from `database/migrations` (copied in, not published on the fly), and `telegraph_chats` is extended with `hash` and `user_id` columns that bind a chat to a panel user.
+- `Project` = one short domain (`domain` is a bare host) + root redirect url. `Link` (table `short_urls`) and `Visit` (table `short_url_visits`) are our models on the tables the old short-url package created; every historical row is kept. Links carry `project_id`, `user_id`, `source` (panel/bot/api/miniapp) and an auto-fetched `title`.
+- `Channel` holds a Telegram chat id, `language` (fa/en) and a post template (`template_text` + `template_buttons`). Projects and channels are many-to-many through `channel_project` with an `is_default` flag per project.
+- Users are admins (see everything) or regular users granted projects through `project_user`. `User::accessibleProjects()` and `canAccessProject()` are the only access checks; use them.
+- Bots/chats still use `TelegraphBot` / `TelegraphChat`; `telegraph_chats` has `hash` and `user_id` columns binding a chat to a panel user.
+- `App\Support\LegacyImport` (run by a migration) turned the old single-domain install into project 1 and imported the channel from the old `storage/settings.json`. There are no runtime settings any more.
 
-All analytics queries exclude bot traffic with `device_type != 'robot'`; keep that filter when adding stats.
+All link creation goes through `App\Services\Shortener::make()` / `bulk()`, which sets the project domain, source and title job. Clicks are recorded by `VisitRecorder` with the same whichbrowser mapping as before. Analytics exclude robots with `Visit::human()` (null device type counts as human); keep that scope when adding stats.
 
-Runtime settings (homepage copy, `channel.has` / `channel.id` / `channel.username`) live in `storage/settings.json` via `anlutro/l4-settings` and the `setting()` helper, not in the database or `.env`.
+The panel's current project comes from the `project` middleware (`SetProjectContext`): session `project_id`, validated against the user's access, shared to views as `$currentProject` / `$projects`, and read in controllers through `$this->project()`.
 
 ### Web panel
 
-Plain controllers + Blade, routes in `routes/web.php`. Everything under `/panel`, `/links`, `/settings` sits behind the `auth` middleware. The redirect route `/s/{key}` is registered by the short-url package; its prefix and tracking options are in `config/short-url.php`. `GET /up` is the Docker healthcheck and deliberately touches no datastore.
+Plain controllers + Blade, routes in `routes/web.php`. `/` (`RootController`: project root redirect by host) and `/s/{key}` (`RedirectController`) answer on every project domain; everything else is behind `auth` + `project`, and `/projects`, `/channels`, `/users`, `/settings` additionally behind `admin`. Key generation and prefix live in `config/shortener.php`. `GET /up` is the Docker healthcheck and deliberately touches no datastore.
 
 Views extend `template/master` (public) or `template/dash` (panel sidebar). The UI is Flux UI used purely as Blade components (`<flux:...>`); there are no Livewire components in `app/`. The Tailwind build `@import`s and `@source`s files from `vendor/livewire/flux`, so `vendor/` must exist before `npm run build` works.
+
+The panel is Persian and RTL by default (`config('app.locale') = fa`, per-user `locale` column). Every user-facing string goes through `__()` with the English text as the key and its translation in `lang/fa.json`. Dates and numbers go through the `local_date()` / `local_number()` helpers (Jalali and Persian digits in `fa`). Mark url/code inputs and cells `dir="ltr"`.
 
 ### Telegram bot (state machine)
 
@@ -59,6 +65,7 @@ Views extend `template/master` (public) or `template/dash` (panel sidebar). The 
 2. A state is a `StateManager` subclass in `app/Http/Webhooks/State/` with `handleStep1()`, `handleStep2()`, … . Conversation position is kept in Telegraph's per-chat storage under `state`, `step`, and `data.*`; `nextStep()` advances, `done()` clears.
 3. Inline-keyboard buttons route through `Handler::keyboard_handler()`, which maps `action_name` params (e.g. `channel_confirm`) to a state class and passes the action name in as the "message" (see `ForChannel::handleKeyboard`). `Feed` extends `ForChannel` with a `feed_` action prefix and one extra step for the feed url.
 4. Authorization: `Handler::isAuthenticated()` requires `telegraph_chats.user_id` to be set. `/start` issues a hash; visiting `/auth/bot/{hash}` while logged in binds the chat. Negative chat IDs (groups/channels) are ignored in `handleChatMessage`.
+5. Project: until chats carry their own project (phase 2), `StateManager::project()` is the bound user's first accessible project. Channel posts go to that project's default channel and are rendered by `PostComposer` from the channel's template.
 
 The advertised command list is `bot_commands()` in `app/helpers.php` (autoloaded via composer). Adding a command means: a `Handler` method, a state class, an entry in `bot_commands()`, then `php artisan bot:update`. Note `bulk` is advertised there but has no `Handler` method (known gap; bulk works in the panel only).
 
@@ -70,4 +77,4 @@ One FrankenPHP image, one container, supervisord as PID 1 running `web` + `worke
 
 ## Tests
 
-`phpunit.xml` forces SQLite `:memory:`, array cache/session, and sync queue. Feature tests use `RefreshDatabase` and build a `User` by hand in `setUp()`. The short-url package's migrations run too, so `ShortURL::destinationUrl(...)->make()` and `ShortURLVisit` can be used directly, as in `DashboardTest`.
+`phpunit.xml` forces SQLite `:memory:`, array cache/session, and sync queue. Feature tests use `RefreshDatabase` and the helpers on `tests/TestCase.php` (`makeAdmin()`, `makeUser()`, `makeProject()`, `makeChannel()`, `makeLink()`, `makeVisit()`). A fresh test database has no project; create one. `Http::fake()` whatever fetches titles, or the sync queue will hit the network.
