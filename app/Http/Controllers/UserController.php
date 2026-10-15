@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\BotChat;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\RedirectResponse;
-use DefStudio\Telegraph\Models\TelegraphChat;
 
 class UserController extends Controller
 {
@@ -74,7 +74,7 @@ class UserController extends Controller
             return redirect('users')->with('msg-error', __('You cannot delete your own account.'));
         }
 
-        TelegraphChat::where('user_id', $user->id)->update(['user_id' => null]);
+        BotChat::where('user_id', $user->id)->update(['user_id' => null, 'status' => BotChat::PENDING]);
         $user->delete();
 
         return redirect('users')->with('msg-ok', __('User deleted.'));

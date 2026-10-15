@@ -47,7 +47,7 @@
 
         @if(auth()->user()->is_admin)
             <flux:sidebar.nav>
-                <flux:sidebar.group expandable :expanded="request()->is('projects*', 'channels*', 'users*', 'settings*')" heading="{{ __('Administration') }}">
+                <flux:sidebar.group expandable :expanded="request()->is('projects*', 'channels*', 'users*', 'settings*', 'bot/*')" heading="{{ __('Administration') }}">
                     <flux:sidebar.item icon="globe-alt" href="{{ url('/projects') }}" :current="request()->is('projects*')">
                         {{ __('Projects') }}
                     </flux:sidebar.item>
@@ -56,6 +56,9 @@
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="users" href="{{ url('/users') }}" :current="request()->is('users*')">
                         {{ __('Users') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="chat-bubble-left-right" href="{{ url('bot/chats') }}" :current="request()->is('bot/chats*')">
+                        {{ __('Bot access') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="cog-6-tooth" href="{{ url('settings') }}" :current="request()->is('settings*')">
                         {{ __('Bot') }}

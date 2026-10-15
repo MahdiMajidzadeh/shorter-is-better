@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\BotChat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use DefStudio\Telegraph\Models\TelegraphChat;
 
 class AuthController extends Controller
 {
@@ -53,15 +53,22 @@ class AuthController extends Controller
 
     public function hash(Request $request, $hash)
     {
-        $chat = TelegraphChat::where('hash', $hash)->first();
+        $chat = BotChat::where('hash', $hash)->first();
 
-        if (! $chat) {
+        if (! $chat || $chat->isBlocked()) {
             abort(404);
         }
 
-        $chat->user_id = auth()->id();
-        $chat->save();
+        $user = $request->user();
 
-        return redirect('panel')->with('msg-ok', __('Your Telegram chat is now linked to this account.'));
+        $chat->forceFill([
+            'user_id'    => $user->id,
+            'project_id' => null,
+            'status'     => $user->is_admin ? BotChat::ACTIVE : BotChat::PENDING,
+        ])->save();
+
+        return redirect('panel')->with('msg-ok', $user->is_admin
+            ? __('Your Telegram chat is now linked to this account.')
+            : __('Your Telegram chat is linked and waits for an admin to approve it.'));
     }
 }

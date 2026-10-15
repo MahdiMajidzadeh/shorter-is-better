@@ -2,31 +2,27 @@
 
 namespace App\Console\Commands;
 
+use App\Support\BotRegistrar;
 use Illuminate\Console\Command;
-use DefStudio\Telegraph\Models\TelegraphBot;
 
 class BotUpdate extends Command
 {
     protected $signature = 'bot:update';
 
-    protected $description = 'Update Bots command';
+    protected $description = 'Register the Telegram webhook and command list';
 
-    public function handle()
+    public function handle(BotRegistrar $registrar): int
     {
-        $bots = TelegraphBot::all();
+        if (! config('nutgram.token')) {
+            $this->error('TELEGRAM_TOKEN is not set.');
 
-        foreach ($bots as $bot) {
-            //            $bot->unregisterWebhook()->send();
-            $bot->registerWebhook()->send();
-            //            $this->info(json_encode($bot->info()));
-            //            $this->info(json_encode($bot->getWebhookDebugInfo()->send()));
-            $bot->unregisterCommands()->send();
-
-            $v = $bot->registerCommands(bot_commands())->send();
-
-            $this->info($bot->name.' updated!');
+            return self::FAILURE;
         }
 
-        $this->info('Happy Shorting!!!');
+        $registrar->register();
+
+        $this->info('Webhook set to '.BotRegistrar::webhookUrl().' and commands registered.');
+
+        return self::SUCCESS;
     }
 }

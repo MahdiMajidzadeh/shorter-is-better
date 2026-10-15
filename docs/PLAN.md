@@ -142,7 +142,7 @@ Each phase ends green on `php artisan test` and Pint, and is one commit.
   secondary domain, root redirect, project scoping, non-admin isolation,
   data migration backfill, template rendering with missing placeholders.
 
-### Phase 2: bot on Nutgram and projects
+### Phase 2: bot on Nutgram and projects (done)
 
 - Replace Telegraph with Nutgram. `bot_chats` table and migration of
   existing bindings. Middleware: resolve chat, refuse `pending` with a

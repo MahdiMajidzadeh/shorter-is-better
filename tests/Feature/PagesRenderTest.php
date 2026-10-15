@@ -66,7 +66,7 @@ class PagesRenderTest extends TestCase
             'users/create',
             'users/'.$other->id.'/edit',
             'settings',
-            'settings/bots/create',
+            'bot/chats',
         ] as $page) {
             $this->actingAs($this->user)->get($page)->assertOk();
         }

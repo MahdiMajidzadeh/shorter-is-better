@@ -59,10 +59,15 @@ Route::group(['middleware' => ['primary', 'auth', 'project']], function () {
             Route::post('/{user}/delete', [C\UserController::class, 'destroy']);
         });
 
+        Route::group(['prefix' => 'bot'], function () {
+            Route::get('/chats', [C\BotChatController::class, 'index']);
+            Route::post('/chats/{chat}', [C\BotChatController::class, 'update']);
+            Route::post('/chats/{chat}/delete', [C\BotChatController::class, 'destroy']);
+        });
+
         Route::group(['prefix' => 'settings'], function () {
             Route::get('/', [C\SettingController::class, 'index']);
-            Route::get('/bots/create', [C\SettingController::class, 'botsCreate']);
-            Route::post('/bots/create', [C\SettingController::class, 'botsCreateSubmit']);
+            Route::post('/bot/register', [C\SettingController::class, 'register']);
         });
     });
 });

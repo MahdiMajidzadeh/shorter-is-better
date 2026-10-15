@@ -8,5 +8,8 @@
     "source.panel": "Panel",
     "source.bot": "Bot",
     "source.api": "API",
-    "source.miniapp": "Mini app"
+    "source.miniapp": "Mini app",
+    "status.pending": "Pending",
+    "status.active": "Active",
+    "status.blocked": "Blocked"
 }

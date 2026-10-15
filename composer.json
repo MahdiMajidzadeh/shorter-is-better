@@ -6,13 +6,12 @@
     "license": "MIT",
     "require": {
         "php": "^8.4",
-        "defstudio/telegraph": "^1.9",
         "guzzlehttp/guzzle": "^8.0",
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",
         "livewire/flux": "^2.17",
-        "malios/php-to-ascii-table": "^3.0",
         "morilog/jalali": "^3.5",
+        "nutgram/laravel": "^1.7",
         "sentry/sentry-laravel": "^4.0",
         "whichbrowser/parser": "^2.1"
     },

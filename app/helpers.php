@@ -2,7 +2,6 @@
 
 use Morilog\Jalali\Jalalian;
 use Illuminate\Support\Carbon;
-use DefStudio\Telegraph\Models\TelegraphBot;
 
 if (! function_exists('chart_data_line')) {
     function chart_data_line($data, $label, $col, $chartLabel)
@@ -14,33 +13,6 @@ if (! function_exists('chart_data_line')) {
                 'data'  => $data->pluck($col),
             ]],
         ];
-    }
-}
-
-if (! function_exists('bot_commands')) {
-    function bot_commands(): array
-    {
-        return [
-            'short'       => 'short url',
-            'short_key'   => 'short url with custom key',
-            'for_channel' => 'make short for channel',
-            'feed'        => 'channel post with article and feed links',
-            'report'      => 'short report of last 7 days',
-            'stat'        => 'show stat for shorted url',
-            'bulk'        => 'short bulk of links in text',
-        ];
-    }
-}
-
-if (! function_exists('bot_update')) {
-    function bot_update()
-    {
-        $bots = TelegraphBot::all();
-
-        foreach ($bots as $bot) {
-            $bot->unregisterCommands()->send();
-            $v = $bot->registerCommands(bot_commands())->send();
-        }
     }
 }
 

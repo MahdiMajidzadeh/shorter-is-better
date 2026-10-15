@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A personal, multi-project URL shortener (Laravel 13 / PHP 8.4) with a web panel and a Telegram bot front end. Shortening and click tracking are our own code (`app/Services`); the bot is built on `defstudio/telegraph` (being replaced by Nutgram in phase 2 of docs/PLAN.md). README.md covers user-facing setup; DOCKER.md covers the production image and the Dokploy release pipeline in depth. docs/PLAN.md is the approved transformation plan and records which phase is done.
+A personal, multi-project URL shortener (Laravel 13 / PHP 8.4) with a web panel and a Telegram bot front end. Shortening and click tracking are our own code (`app/Services`); the bot is built on Nutgram (`nutgram/laravel`). README.md covers user-facing setup; DOCKER.md covers the production image and the Dokploy release pipeline in depth. docs/PLAN.md is the approved transformation plan and records which phase is done.
 
 ## Commands
 
@@ -24,7 +24,7 @@ php artisan test --filter=test_referrers_are_grouped_by_host   # one test
 ```bash
 npm run build     # Tailwind 4: resources/css/app.css -> public/index.css (committed)
 npm run watch
-php artisan bot:update   # re-register webhook + command list on every bot; run after changing bot_commands()
+php artisan bot:update   # register the webhook + per-language command list; run after setting TELEGRAM_TOKEN or changing command descriptions
 ```
 
 Docker locally: `docker compose -f compose.local.yaml --env-file .env.docker up --build` (needs a gitignored `.env.docker` with `APP_KEY`, `DB_PASSWORD`, `DB_ROOT_PASSWORD`).
@@ -42,7 +42,7 @@ Laravel Pint with two non-default rules in `pint.json`: imports are sorted by **
 - `Project` = one short domain (`domain` is a bare host) + root redirect url. `Link` (table `short_urls`) and `Visit` (table `short_url_visits`) are our models on the tables the old short-url package created; every historical row is kept. Links carry `project_id`, `user_id`, `source` (panel/bot/api/miniapp) and an auto-fetched `title`.
 - `Channel` holds a Telegram chat id, `language` (fa/en) and a post template (`template_text` + `template_buttons`). Projects and channels are many-to-many through `channel_project` with an `is_default` flag per project.
 - Users are admins (see everything) or regular users granted projects through `project_user`. `User::accessibleProjects()` and `canAccessProject()` are the only access checks; use them.
-- Bots/chats still use `TelegraphBot` / `TelegraphChat`; `telegraph_chats` has `hash` and `user_id` columns binding a chat to a panel user.
+- `BotChat` is every private Telegram chat that ever wrote to the bot: `status` (pending/active/blocked), bound `user_id`, the chat's active `project_id`, and the `hash` used by the `/auth/bot/{hash}` link. The old `telegraph_*` tables are kept but unused.
 - `App\Support\LegacyImport` (run by a migration) turned the old single-domain install into project 1 and imported the channel from the old `storage/settings.json`. There are no runtime settings any more.
 
 All link creation goes through `App\Services\Shortener::make()` / `bulk()`, which sets the project domain, source and title job. Clicks are recorded by `VisitRecorder` with the same whichbrowser mapping as before. Analytics exclude robots with `Visit::human()` (null device type counts as human); keep that scope when adding stats.
@@ -57,19 +57,21 @@ Views extend `template/master` (public) or `template/dash` (panel sidebar). The 
 
 The panel is Persian and RTL by default (`config('app.locale') = fa`, per-user `locale` column). Every user-facing string goes through `__()` with the English text as the key and its translation in `lang/fa.json`. Dates and numbers go through the `local_date()` / `local_number()` helpers (Jalali and Persian digits in `fa`). Mark url/code inputs and cells `dir="ltr"`.
 
-### Telegram bot (state machine)
+### Telegram bot (Nutgram)
 
-`config/telegraph.php` points the webhook at `App\Http\Webhooks\Handler`. Flow:
+One bot, token in `TELEGRAM_TOKEN`, webhook at `POST /api/telegram/webhook` (`TelegramWebhookController`, secret token enforced in production by Nutgram safe mode). Handlers live in `routes/telegram.php`:
 
-1. Each slash command is a public method on `Handler` (`short`, `short_key`, `stat`, `report`, `for_channel`, `feed`) that calls `startState(SomeState::class)`. Bare messages with no active state default to `Short` at step 2.
-2. A state is a `StateManager` subclass in `app/Http/Webhooks/State/` with `handleStep1()`, `handleStep2()`, … . Conversation position is kept in Telegraph's per-chat storage under `state`, `step`, and `data.*`; `nextStep()` advances, `done()` clears.
-3. Inline-keyboard buttons route through `Handler::keyboard_handler()`, which maps `action_name` params (e.g. `channel_confirm`) to a state class and passes the action name in as the "message" (see `ForChannel::handleKeyboard`). `Feed` extends `ForChannel` with a `feed_` action prefix and one extra step for the feed url.
-4. Authorization: `Handler::isAuthenticated()` requires `telegraph_chats.user_id` to be set. `/start` issues a hash; visiting `/auth/bot/{hash}` while logged in binds the chat. Negative chat IDs (groups/channels) are ignored in `handleChatMessage`.
-5. Project: until chats carry their own project (phase 2), `StateManager::project()` is the bound user's first accessible project. Channel posts go to that project's default channel and are rendered by `PostComposer` from the channel's template.
+1. Global middleware, in order: `ResolveBotChat` (ignores non-private chats, upserts the `BotChat`, sets the locale from the bound user, exposes the row as `$bot->get('botChat')`) then `EnsureBotAccess` (silence for blocked, `bot_replies.not_allowed` for anything not active + bound to an active user, `bot_replies.no_project` when the user has no project). `/start` skips the gate so a new chat can get its linking url.
+2. Each command maps to a handler in `app/Telegram/Handlers` or a `Conversation` in `app/Telegram/Conversations` (`Short`, `ShortWithKey`, `Bulk`, `Stat`, `ForChannel`, `Feed`). Conversation state is serialized to the cache between steps (array in tests, Redis in production); keep step data in protected properties. `InteractsWithBotChat` gives steps the chat, user and project.
+3. `ForChannel` picks a channel (inline keyboard when the project has several, else the default), shortens the url on the chat's active project, fetches page meta, renders the channel template with `PostComposer`, previews with Confirm / Edit / Dismiss callback buttons (`post:*`), and publishes through `ChannelPublisher`. `Feed` is the same with one extra feed-url step.
+4. `/project` lists the user's projects as `project:{id}` callback buttons and stores the choice on the chat. A bare url outside a conversation is shortened by `FallbackHandler`.
+5. Every reply string is in `lang/{fa,en}/bot_replies.php` (the group is deliberately not named after a UI label: `__('Bot')` on a case-insensitive filesystem would resolve a `bot.php` group). Command descriptions are set per language in `routes/telegram.php`; `php artisan bot:update` registers webhook + commands.
 
-The advertised command list is `bot_commands()` in `app/helpers.php` (autoloaded via composer). Adding a command means: a `Handler` method, a state class, an entry in `bot_commands()`, then `php artisan bot:update`. Note `bulk` is advertised there but has no `Handler` method (known gap; bulk works in the panel only).
+Bot replies are synchronous HTTP calls; the only queued work left is `FetchLinkTitle`, so the supervised `worker` program in `docker/supervisord.conf` must still run or titles stay empty.
 
-Telegraph sends every Telegram API call through a queued job. Locally `QUEUE_CONNECTION=sync` so it just works; in production the queue is Redis and the supervised `worker` program in `docker/supervisord.conf` must be running or the bot goes silent.
+Adding a command means: a handler or conversation class, an `onCommand` line with descriptions in `routes/telegram.php`, strings in `bot_replies`, a test in `tests/Feature/BotTest.php`, then `php artisan bot:update`.
+
+Access is granted in the panel under Bot access (`/bot/chats`): approve = bind a user + status active. The `/auth/bot/{hash}` link binds the chat to the signed-in user as pending (active when that user is an admin).
 
 ### Deployment shape
 
@@ -77,4 +79,4 @@ One FrankenPHP image, one container, supervisord as PID 1 running `web` + `worke
 
 ## Tests
 
-`phpunit.xml` forces SQLite `:memory:`, array cache/session, and sync queue. Feature tests use `RefreshDatabase` and the helpers on `tests/TestCase.php` (`makeAdmin()`, `makeUser()`, `makeProject()`, `makeChannel()`, `makeLink()`, `makeVisit()`). A fresh test database has no project; create one. `Http::fake()` whatever fetches titles, or the sync queue will hit the network.
+`phpunit.xml` forces SQLite `:memory:`, array cache/session, and sync queue. Feature tests use `RefreshDatabase` and the helpers on `tests/TestCase.php` (`makeAdmin()`, `makeUser()`, `makeProject()`, `makeChannel()`, `makeLink()`, `makeVisit()`). A fresh test database has no project; create one. `Http::fake()` whatever fetches titles, or the sync queue will hit the network. Bot tests drive the Nutgram fake (`app(Nutgram::class)`) with `hearMessage([...])->reply()` and a fixed private chat id, then `assertReplyText()` / `assertReply('sendMessage', [...], $index)`; see `BotTest::say()` and `tap()`.
