@@ -11,6 +11,12 @@ use DefStudio\Telegraph\Models\TelegraphChat;
 
 class ForChannel extends StateManager
 {
+    /**
+     * Prefix of the inline-keyboard action names routed back to this state
+     * through Handler::keyboard_handler().
+     */
+    protected string $actionPrefix = 'channel_';
+
     public function handleStep1()
     {
         $this->chat->message('send your url')->send();
@@ -19,119 +25,138 @@ class ForChannel extends StateManager
 
     public function handleStep2()
     {
-        $this->chat->storage()->set('data.url', $this->message);
-
-        if (! $this->isUrl($this->message)) {
-            $this->chat->message('url is not valid')->send();
-
-            return;
-        } elseif ($this->doesUrlRedirect($this->message)) {
-            $this->chat->message('url is redirected, send original url')->send();
-
+        if (! $this->receiveUrl()) {
             return;
         }
 
-        $this->chat->storage()->set('data.url_short', $this->makeShort($this->message));
-        $this->getOpenGraph();
-        $messageText = $this->generateText();
-        $this->chat->storage()->set('data.messageText', $messageText);
-
-        $response = $this->chat->markdown($messageText)
-            ->keyboard(Keyboard::make()->buttons([
-                Button::make('Confirm')->action('keyboard_handler')->param('action_name', 'channel_confirm'),
-                Button::make('Edit')->action('keyboard_handler')->param('action_name', 'channel_edit'),
-                Button::make('Dismiss')->action('keyboard_handler')->param('action_name', 'channel_dismiss'),
-            ]))->send();
-
-        $this->chat->storage()->set('data.last_id', $response->telegraphMessageId());
+        $this->sendPreview();
         $this->nextStep();
     }
 
     public function handleStep3()
     {
-        $action = str_replace('channel_', '', $this->message);
-        $funcName = 'handleStep3'.$action;
-        $this->$funcName();
-
-        $this->chat->deleteKeyboard(
-            $this->chat->storage()->get('data.last_id')
-        )->send();
+        $this->handleKeyboard();
     }
 
-    public function handleStep3confirm()
+    public function handleStep4()
     {
-        $channel = TelegraphChat::where('chat_id', setting('channel.id'))->latest()->first();
-        $data = $this->chat->storage()->get('data.link_data');
-
-        $msg = $channel->markdown(
-            $this->chat->storage()->get('data.messageText')
-        );
-
-        if (isset($data['image']) && strlen($data['image']) > 1) {
-            $msg = $msg->photo($data['image']);
-        }
-
-        $msg->keyboard(Keyboard::make()->buttons([
-            Button::make('Read Article')->url(
-                $this->chat->storage()->get('data.url_short')
-            ),
-        ]))
-            ->withoutPreview()
-            ->send();
-
+        $this->publish($this->message);
         $this->done();
     }
 
-    public function handleStep3edit()
+    /**
+     * Validate the article url sent by the user, shorten it and fetch its
+     * Open Graph data. Returns false (after replying) when the url is rejected.
+     */
+    protected function receiveUrl(): bool
+    {
+        $this->chat->storage()->set('data.url', $this->message);
+
+        if (! $this->isUrl($this->message)) {
+            $this->chat->message('url is not valid')->send();
+
+            return false;
+        } elseif ($this->doesUrlRedirect($this->message)) {
+            $this->chat->message('url is redirected, send original url')->send();
+
+            return false;
+        }
+
+        $this->chat->storage()->set('data.url_short', $this->makeShort($this->message));
+        $this->getOpenGraph();
+
+        return true;
+    }
+
+    protected function sendPreview(): void
+    {
+        $messageText = $this->generateText();
+        $this->chat->storage()->set('data.messageText', $messageText);
+
+        $response = $this->chat->markdown($messageText)
+            ->keyboard(Keyboard::make()->buttons([
+                Button::make('Confirm')->action('keyboard_handler')->param('action_name', $this->actionPrefix.'confirm'),
+                Button::make('Edit')->action('keyboard_handler')->param('action_name', $this->actionPrefix.'edit'),
+                Button::make('Dismiss')->action('keyboard_handler')->param('action_name', $this->actionPrefix.'dismiss'),
+            ]))->send();
+
+        $this->chat->storage()->set('data.last_id', $response->telegraphMessageId());
+    }
+
+    protected function handleKeyboard(): void
+    {
+        // Read before dispatching: confirm/dismiss call done(), which clears data.
+        $lastId = $this->chat->storage()->get('data.last_id');
+
+        $action = str_replace($this->actionPrefix, '', $this->message);
+        $this->$action();
+
+        $this->chat->deleteKeyboard($lastId)->send();
+    }
+
+    protected function confirm(): void
+    {
+        $this->publish($this->chat->storage()->get('data.messageText'));
+        $this->done();
+    }
+
+    protected function edit(): void
     {
         $this->chat->markdown('sent your replacement text:')->send();
         $this->nextStep();
     }
 
-    public function handleStep3dismiss()
+    protected function dismiss(): void
     {
         $this->chat->markdown('ok')->send();
         $this->done();
     }
 
-    public function handleStep4()
+    protected function publish(string $text): void
     {
         $channel = TelegraphChat::where('chat_id', setting('channel.id'))->latest()->first();
         $data = $this->chat->storage()->get('data.link_data');
-        $msg = $channel->markdown($this->message);
+        $msg = $channel->markdown($text);
 
         if (isset($data['image']) && strlen($data['image']) > 1) {
             $msg = $msg->photo($data['image']);
         }
 
-        $msg->keyboard(Keyboard::make()->buttons([
+        $msg->keyboard($this->channelKeyboard())
+            ->withoutPreview()
+            ->send();
+    }
+
+    /**
+     * Inline keyboard attached to the channel post. Every button goes on its
+     * own row.
+     */
+    protected function channelKeyboard(): Keyboard
+    {
+        return Keyboard::make()->buttons([
             Button::make('Read Article')->url(
                 $this->chat->storage()->get('data.url_short')
             ),
-        ]))
-            ->withoutPreview()
-            ->send();
-
-        $this->done();
+        ]);
     }
 
     protected function timeRead($url): int
     {
-//        $client = new Client();
-//        $crawler = $client->request('GET', $url);
-//
-//        $text = $crawler->filter('p')->each(function ($node) {
-//            return $node->text();
-//        });
-//
-//        return round(count(explode(' ', implode("\n", $text))) / 160);
+        //        $client = new Client();
+        //        $crawler = $client->request('GET', $url);
+        //
+        //        $text = $crawler->filter('p')->each(function ($node) {
+        //            return $node->text();
+        //        });
+        //
+        //        return round(count(explode(' ', implode("\n", $text))) / 160);
 
         return 5;
     }
 
-    private function getOpenGraph()
+    protected function getOpenGraph()
     {
-        $og = new OpenGraph();
+        $og = new OpenGraph;
         $ogData = $og->fetch($this->chat->storage()->get('data.url'));
 
         $data = [
@@ -143,7 +168,7 @@ class ForChannel extends StateManager
         $this->chat->storage()->set('data.link_data', $data);
     }
 
-    private function generateText(): string
+    protected function generateText(): string
     {
         $data = $this->chat->storage()->get('data.link_data');
 
@@ -154,7 +179,7 @@ class ForChannel extends StateManager
             setting('channel.username');
     }
 
-    private function doesUrlRedirect($url): bool
+    protected function doesUrlRedirect($url): bool
     {
         $headers = get_headers($url, 1);
         if (! empty($headers['Location'])) {

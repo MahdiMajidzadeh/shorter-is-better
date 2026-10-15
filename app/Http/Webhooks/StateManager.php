@@ -65,6 +65,6 @@ class StateManager
     {
         $this->chat->storage()->forget('state');
         $this->chat->storage()->forget('step');
-        $this->chat->storage()->forget('data.*');
+        $this->chat->storage()->forget('data');
     }
 }

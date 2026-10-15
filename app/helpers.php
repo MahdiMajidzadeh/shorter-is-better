@@ -20,8 +20,9 @@ if (! function_exists('bot_commands')) {
     {
         $commands['short_key'] = 'short url with custom key';
 
-        if (setting('channel.has', false)) {
+        if (setting('channel.has', 'off') == 'on') {
             $commands['for_channel'] = 'make short for channel';
+            $commands['feed'] = 'channel post with article and feed links';
         }
 
         $commands['report'] = 'short report of last 7 days';

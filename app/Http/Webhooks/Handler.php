@@ -3,6 +3,7 @@
 namespace App\Http\Webhooks;
 
 use Illuminate\Support\Str;
+use App\Http\Webhooks\State\Feed;
 use App\Http\Webhooks\State\Stat;
 use App\Http\Webhooks\State\Short;
 use Illuminate\Support\Stringable;
@@ -49,12 +50,20 @@ class Handler extends WebhookHandler
         $this->startState(ForChannel::class);
     }
 
+    public function feed()
+    {
+        $this->startState(Feed::class);
+    }
+
     public function keyboard_handler()
     {
         $actionList = [
             'channel_confirm' => ForChannel::class,
             'channel_edit'    => ForChannel::class,
             'channel_dismiss' => ForChannel::class,
+            'feed_confirm'    => Feed::class,
+            'feed_edit'       => Feed::class,
+            'feed_dismiss'    => Feed::class,
         ];
 
         $actionName = $this->data->get('action_name');
@@ -108,7 +117,7 @@ class Handler extends WebhookHandler
 
         $this->chat->storage()->set('state', $class);
         $this->chat->storage()->set('step', 1);
-        $this->chat->storage()->forget('data.*');
+        $this->chat->storage()->forget('data');
 
         $state = new $class($this->chat, '');
         $state->handle();

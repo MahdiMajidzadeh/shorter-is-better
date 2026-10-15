@@ -55,9 +55,9 @@ Views extend `template/master` (public) or `template/dash` (panel sidebar). The 
 
 `config/telegraph.php` points the webhook at `App\Http\Webhooks\Handler`. Flow:
 
-1. Each slash command is a public method on `Handler` (`short`, `short_key`, `stat`, `report`, `for_channel`) that calls `startState(SomeState::class)`. Bare messages with no active state default to `Short` at step 2.
+1. Each slash command is a public method on `Handler` (`short`, `short_key`, `stat`, `report`, `for_channel`, `feed`) that calls `startState(SomeState::class)`. Bare messages with no active state default to `Short` at step 2.
 2. A state is a `StateManager` subclass in `app/Http/Webhooks/State/` with `handleStep1()`, `handleStep2()`, … . Conversation position is kept in Telegraph's per-chat storage under `state`, `step`, and `data.*`; `nextStep()` advances, `done()` clears.
-3. Inline-keyboard buttons route through `Handler::keyboard_handler()`, which maps `action_name` params (e.g. `channel_confirm`) to a state class and passes the action name in as the "message" (see `ForChannel::handleStep3`).
+3. Inline-keyboard buttons route through `Handler::keyboard_handler()`, which maps `action_name` params (e.g. `channel_confirm`) to a state class and passes the action name in as the "message" (see `ForChannel::handleKeyboard`). `Feed` extends `ForChannel` with a `feed_` action prefix and one extra step for the feed url.
 4. Authorization: `Handler::isAuthenticated()` requires `telegraph_chats.user_id` to be set. `/start` issues a hash; visiting `/auth/bot/{hash}` while logged in binds the chat. Negative chat IDs (groups/channels) are ignored in `handleChatMessage`.
 
 The advertised command list is `bot_commands()` in `app/helpers.php` (autoloaded via composer). Adding a command means: a `Handler` method, a state class, an entry in `bot_commands()`, then `php artisan bot:update`. Note `bulk` is advertised there but has no `Handler` method (known gap; bulk works in the panel only).

@@ -59,6 +59,7 @@ link. Group and channel chats (negative chat IDs) are ignored outright.
 | `/stat` | browser / device / OS breakdown and 14-day views for one short URL |
 | `/report` | top 20 links and daily non-bot views for the last 7 days |
 | `/for_channel` | build and publish a channel post — only when a channel is configured |
+| `/feed` | like `/for_channel`, but also asks for a feed URL and adds a second "Read on PM Feed" button to the post |
 
 `bot_commands()` also advertises `/bulk`, but `Handler` has no method for it, so the
 bot replies with its unknown-command message. Bulk shortening works in the panel
@@ -130,7 +131,7 @@ is also what you want after changing the available commands in
 
 To publish to a channel, add the bot to the channel as an admin and fill in the
 channel ID and username under **Settings → Channel**. Enabling it adds
-`/for_channel` to the command list.
+`/for_channel` and `/feed` to the command list.
 
 ## Configuration
 
