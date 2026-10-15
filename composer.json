@@ -11,6 +11,7 @@
         "laravel/sanctum": "^4.3",
         "laravel/tinker": "^3.0",
         "livewire/flux": "^2.17",
+        "mahdimajidzadeh/ds": "^0.4.2",
         "morilog/jalali": "^3.5",
         "nutgram/laravel": "^1.7",
         "whichbrowser/parser": "^2.1"

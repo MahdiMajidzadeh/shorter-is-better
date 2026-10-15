@@ -1,8 +1,10 @@
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
+@import '../../vendor/mahdimajidzadeh/ds/resources/css/mds.css';
 
 @source '../views';
 @source '../../vendor/livewire/flux/stubs/resources/views';
+@source '../../vendor/mahdimajidzadeh/ds/resources/views';
 
 @custom-variant dark (&:where(.dark, .dark *));
 

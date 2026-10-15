@@ -4,8 +4,70 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0736ac5f5412a9a3d5806568890a7828",
+    "content-hash": "e65f5481ee07d03154c3b200e7577946",
     "packages": [
+        {
+            "name": "afatmustafa/blade-hugeicons",
+            "version": "v2.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/afatmustafa/blade-hugeicons.git",
+                "reference": "91dd0f3b1ffb729784f806ef4e7be5b370a3397d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/afatmustafa/blade-hugeicons/zipball/91dd0f3b1ffb729784f806ef4e7be5b370a3397d",
+                "reference": "91dd0f3b1ffb729784f806ef4e7be5b370a3397d",
+                "shasum": ""
+            },
+            "require": {
+                "blade-ui-kit/blade-icons": "^1.1|^1.8",
+                "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.21",
+                "orchestra/testbench": "^8.0|^9.0|^10.0|^11.0",
+                "phpunit/phpunit": "^10.1|^11.5|^12.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Afatmustafa\\HugeIcons\\BladeHugeIconsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Afatmustafa\\HugeIcons\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mustafa Afat",
+                    "email": "mustafa@afat.me",
+                    "homepage": "https://afat.me",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A package to easily make use of Hugeicons(Free version) in your Laravel Blade views.",
+            "homepage": "https://github.com/afatmustafa/blade-hugeicons",
+            "keywords": [
+                "Hugeicons",
+                "blade",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/afatmustafa/blade-hugeicons/issues",
+                "source": "https://github.com/afatmustafa/blade-hugeicons/tree/v2.0.3"
+            },
+            "time": "2026-08-06T20:03:19+00:00"
+        },
         {
             "name": "beberlei/assert",
             "version": "v3.3.4",
@@ -72,6 +134,87 @@
                 "source": "https://github.com/beberlei/assert/tree/v3.3.4"
             },
             "time": "2026-06-10T19:47:05+00:00"
+        },
+        {
+            "name": "blade-ui-kit/blade-icons",
+            "version": "1.10.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/driesvints/blade-icons.git",
+                "reference": "6e072d021ea6249986c330b93293c33d0c4f0e34"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/driesvints/blade-icons/zipball/6e072d021ea6249986c330b93293c33d0c4f0e34",
+                "reference": "6e072d021ea6249986c330b93293c33d0c4f0e34",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/contracts": "^8.0|^9.0|^10.0|^11.0|^12.0|^13.0",
+                "illuminate/filesystem": "^8.0|^9.0|^10.0|^11.0|^12.0|^13.0",
+                "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0|^13.0",
+                "illuminate/view": "^8.0|^9.0|^10.0|^11.0|^12.0|^13.0",
+                "php": "^7.4|^8.0",
+                "symfony/console": "^5.3|^6.0|^7.0|^8.0",
+                "symfony/finder": "^5.3|^6.0|^7.0|^8.0"
+            },
+            "require-dev": {
+                "mockery/mockery": "^1.5.1",
+                "orchestra/testbench": "^6.0|^7.0|^8.0|^9.0|^10.0|^11.0",
+                "phpunit/phpunit": "^9.0|^10.5|^11.0"
+            },
+            "bin": [
+                "bin/blade-icons-generate"
+            ],
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "BladeUI\\Icons\\BladeIconsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
+                "psr-4": {
+                    "BladeUI\\Icons\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Dries Vints",
+                    "homepage": "https://driesvints.com"
+                }
+            ],
+            "description": "A package to easily make use of icons in your Laravel Blade views.",
+            "homepage": "https://github.com/driesvints/blade-icons",
+            "keywords": [
+                "blade",
+                "icons",
+                "laravel",
+                "svg"
+            ],
+            "support": {
+                "issues": "https://github.com/driesvints/blade-icons/issues",
+                "source": "https://github.com/driesvints/blade-icons"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/sponsors/driesvints",
+                    "type": "github"
+                },
+                {
+                    "url": "https://www.paypal.com/paypalme/driesvints",
+                    "type": "paypal"
+                }
+            ],
+            "time": "2026-06-30T09:44:12+00:00"
         },
         {
             "name": "brick/math",
@@ -2307,6 +2450,82 @@
                 }
             ],
             "time": "2026-09-28T18:12:51+00:00"
+        },
+        {
+            "name": "mahdimajidzadeh/ds",
+            "version": "v0.4.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/MahdiMajidzadeh/majid-ds.git",
+                "reference": "c9e40791e937d1b65f6e54243bb2514395523c8a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/MahdiMajidzadeh/majid-ds/zipball/c9e40791e937d1b65f6e54243bb2514395523c8a",
+                "reference": "c9e40791e937d1b65f6e54243bb2514395523c8a",
+                "shasum": ""
+            },
+            "require": {
+                "afatmustafa/blade-hugeicons": "^2.0.3",
+                "illuminate/support": "^12.0|^13.0",
+                "illuminate/view": "^12.0|^13.0",
+                "livewire/flux": "^2.0",
+                "livewire/livewire": "^3.7.4|^4.0",
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.0",
+                "orchestra/testbench": "^10.0|^11.0",
+                "phpunit/phpunit": "^11.0|^12.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "Mds": "MajidDs\\Mds"
+                    },
+                    "providers": [
+                        "MajidDs\\MajidDsServiceProvider"
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "0.4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "MajidDs\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mahdi Majidzadeh"
+                }
+            ],
+            "description": "Majid DS — an RTL/Persian-first UI kit for Laravel Livewire, built on top of Flux UI with extra e-commerce components.",
+            "homepage": "https://github.com/MahdiMajidzadeh/majid-ds",
+            "keywords": [
+                "blade",
+                "e-commerce",
+                "farsi",
+                "flux",
+                "laravel",
+                "livewire",
+                "persian",
+                "rtl",
+                "ui-kit"
+            ],
+            "support": {
+                "docs": "https://mahdimajidzadeh.github.io/majid-ds/",
+                "issues": "https://github.com/MahdiMajidzadeh/majid-ds/issues",
+                "source": "https://github.com/MahdiMajidzadeh/majid-ds"
+            },
+            "time": "2026-10-01T00:56:54+00:00"
         },
         {
             "name": "monolog/monolog",
