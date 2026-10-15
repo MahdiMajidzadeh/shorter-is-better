@@ -86,10 +86,14 @@ the project. The panel, the API and the mini app answer only on the primary
 
 1. Create a bot with [@BotFather](https://t.me/BotFather) and put its token in
    the `TELEGRAM_TOKEN` environment variable.
-2. Run `php artisan bot:update`, or press **Register webhook and commands** on
-   **Administration → Bot**. This sets the webhook (`/api/telegram/webhook`),
-   the command list in Persian and English, and the mini app menu button.
-   `APP_URL` must be a public HTTPS url; tunnel it for local work.
+2. Press **Register webhook and commands** on **Administration → Bot**, or run
+   `php artisan bot:update` where the app runs (in production: inside the
+   container, `docker exec <container> php artisan bot:update`). The webhook
+   secret is derived from `APP_KEY`, so running it elsewhere registers a
+   secret the server will reject. This sets the webhook
+   (`/api/telegram/webhook`), the command list in Persian and English, and the
+   mini app menu button. `APP_URL` must be a public HTTPS url; tunnel it for
+   local work.
 3. Each user sends `/start` to the bot and opens the link it replies with while
    signed in to the panel. An admin then approves the chat under
    **Administration → Bot access** (admins' own chats are approved at once).

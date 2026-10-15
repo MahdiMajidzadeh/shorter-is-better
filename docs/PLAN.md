@@ -17,7 +17,10 @@ columns. All migrations are additive.
 2. Set `TELEGRAM_TOKEN` in Dokploy. The panel's Bot page shows the token of
    the bot created in the old version, ready to copy.
 3. After the first start, press "Register webhook and commands" on the Bot
-   page, or run `php artisan bot:update`. The webhook path changed to
+   page, or run `docker exec <container> php artisan bot:update` inside the
+   running container. It must run with the production `APP_KEY`, because the
+   webhook secret is derived from it; run from a laptop with another key the
+   bot goes silent with no error. The webhook path changed to
    `/api/telegram/webhook`.
 4. Open the imported channel under Channels and switch it to Persian if you
    want the right-to-left marks; it was imported as English so the post
