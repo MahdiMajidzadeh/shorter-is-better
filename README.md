@@ -1,76 +1,40 @@
 # Shorter is Better
 
-A self-hosted URL shortener with a stats dashboard and a Telegram bot front end.
-Shorten links from a web panel or straight from a Telegram chat, then see who
-clicked them — browsers, devices, operating systems and daily traffic — without
-handing your link data to a third party.
+A personal, self-hosted link shortener for publishing: several short domains,
+Telegram channels with their own post templates, a Telegram bot and mini app,
+a scoped JSON API, click reports, and a Persian right-to-left panel.
 
-Built with Laravel 13 / PHP 8.4 on top of
-[ashallendesign/short-url](https://github.com/ash-jc-allen/short-url) for the
-shortening and click tracking, and [defstudio/telegraph](https://github.com/defstudio/telegraph)
-for the bot. The UI is [Flux UI](https://fluxui.dev) (free tier) on Tailwind
-CSS 4, with automatic light/dark mode.
+Built with Laravel 13 / PHP 8.4. Shortening and click tracking are the app's
+own code; the bot runs on [Nutgram](https://nutgram.dev); API keys are
+[Laravel Sanctum](https://laravel.com/docs/sanctum) tokens; the panel is
+[Flux UI](https://fluxui.dev) on Tailwind CSS 4.
 
-## Features
+## What it does
 
-- **Short links** — auto-generated keys or your own custom key, served from
-  `/s/{key}` with a 301 redirect.
-- **Bulk shortening** — paste a block of text and every URL in it comes back
-  replaced with its short version, surrounding text intact.
-- **Click analytics** — per-link breakdown of browser, device type and operating
-  system, plus a 30-day views chart. Robot traffic is excluded from reports.
-- **Visit log** — a paginated, chronological feed of every recorded click.
-- **Telegram bot** — shorten links, fetch stats and pull a 7-day report from
-  chat. Bots are created and registered from the settings page; no CLI needed.
-- **Channel publishing** — hand the bot a URL and it scrapes the page's
-  OpenGraph title, description and image, shows you a preview with
-  Confirm / Edit / Dismiss buttons, and posts the approved version to your
-  Telegram channel with the short link attached.
-- **Editable landing page** — the public homepage's headline, subtitle and
-  call-to-action are all set from the settings page.
-
-## How it works
-
-| Piece | Where |
-| --- | --- |
-| Web panel (dashboard, links, settings) | [routes/web.php](routes/web.php) |
-| Redirect route `/s/{key}` | registered by the short-url package, prefix set in [config/short-url.php](config/short-url.php) |
-| Health probe `GET /up` | [HealthController.php](app/Http/Controllers/HealthController.php) |
-| Telegram command routing | [app/Http/Webhooks/Handler.php](app/Http/Webhooks/Handler.php) |
-| Bot conversation steps | [app/Http/Webhooks/State/](app/Http/Webhooks/State) |
-
-The bot is a small state machine. `Handler` maps each slash command to a state
-class, and [StateManager](app/Http/Webhooks/StateManager.php) walks the chat
-through numbered steps (`handleStep1`, `handleStep2`, …) using Telegraph's
-per-chat storage, so a multi-turn exchange like "send your url" → "short key:"
-needs no session table of its own.
-
-Bots are locked to a panel user. Sending `/start` returns a one-time
-`/auth/bot/{hash}` link; opening it while signed in to the panel binds that chat
-to your account, and unbound chats get a "Not Allowed" reply instead of a short
-link. Group and channel chats (negative chat IDs) are ignored outright.
-
-### Bot commands
-
-| Command | Does |
-| --- | --- |
-| `/short` | shorten a URL (also the default for any bare message) |
-| `/short_key` | shorten a URL with a custom key |
-| `/stat` | browser / device / OS breakdown and 14-day views for one short URL |
-| `/report` | top 20 links and daily non-bot views for the last 7 days |
-| `/for_channel` | build and publish a channel post — only when a channel is configured |
-| `/feed` | like `/for_channel`, but also asks for a feed URL and adds a second "Read on PM Feed" button to the post |
-
-`bot_commands()` also advertises `/bulk`, but `Handler` has no method for it, so the
-bot replies with its unknown-command message. Bulk shortening works in the panel
-only.
-
-## Requirements
-
-- PHP 8.4+
-- MySQL or MariaDB
-- Composer
-- Node.js (only if you change frontend assets — `public/index.css` is committed)
+- **Projects.** A project is one short domain plus a root redirect url. Links
+  are served from `/s/{key}` on that domain; the bare domain redirects wherever
+  you set. Keys are unique across all projects, so a link resolves on any of
+  your domains.
+- **Channels.** A Telegram channel with a language (Persian or English) and an
+  editable post template: message text with placeholders such as `{title}`,
+  `{short_url}` and `{feed_url}`, plus inline buttons. Channels and projects are
+  many-to-many; each project marks one as default.
+- **Users.** Admins see everything and manage projects, channels, users, the
+  bot and its chats. Other users see the projects they were granted, in the
+  panel, the bot, the API and the mini app alike.
+- **Bot.** One bot for every project: `/short`, `/short_key`, `/bulk`, `/stat`,
+  `/report`, `/project` to switch the active project, `/for_channel` and
+  `/feed` to post an article (with a preview you can confirm, edit or dismiss).
+  A bare url is shortened on the spot. Chats must be approved by an admin.
+- **Mini app.** The bot's menu button opens a small app with the same four
+  things: shorten, links and stats, post to a channel, report.
+- **API.** `/api/v1` with per-project keys that carry scopes.
+- **Reports.** Clicks per day, per link, per source (panel, bot, API, mini
+  app) and per channel, with robot traffic excluded. Titles are fetched from
+  the page automatically.
+- **Persian first.** The panel, bot replies and mini app are Persian and
+  right-to-left by default, with Jalali dates; every user can switch to
+  English.
 
 ## Local setup
 
@@ -80,70 +44,94 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-Point the `DB_*` variables in `.env` at your database, then:
+Point the `DB_*` variables in `.env` at MySQL or MariaDB, then:
 
 ```bash
 php artisan migrate --seed
 ```
 
-The seeder creates one admin account (username `admin`). Set `ADMIN_PASSWORD` in
-`.env` before seeding to pick its password; left empty, the seeder generates a
-random one and prints it once in the seed output.
+The seeder creates one admin account (username `admin`, password from
+`ADMIN_PASSWORD` or a generated one printed once) and the first project from
+`APP_URL`.
 
 ```bash
 php artisan serve
 ```
 
-Sign in at <http://localhost:8000/auth> and the panel is at `/panel`.
+Sign in at <http://localhost:8000/auth>. The panel is at `/panel`.
 
 ### Docker
 
-A single-image FrankenPHP setup (PHP 8.4 + Caddy in one process, supervisord
-running web + queue worker in one container) is ready to go. Create a
-gitignored `.env.docker` with `APP_KEY`, `DB_PASSWORD` and `DB_ROOT_PASSWORD`
-(the snippet is at the top of [compose.local.yaml](compose.local.yaml)), then:
+A single FrankenPHP image with supervisord running the web server and the queue
+worker. Create a gitignored `.env.docker` with `APP_KEY`, `DB_PASSWORD` and
+`DB_ROOT_PASSWORD` (snippet at the top of [compose.local.yaml](compose.local.yaml)),
+then:
 
 ```bash
 docker compose -f compose.local.yaml --env-file .env.docker up --build
 ```
 
-Full details, including the GitHub Actions → Dokploy release pipeline and the
-production panel setup, are in [DOCKER.md](DOCKER.md).
+Production, the Dokploy release pipeline and every environment variable are
+in [DOCKER.md](DOCKER.md).
 
-## Connecting a Telegram bot
+## Projects and domains
 
-1. Create a bot with [@BotFather](https://t.me/BotFather) and copy the token.
-2. In the panel, go to **Settings → Create Bot** and paste the token and a name.
-   The app registers the webhook and the command list for you.
-3. Message your bot `/start` and open the link it sends back while signed in to
-   the panel.
+Create projects under **Administration → Projects**. For each extra domain:
+point its DNS at the server, add the domain to the app in Dokploy (so Traefik
+issues a certificate and routes it to the container), then enter the domain on
+the project. The panel, the API and the mini app answer only on the primary
+`APP_URL` domain; every other project domain serves just the redirects.
 
-The webhook has to be reachable from Telegram, so `APP_URL` must be a public
-HTTPS URL — for local work, tunnel it (ngrok, Cloudflare Tunnel) and re-run:
+## Telegram bot
 
-```bash
-php artisan bot:update
-```
+1. Create a bot with [@BotFather](https://t.me/BotFather) and put its token in
+   the `TELEGRAM_TOKEN` environment variable.
+2. Run `php artisan bot:update`, or press **Register webhook and commands** on
+   **Administration → Bot**. This sets the webhook (`/api/telegram/webhook`),
+   the command list in Persian and English, and the mini app menu button.
+   `APP_URL` must be a public HTTPS url; tunnel it for local work.
+3. Each user sends `/start` to the bot and opens the link it replies with while
+   signed in to the panel. An admin then approves the chat under
+   **Administration → Bot access** (admins' own chats are approved at once).
 
-That re-registers the webhook and refreshes the command list on every bot, which
-is also what you want after changing the available commands in
-[bot_commands()](app/helpers.php).
+To post to a channel: add the bot to the channel as an admin, create the
+channel under **Administration → Channels** with its numeric chat id, and
+attach it to a project. The template editor shows a live preview.
 
-To publish to a channel, add the bot to the channel as an admin and fill in the
-channel ID and username under **Settings → Channel**. Enabling it adds
-`/for_channel` and `/feed` to the command list.
+## API
+
+Create a key under **API keys** (per project, shown once) and send it as
+`Authorization: Bearer <key>`. Scopes: `links:create`, `links:read`,
+`links:stats`, `links:bulk`, `links:delete`, `reports:read`.
+
+| Method | Path | Scope |
+| --- | --- | --- |
+| GET | `/api/v1/me` | any |
+| GET | `/api/v1/links?search=&per_page=` | `links:read` |
+| POST | `/api/v1/links` `{url, key?}` | `links:create` |
+| POST | `/api/v1/links/bulk` `{text}` | `links:bulk` |
+| GET | `/api/v1/links/{key}` | `links:read` |
+| GET | `/api/v1/links/{key}/stats?days=30` | `links:stats` |
+| DELETE | `/api/v1/links/{key}` | `links:delete` |
+| GET | `/api/v1/reports/summary?days=7` | `reports:read` |
+
+Errors always look like `{"error": {"code": "...", "message": "...", "fields"?: {...}}}`.
+120 requests per minute per key. A freshly created link may carry `title: null`
+until the queue worker has fetched the page.
 
 ## Configuration
 
-Runtime settings — homepage copy, channel details — live in
-`storage/settings.json` via [anlutro/l4-settings](https://github.com/anlutro/laravel-settings),
-edited from the settings page rather than the environment. **Back that file up**:
-it is not in the database, and in Docker it lives on the `storage` volume.
+| Key | Purpose |
+| --- | --- |
+| `APP_URL` | Primary domain; the panel, API and mini app live here. |
+| `TELEGRAM_TOKEN` | The bot token. The bot and the mini app refuse to run without it. |
+| `ADMIN_PASSWORD` | Password of the seeded admin. |
+| `SANCTUM_TOKEN_PREFIX` | Prefix of API keys, default `sib_`. |
+| `SENTRY_LARAVEL_DSN` | Optional error reporting. |
 
-Shortening behaviour (key length, tracked fields, redirect status code, the `/s`
-prefix) is in [config/short-url.php](config/short-url.php).
-
-Optional error reporting: set `SENTRY_LARAVEL_DSN`.
+Key length, alphabet and the title fetch timeout are in
+[config/shortener.php](config/shortener.php). Everything else (projects,
+channels, templates) is edited in the panel and stored in the database.
 
 ## Development
 
@@ -155,18 +143,14 @@ Optional error reporting: set `SENTRY_LARAVEL_DSN`.
 php artisan test
 ```
 
-Code style is [Laravel Pint](https://laravel.com/docs/pint) with the rules in
-[pint.json](pint.json). The test suite runs on an in-memory SQLite database and
-covers page rendering, auth redirects and the short-link redirect.
+The suite runs on in-memory SQLite and covers the panel, redirects, the
+shortener, the bot (against Nutgram's fake), the API and the mini app.
+Architecture notes for contributors are in [CLAUDE.md](CLAUDE.md); the
+transformation plan and first-deploy checklist are in [docs/PLAN.md](docs/PLAN.md).
 
-`public/index.css` is committed for non-Docker local development, so Node is
-only needed when you change views or
-[resources/css/app.css](resources/css/app.css) — rebuild it with:
+`public/index.css` is committed for non-Docker local development; rebuild it
+after changing views or `resources/css/app.css`:
 
 ```bash
 npm install && npm run build
 ```
-
-(`npm run watch` rebuilds on change while you work.) The production image does
-not use the committed file: its `assets` stage runs the same build, so the
-shipped CSS always matches the shipped views.

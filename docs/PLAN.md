@@ -212,7 +212,7 @@ Each phase ends green on `php artisan test` and Pint, and is one commit.
 - Screens: shorten, my links, link stats, project report, compose channel
   post. Reuses Blade partials from the panel; compact layout for lists.
 
-### Phase 6: Persian RTL
+### Phase 6: Persian RTL (done)
 
 - `dir="rtl"`, `lang="fa"`, Vazirmatn font in both layouts, `locale = fa`,
   `lang/fa` for every panel string and bot reply, Jalali dates.
@@ -221,7 +221,7 @@ Each phase ends green on `php artisan test` and Pint, and is one commit.
 If you confirm assumption 1, this phase runs alongside phase 1 so every
 new screen is written RTL from the start.
 
-### Phase 7: docs and deploy
+### Phase 7: docs and deploy (done)
 
 - README, DOCKER.md, CLAUDE.md for the new architecture: project domains
   in Dokploy, Nutgram webhook command, Sanctum env,

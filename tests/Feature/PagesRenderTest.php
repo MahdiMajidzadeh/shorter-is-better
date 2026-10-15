@@ -95,6 +95,23 @@ class PagesRenderTest extends TestCase
         $this->actingAs($regular)->get('panel')->assertOk()->assertDontSee('Administration');
     }
 
+    public function test_error_pages_render_in_the_user_language(): void
+    {
+        $this->user->update(['locale' => 'fa']);
+
+        $this->actingAs($this->user)->get('links/does-not-exist')->assertNotFound()->assertSee('صفحه پیدا نشد');
+        $this->get('http://unknown.test/')->assertNotFound()->assertSee('صفحه پیدا نشد');
+    }
+
+    public function test_validation_messages_are_persian_with_field_names(): void
+    {
+        $this->user->update(['locale' => 'fa']);
+
+        $this->actingAs($this->user)->from('links/create')->post('links/create', ['url' => ''])
+            ->assertRedirect('links/create')
+            ->assertSessionHasErrors(['url' => 'فیلد آدرس الزامی است.']);
+    }
+
     public function test_unknown_short_key_returns_404(): void
     {
         $this->actingAs($this->user)->get('links/does-not-exist')->assertNotFound();

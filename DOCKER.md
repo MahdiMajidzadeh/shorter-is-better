@@ -56,9 +56,10 @@ Application container. This layout makes the deployed shape and the repo agree.)
 
 - **`web`** — `frankenphp run` (Caddy + PHP, the only process the healthcheck
   probes).
-- **`worker`** — required: [Telegraph](https://defstudio.github.io/telegraph)
-  sends every bot API call through a queued job (`SendRequestToTelegramJob`),
-  and production runs `QUEUE_CONNECTION=redis`. Flags:
+- **`worker`** — required: link titles are fetched by a queued job
+  (`FetchLinkTitle`) and production runs `QUEUE_CONNECTION=redis`; without
+  the worker every new link keeps an empty title. Bot replies are synchronous
+  and do not depend on it. Flags:
   `--tries=3 --max-time=3600 --sleep=3`. Scale with `numprocs` in
   `docker/supervisord.conf`, never with a second container.
 - **no `scheduler`** — `App\Console\Kernel::schedule()` is empty (has been
@@ -99,10 +100,12 @@ from the tab is a key the container does not have.
 | `APP_ENV` | `production` |
 | `APP_DEBUG` | `false` |
 | `APP_KEY` | **Required.** Generate once: `docker run --rm <image> php artisan key:generate --show`. Changing it invalidates every session and encrypted value — the container refuses to boot without one rather than generating a throwaway. |
-| `APP_URL` | **Required.** Public URL including scheme; short links are built from this. |
+| `APP_URL` | **Required.** Public URL of the primary domain including scheme. The panel, the API and the mini app answer only here; the first project is created from it. |
+| `TELEGRAM_TOKEN` | **Required for the bot and the mini app.** Token from @BotFather. After the first boot run `php artisan bot:update` (or the panel's Bot page) to register the webhook, command list and menu button. |
+| `SANCTUM_TOKEN_PREFIX` | Optional, default `sib_`; prefix of API keys. |
 | `LOG_CHANNEL` | `stderr` (so `docker logs` gets everything) |
 | `LOG_LEVEL` | `warning` |
-| `ADMIN_PASSWORD` | Password for the seeded `admin` account; empty = seeder generates one and prints it once. |
+| `ADMIN_PASSWORD` | Password for the seeded `admin` account; empty = seeder generates one and prints it once. Seeding also creates the first project from `APP_URL`. |
 | `DB_CONNECTION` | `mariadb` |
 | `DB_HOST` | Internal hostname of the **panel-managed database** on `dokploy-network` (from the database service's page in Dokploy). |
 | `DB_PORT` | `3306` |
@@ -148,12 +151,14 @@ deletes the old volumes**):
    `REDIS_HOST` pointing at the panel datastores. (`DB_ROOT_PASSWORD` is no
    longer needed — that belonged to the compose-hosted MariaDB. `APP_IMAGE` /
    `IMAGE_TAG` are gone too — the image is chosen in the provider settings.)
-5. **Mount:** a volume at `/app/storage`. It holds `storage/settings.json`
-   (anlutro/l4-settings: homepage copy and channel settings) and uploads —
-   copy the contents of the old `app-storage` volume into it.
-6. **Port / domain:** route the domain to container port **8080**. Traefik
-   terminates TLS; the container trusts its `X-Forwarded-*` headers (see
-   `app/Http/Middleware/TrustProxies.php`).
+5. **Mount:** a volume at `/app/storage`. Since v2 it holds only logs and
+   uploads (settings moved into the database), but keep it: the first v2 boot
+   reads the old `storage/settings.json` once to import the channel.
+6. **Port / domains:** route the primary domain to container port **8080**.
+   Traefik terminates TLS; the container trusts its `X-Forwarded-*` headers
+   (see `app/Http/Middleware/TrustProxies.php`). Every extra short domain is
+   added the same way, as another domain on the same Application, and then
+   entered on its project in the panel. No code change per domain.
 7. **Stop timeout:** raise the container stop timeout to at least **90s** (the
    worker's `stopwaitsecs`), or docker SIGKILLs supervisord ~10s into a
    redeploy and a running job dies mid-flight.
@@ -226,8 +231,16 @@ supervisord process model as production (web + worker in one container).
 
 ## Operating notes
 
-- **Persistent state.** `/app/storage` holds `storage/settings.json` — losing
-  that mount loses the homepage copy and channel settings. Back it up.
+- **Persistent state** is the database: projects, channels, templates, API
+  keys, bot chats, links and visits. `/app/storage` holds only logs and
+  uploads now. Back up the database.
+- **After a deploy that changes `APP_URL`** or the bot token, run
+  `docker exec <container> php artisan bot:update` so Telegram points at the
+  right webhook and the mini app menu button has the right url.
+- **Bot silent?** Check `TELEGRAM_TOKEN` is set, `bot:update` has run, and
+  that the chat is approved under Bot access. The webhook rejects calls
+  without the secret token Nutgram derives from `APP_KEY`, so changing
+  `APP_KEY` also needs a `bot:update`.
 - **Worker liveness:** `docker exec <container> supervisorctl status`.
 - **Artisan in the running container:**
   ```bash

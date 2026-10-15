@@ -55,7 +55,7 @@ Plain controllers + Blade, routes in `routes/web.php`. `/` (`RootController`: pr
 
 Views extend `template/master` (public) or `template/dash` (panel sidebar). The UI is Flux UI used purely as Blade components (`<flux:...>`); there are no Livewire components in `app/`. The Tailwind build `@import`s and `@source`s files from `vendor/livewire/flux`, so `vendor/` must exist before `npm run build` works.
 
-The panel is Persian and RTL by default (`config('app.locale') = fa`, per-user `locale` column). Every user-facing string goes through `__()` with the English text as the key and its translation in `lang/fa.json`. Dates and numbers go through the `local_date()` / `local_number()` helpers (Jalali and Persian digits in `fa`). Mark url/code inputs and cells `dir="ltr"`.
+The panel is Persian and RTL by default (`config('app.locale') = fa`, per-user `locale` column). Every user-facing string goes through `__()` with the English text as the key and its translation in `lang/fa.json`. Dates and numbers go through the `local_date()` / `local_number()` helpers (Jalali and Persian digits in `fa`). Mark url/code inputs and cells `dir="ltr"`. Framework strings (validation, auth, pagination) are in `lang/fa/*.php`, generated from laravel-lang; `validation.attributes` there names every form field, so add a Persian label when adding a field. Error pages (`resources/views/errors/`) extend `errors.layout`.
 
 ### API (Sanctum)
 

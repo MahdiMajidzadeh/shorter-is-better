@@ -223,5 +223,18 @@
     "Not posted to a channel": "بدون انتشار در کانال",
     "Referrers": "ارجاع‌دهنده‌ها",
     "Direct": "مستقیم",
-    ":count in the last 30 days": ":count کلیک در ۳۰ روز اخیر"
+    ":count in the last 30 days": ":count کلیک در ۳۰ روز اخیر",
+    "Back to the panel": "بازگشت به پنل",
+    "You are not allowed to do this.": "اجازه این کار را ندارید.",
+    "This page needs a role your account does not have.": "این صفحه به نقشی نیاز دارد که حساب شما ندارد.",
+    "Page not found": "صفحه پیدا نشد",
+    "The link may be wrong, or the page was removed.": "شاید لینک اشتباه باشد یا صفحه حذف شده باشد.",
+    "The page expired": "صفحه منقضی شد",
+    "Your session timed out. Go back and try again.": "نشست شما تمام شده است. برگردید و دوباره تلاش کنید.",
+    "Too many requests": "درخواست‌های بیش از حد",
+    "Slow down a little and try again in a minute.": "کمی آهسته‌تر؛ یک دقیقه دیگر دوباره تلاش کنید.",
+    "Something went wrong": "مشکلی پیش آمد",
+    "The error has been recorded. Try again in a moment.": "خطا ثبت شد. چند لحظه دیگر دوباره تلاش کنید.",
+    "Temporarily unavailable": "موقتاً در دسترس نیست",
+    "The service is being updated. Try again shortly.": "سرویس در حال به‌روزرسانی است. کمی بعد دوباره تلاش کنید."
 }

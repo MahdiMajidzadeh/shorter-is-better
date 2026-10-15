@@ -26,6 +26,7 @@ services:
       APP_DEBUG: ${APP_DEBUG:-false}
       APP_KEY: ${APP_KEY:?required - generate with `php artisan key:generate --show`}
       APP_URL: ${APP_URL:-http://localhost:8080}
+      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN:-}
       LOG_CHANNEL: stderr
       LOG_LEVEL: ${LOG_LEVEL:-debug}
 
