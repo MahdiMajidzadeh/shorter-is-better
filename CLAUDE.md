@@ -57,6 +57,14 @@ Views extend `template/master` (public) or `template/dash` (panel sidebar). The 
 
 The panel is Persian and RTL by default (`config('app.locale') = fa`, per-user `locale` column). Every user-facing string goes through `__()` with the English text as the key and its translation in `lang/fa.json`. Dates and numbers go through the `local_date()` / `local_number()` helpers (Jalali and Persian digits in `fa`). Mark url/code inputs and cells `dir="ltr"`.
 
+### API (Sanctum)
+
+`routes/api.php`, prefix `/api/v1`, every route behind `auth:sanctum` + `api.project`. An API key is `App\Models\ApiKey` (Sanctum's token model, `personal_access_tokens` + `project_id`): owned by a user, bound to one project, scopes stored as abilities (`ApiKey::SCOPES`), prefixed `sib_`. Create keys with `ApiKey::issue()` (panel page `/api-keys`, per current project). `SetApiProjectContext` refuses disabled owners and lost project access, then binds the key's project so controllers use `$this->project()` like the panel. Routes declare their scope with `->middleware('ability:links:create')`. Rate limit is 120/min per key (`RouteServiceProvider`, resolved through the sanctum guard because throttling runs before route auth).
+
+Errors on `api/*` always render as `{"error": {"code", "message", "fields"?}}` from `Exceptions\Handler::renderApi()`; note Laravel turns `AuthorizationException` into `AccessDeniedHttpException` before renderables run. Endpoints: `GET me`, `GET/POST links`, `POST links/bulk`, `GET/DELETE links/{key}`, `GET links/{key}/stats`, `GET reports/summary`. All numbers come from `App\Services\ReportService`; use it for any new stats instead of writing queries in a controller. Dates in the API are ISO 8601 Gregorian.
+
+In tests, create a real key with `ApiKey::issue()` and send it with `withToken()`; call `$this->app['auth']->forgetGuards()` between requests because the sanctum request guard caches its user for the whole test (see `ApiTest::api()`).
+
 ### Telegram bot (Nutgram)
 
 One bot, token in `TELEGRAM_TOKEN`, webhook at `POST /api/telegram/webhook` (`TelegramWebhookController`, secret token enforced in production by Nutgram safe mode). Handlers live in `routes/telegram.php`:

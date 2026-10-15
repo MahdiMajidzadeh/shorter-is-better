@@ -43,6 +43,9 @@
             <flux:sidebar.item icon="document-text" href="{{ url('/links/logs') }}" :current="request()->is('links/logs')">
                 {{ __('Visit log') }}
             </flux:sidebar.item>
+            <flux:sidebar.item icon="key" href="{{ url('/api-keys') }}" :current="request()->is('api-keys*')">
+                {{ __('API keys') }}
+            </flux:sidebar.item>
         </flux:sidebar.nav>
 
         @if(auth()->user()->is_admin)

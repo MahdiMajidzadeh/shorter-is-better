@@ -30,6 +30,12 @@ Route::group(['middleware' => ['primary', 'auth', 'project']], function () {
         Route::get('/{short}', [C\LinkController::class, 'detail']);
     });
 
+    Route::group(['prefix' => 'api-keys'], function () {
+        Route::get('/', [C\ApiKeyController::class, 'index']);
+        Route::post('/', [C\ApiKeyController::class, 'store']);
+        Route::post('/{id}/delete', [C\ApiKeyController::class, 'destroy']);
+    });
+
     Route::group(['middleware' => 'admin'], function () {
         Route::group(['prefix' => 'projects'], function () {
             Route::get('/', [C\ProjectController::class, 'index']);

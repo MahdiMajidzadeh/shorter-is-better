@@ -55,6 +55,7 @@ class PagesRenderTest extends TestCase
             'links/create',
             'links/bulk',
             'links/logs',
+            'api-keys',
             'links/'.$short->url_key,
             'projects',
             'projects/create',

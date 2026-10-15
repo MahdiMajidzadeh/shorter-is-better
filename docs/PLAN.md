@@ -162,7 +162,7 @@ Each phase ends green on `php artisan test` and Pint, and is one commit.
 - Tests rewritten with Nutgram's fake bot: each conversation, the access
   gate, channel choice, template output.
 
-### Phase 3: API
+### Phase 3: API (done)
 
 - Sanctum. Keys created in the panel per project with chosen scopes, shown
   once. Rate limit per key.

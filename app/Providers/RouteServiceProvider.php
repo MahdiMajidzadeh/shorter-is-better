@@ -51,8 +51,12 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function configureRateLimiting()
     {
+        // One bucket per API key, falling back to the caller's IP before auth.
         RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+            // Throttling runs before route auth, so resolve the key through the sanctum guard.
+            $token = $request->user('sanctum')?->currentAccessToken();
+
+            return Limit::perMinute(120)->by($token?->id ? 'key:'.$token->id : 'ip:'.$request->ip());
         });
     }
 }

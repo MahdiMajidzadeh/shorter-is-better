@@ -75,6 +75,7 @@ class UserController extends Controller
         }
 
         BotChat::where('user_id', $user->id)->update(['user_id' => null, 'status' => BotChat::PENDING]);
+        $user->tokens()->delete();
         $user->delete();
 
         return redirect('users')->with('msg-ok', __('User deleted.'));

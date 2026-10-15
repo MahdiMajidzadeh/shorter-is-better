@@ -12,17 +12,20 @@ use Illuminate\Auth\Middleware\Authorize;
 use App\Http\Middleware\EnsurePrimaryHost;
 use App\Http\Middleware\SetProjectContext;
 use Illuminate\Http\Middleware\HandleCors;
+use App\Http\Middleware\SetApiProjectContext;
 use Illuminate\Auth\Middleware\RequirePassword;
 use Illuminate\Http\Middleware\SetCacheHeaders;
 use Illuminate\Session\Middleware\StartSession;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use Illuminate\Routing\Middleware\ThrottleRequests;
+use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Illuminate\Routing\Middleware\ValidateSignature;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Auth\Middleware\AuthenticateWithBasicAuth;
 use Illuminate\Foundation\Http\Middleware\ValidatePostSize;
@@ -78,7 +81,10 @@ class Kernel extends HttpKernel
      * @var array<string, class-string|string>
      */
     protected $routeMiddleware = [
+        'abilities'        => CheckAbilities::class,
+        'ability'          => CheckForAnyAbility::class,
         'admin'            => EnsureAdmin::class,
+        'api.project'      => SetApiProjectContext::class,
         'primary'          => EnsurePrimaryHost::class,
         'auth'             => Authenticate::class,
         'project'          => SetProjectContext::class,
