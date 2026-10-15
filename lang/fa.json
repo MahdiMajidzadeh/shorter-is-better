@@ -102,7 +102,6 @@
     "Project saved.": "پروژه ذخیره شد.",
     "Projects": "پروژه‌ها",
     "Recent activity": "فعالیت اخیر",
-    "Referrers, 7 days": "ارجاع‌دهنده‌ها، ۷ روز اخیر",
     "Rendered with sample data as you type.": "هم‌زمان با تایپ، با داده نمونه رندر می‌شود.",
     "Role": "نقش",
     "Root redirect": "هدایت دامنه",
@@ -216,5 +215,13 @@
     "Read link statistics": "خواندن آمار لینک",
     "Bulk-shorten text": "کوتاه‌سازی گروهی متن",
     "Delete links": "حذف لینک",
-    "Read project reports": "خواندن گزارش پروژه"
+    "Read project reports": "خواندن گزارش پروژه",
+    "Clicks by source, 7 days": "کلیک بر اساس منبع، ۷ روز اخیر",
+    "Where the clicked links were created": "لینک‌های کلیک‌شده از کجا ساخته شده‌اند",
+    "Clicks by channel, 7 days": "کلیک بر اساس کانال، ۷ روز اخیر",
+    "Links posted by the bot, per channel": "لینک‌هایی که ربات در هر کانال منتشر کرده",
+    "Not posted to a channel": "بدون انتشار در کانال",
+    "Referrers": "ارجاع‌دهنده‌ها",
+    "Direct": "مستقیم",
+    ":count in the last 30 days": ":count کلیک در ۳۰ روز اخیر"
 }

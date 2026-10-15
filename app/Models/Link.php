@@ -45,6 +45,12 @@ class Link extends Model
         return $this->belongsTo(User::class);
     }
 
+    /** The channel this link was posted to by the bot, if any. */
+    public function channel(): BelongsTo
+    {
+        return $this->belongsTo(Channel::class);
+    }
+
     public function visits(): HasMany
     {
         return $this->hasMany(Visit::class, 'short_url_id');

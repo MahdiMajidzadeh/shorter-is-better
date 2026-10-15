@@ -205,6 +205,7 @@ class BotTest extends TestCase
         ], 2);
         $this->bot->assertReplyText(__('bot_replies.published', ['channel' => $channel->title]), 3);
         $this->bot->assertNoConversation(self::CHAT, self::CHAT);
+        $this->assertSame($channel->id, Link::firstOrFail()->channel_id);
     }
 
     public function test_a_refused_channel_post_is_reported_not_claimed(): void

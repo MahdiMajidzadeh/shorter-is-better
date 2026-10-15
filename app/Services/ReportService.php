@@ -8,6 +8,7 @@ use App\Models\Project;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 /**
  * Every analytics query in one place, so the panel, the bot, the API and
@@ -21,18 +22,21 @@ class ReportService
         $previous = now()->subDays($days * 2);
 
         return [
-            'days'            => $days,
-            'since'           => $since->toIso8601String(),
-            'clicks'          => $this->visits($project)->where('visited_at', '>=', $since)->count(),
-            'clicks_previous' => $this->visits($project)->whereBetween('visited_at', [$previous, $since])->count(),
-            'clicks_total'    => $this->visits($project)->count(),
-            'links_total'     => Link::forProject($project)->count(),
-            'links_new'       => Link::forProject($project)->where('created_at', '>=', $since)->count(),
-            'daily'           => $this->daily($this->visits($project), $since),
-            'top_links'       => $this->topLinks($project, $since),
-            'devices'         => $this->breakdown($this->visits($project)->where('visited_at', '>=', $since), 'device_type'),
-            'sources'         => $this->sources($project, $since),
-            'referrers'       => $this->referrers($this->visits($project)->where('visited_at', '>=', $since)),
+            'days'             => $days,
+            'since'            => $since->toIso8601String(),
+            'clicks_today'     => $this->visits($project)->where('visited_at', '>=', today())->count(),
+            'clicks_yesterday' => $this->visits($project)->whereBetween('visited_at', [today()->subDay(), today()])->count(),
+            'clicks'           => $this->visits($project)->where('visited_at', '>=', $since)->count(),
+            'clicks_previous'  => $this->visits($project)->whereBetween('visited_at', [$previous, $since])->count(),
+            'clicks_total'     => $this->visits($project)->count(),
+            'links_total'      => Link::forProject($project)->count(),
+            'links_new'        => Link::forProject($project)->where('created_at', '>=', $since)->count(),
+            'daily'            => $this->daily($this->visits($project), $since),
+            'top_links'        => $this->topLinks($project, $since),
+            'devices'          => $this->breakdown($this->visits($project)->where('visited_at', '>=', $since), 'device_type'),
+            'sources'          => $this->sources($project, $since),
+            'channels'         => $this->channels($project, $since),
+            'referrers'        => $this->referrers($this->visits($project)->where('visited_at', '>=', $since)),
         ];
     }
 
@@ -114,6 +118,26 @@ class ReportService
             ->get(['short_urls.source as name', DB::raw('COUNT(*) as clicks')])
             ->map(fn ($row) => ['name' => $row->name, 'clicks' => (int) $row->clicks])
             ->all();
+    }
+
+    /** Clicks grouped by the channel the link was posted to; links never posted are "none". */
+    public function channels(Project $project, $since): array
+    {
+        return $this->visits($project)
+            ->join('short_urls', 'short_urls.id', '=', 'short_url_visits.short_url_id')
+            ->leftJoin('channels', 'channels.id', '=', 'short_urls.channel_id')
+            ->where('visited_at', '>=', $since)
+            ->groupBy('short_urls.channel_id', 'channels.title')
+            ->orderByDesc('clicks')
+            ->get(['short_urls.channel_id', 'channels.title', DB::raw('COUNT(*) as clicks')])
+            ->map(fn ($row) => ['id' => $row->channel_id, 'name' => $row->title, 'clicks' => (int) $row->clicks])
+            ->all();
+    }
+
+    /** The latest human clicks with their link, for the activity feed. */
+    public function recent(Project $project, int $limit = 8): EloquentCollection
+    {
+        return $this->visits($project)->with('link')->orderByDesc('visited_at')->take($limit)->get();
     }
 
     /** Referring hosts; clicks without a referer are "direct". */

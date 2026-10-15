@@ -23,6 +23,8 @@ return [
     'stat_os'             => 'Operating systems',
     'report_title'        => 'Last 7 days · :project',
     'report_empty'        => 'No clicks in the last 7 days.',
+    'report_links_new'    => ':count new links',
+    'report_channels'     => 'Clicks by channel',
     'report_daily'        => 'Daily clicks',
     'choose_project'      => 'Choose the active project:',
     'project_not_allowed' => 'You do not have access to that project.',

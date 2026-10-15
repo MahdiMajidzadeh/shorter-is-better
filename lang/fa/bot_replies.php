@@ -23,6 +23,8 @@ return [
     'stat_os'             => 'سیستم‌عامل‌ها',
     'report_title'        => '۷ روز اخیر · :project',
     'report_empty'        => 'در ۷ روز اخیر کلیکی نبوده است.',
+    'report_links_new'    => ':count لینک جدید',
+    'report_channels'     => 'کلیک بر اساس کانال',
     'report_daily'        => 'کلیک روزانه',
     'choose_project'      => 'پروژه فعال را انتخاب کن:',
     'project_not_allowed' => 'به این پروژه دسترسی نداری.',

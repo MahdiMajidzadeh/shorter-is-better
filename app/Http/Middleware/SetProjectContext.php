@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use App\Models\Project;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\View;
 
 /**
@@ -23,6 +24,7 @@ class SetProjectContext
         }
 
         app()->setLocale($user->locale ?: config('app.locale'));
+        Carbon::setLocale(app()->getLocale());
 
         $projects = $user->accessibleProjectList();
         $current = $projects->firstWhere('id', $request->session()->get('project_id')) ?? $projects->first();

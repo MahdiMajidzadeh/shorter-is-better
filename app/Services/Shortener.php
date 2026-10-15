@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Link;
 use App\Models\User;
+use App\Models\Channel;
 use App\Models\Project;
 use App\Jobs\FetchLinkTitle;
 use Illuminate\Support\Collection;
@@ -19,7 +20,7 @@ class Shortener
 {
     public const URL_PATTERN = '~https?://[^\s<>"\']+~iu';
 
-    public function make(Project $project, ?User $user, string $url, string $source, ?string $key = null): Link
+    public function make(Project $project, ?User $user, string $url, string $source, ?string $key = null, ?Channel $channel = null): Link
     {
         $url = trim($url);
 
@@ -39,7 +40,7 @@ class Shortener
             }
         }
 
-        $link = $this->insert($project, $user, $url, $source, $key);
+        $link = $this->insert($project, $user, $url, $source, $key, $channel);
 
         FetchLinkTitle::dispatch($link);
 
@@ -80,7 +81,7 @@ class Shortener
             && in_array(strtolower((string) parse_url($url, PHP_URL_SCHEME)), ['http', 'https'], true);
     }
 
-    private function insert(Project $project, ?User $user, string $url, string $source, ?string $key): Link
+    private function insert(Project $project, ?User $user, string $url, string $source, ?string $key, ?Channel $channel): Link
     {
         $length = (int) config('shortener.key_length');
         $maxAttempts = (int) config('shortener.max_attempts');
@@ -93,6 +94,7 @@ class Shortener
                 return Link::create([
                     'project_id'                     => $project->id,
                     'user_id'                        => $user?->id,
+                    'channel_id'                     => $channel?->id,
                     'source'                         => $source,
                     'destination_url'                => $url,
                     'url_key'                        => $urlKey,

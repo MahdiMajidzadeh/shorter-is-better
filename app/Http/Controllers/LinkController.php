@@ -6,11 +6,10 @@ use App\Models\Link;
 use App\Models\Visit;
 use App\Services\Shortener;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Services\ReportService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use App\Exceptions\ShortenerException;
-use Illuminate\Database\Eloquent\Collection;
 
 class LinkController extends Controller
 {
@@ -53,26 +52,16 @@ class LinkController extends Controller
         return redirect('links/'.$link->url_key);
     }
 
-    public function detail(Request $request, string $short): View
+    public function detail(Request $request, ReportService $reports, string $short): View
     {
         $link = Link::findByKey($short);
 
         abort_if(! $link || ! $request->user()->canAccessProject($link->project_id), 404);
 
-        $data['short'] = $link;
-        $data['operating_system'] = $this->getVisitData($link->id, 'operating_system');
-        $data['device_type'] = $this->getVisitData($link->id, 'device_type');
-        $data['browser'] = $this->getVisitData($link->id, 'browser');
-        $data['views'] = Visit::query()
-            ->select(DB::raw('Date(visited_at) as x'), DB::raw('count(*) as y'))
-            ->where('short_url_id', $link->id)
-            ->human()
-            ->where('visited_at', '>', now()->subDays(30))
-            ->groupBy(DB::raw('Date(visited_at)'))
-            ->orderBy('x')
-            ->get();
-
-        return view('panel.links-detail', $data);
+        return view('panel.links-detail', [
+            'short' => $link->load('channel'),
+            'stats' => $reports->linkStats($link, 30),
+        ]);
     }
 
     public function deleteSubmit(Request $request, int $id): RedirectResponse
@@ -115,16 +104,5 @@ class LinkController extends Controller
             ->paginate(40);
 
         return view('panel.links-logs', $data);
-    }
-
-    private function getVisitData(int $id, string $type): Collection
-    {
-        return Visit::query()
-            ->where('short_url_id', $id)
-            ->human()
-            ->groupBy($type)
-            ->selectRaw($type.' as name, count(*) as total')
-            ->orderBy('total', 'desc')
-            ->get();
     }
 }

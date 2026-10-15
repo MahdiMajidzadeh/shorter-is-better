@@ -16,26 +16,27 @@
             <flux:input label="{{ __('Short link') }}" icon="hashtag" value="{{ $short->default_short_url }}" readonly copyable dir="ltr"/>
             <div class="mt-2 flex flex-wrap gap-x-4 text-sm">
                 <flux:link href="{{ $short->default_short_url }}" variant="subtle">{{ __('Open link') }}</flux:link>
-                <flux:text size="sm">{{ __('Created :date from :source', ['date' => local_date($short->created_at, true), 'source' => __('source.'.$short->source)]) }}</flux:text>
+                <flux:text size="sm">{{ __('Created :date from :source', ['date' => local_date($short->created_at, true), 'source' => __('source.'.$short->source)]) }}@if($short->channel) · {{ __('Channel') }}: {{ $short->channel->title }}@endif</flux:text>
             </div>
         </flux:card>
     </div>
 
     <flux:card class="mt-6">
         <flux:text>{{ __('Clicks, bots excluded') }}</flux:text>
-        <flux:heading size="xl" class="mt-1">{{ local_number($short->visits()->human()->count()) }}</flux:heading>
+        <flux:heading size="xl" class="mt-1">{{ local_number($stats['clicks_total']) }}</flux:heading>
+        <flux:text size="sm" class="mt-1">{{ __(':count in the last 30 days', ['count' => local_number($stats['clicks'])]) }}</flux:text>
         <div id="view-chart" class="mt-6" dir="ltr"></div>
     </flux:card>
 
-    <div class="mt-6 grid gap-6 md:grid-cols-3">
-        @foreach([['title' => __('Operating system'), 'rows' => $operating_system], ['title' => __('Browser'), 'rows' => $browser], ['title' => __('Device'), 'rows' => $device_type, 'device' => true]] as $block)
+    <div class="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        @foreach([['title' => __('Operating system'), 'rows' => $stats['operating_systems']], ['title' => __('Browser'), 'rows' => $stats['browsers']], ['title' => __('Device'), 'rows' => $stats['devices'], 'device' => true], ['title' => __('Referrers'), 'rows' => $stats['referrers'], 'referrer' => true]] as $block)
             <flux:card>
                 <flux:heading>{{ $block['title'] }}</flux:heading>
                 <div class="mt-4 space-y-3">
                     @forelse($block['rows'] as $item)
                         <div class="flex items-center justify-between">
-                            <flux:text>{{ $item['name'] ? (($block['device'] ?? false) ? __('device.'.$item['name']) : $item['name']) : __('Unknown') }}</flux:text>
-                            <flux:badge size="sm">{{ local_number($item['total']) }}</flux:badge>
+                            <flux:text class="truncate" dir="auto">{{ $item['name'] ? (($block['device'] ?? false) ? __('device.'.$item['name']) : (($block['referrer'] ?? false) && $item['name'] === 'direct' ? __('Direct') : $item['name'])) : __('Unknown') }}</flux:text>
+                            <flux:badge size="sm">{{ local_number($item['clicks']) }}</flux:badge>
                         </div>
                     @empty
                         <flux:text size="sm">{{ __('No clicks yet.') }}</flux:text>
@@ -81,7 +82,7 @@
             theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' },
             plotOptions: { bar: { horizontal: false, borderRadius: 2 } },
             dataLabels: { enabled: false },
-            series: [{ name: @json(__('Clicks')), data: @json($views) }]
+            series: [{ name: @json(__('Clicks')), data: @json(collect($stats['daily'])->map(fn ($d) => ['x' => local_date($d['date']), 'y' => $d['clicks']])->values()) }]
         });
         chart.render();
     </script>

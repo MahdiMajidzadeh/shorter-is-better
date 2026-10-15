@@ -43,13 +43,8 @@ class DashboardTest extends TestCase
         $response = $this->actingAs($this->user)->get('panel');
 
         $response->assertOk()
-            ->assertViewHas('clicksToday', 2)
-            ->assertViewHas('clicksWeek', 2)
-            ->assertViewHas('totalClicks', 3)
-            ->assertViewHas('totalLinks', 1)
-            ->assertSee('/s/'.$short->url_key)
-            ->assertSee('t.me')
-            ->assertSee('direct');
+            ->assertViewHas('summary', fn (array $s) => $s['clicks_today'] === 2 && $s['clicks'] === 2 && $s['clicks_total'] === 3 && $s['links_total'] === 1)
+            ->assertSee('/s/'.$short->url_key);
     }
 
     public function test_visits_without_a_device_type_count_as_human(): void
@@ -57,7 +52,7 @@ class DashboardTest extends TestCase
         $short = $this->makeLink($this->project);
         $this->makeVisit($short, now(), null);
 
-        $this->actingAs($this->user)->get('panel')->assertViewHas('clicksToday', 1);
+        $this->actingAs($this->user)->get('panel')->assertViewHas('summary', fn (array $s) => $s['clicks_today'] === 1);
     }
 
     public function test_dashboard_is_scoped_to_the_current_project(): void
@@ -67,25 +62,40 @@ class DashboardTest extends TestCase
         $this->makeVisit($this->makeLink($other));
         $this->makeVisit($this->makeLink($other));
 
-        $this->actingAs($this->user)->get('panel')->assertViewHas('totalClicks', 1);
+        $this->actingAs($this->user)->get('panel')->assertViewHas('summary', fn (array $s) => $s['clicks_total'] === 1);
 
         $this->actingAs($this->user)->get('panel/project/'.$other->id)->assertRedirect();
-        $this->actingAs($this->user)->get('panel')->assertViewHas('totalClicks', 2)->assertViewHas('totalLinks', 2);
+        $this->actingAs($this->user)->get('panel')->assertViewHas('summary', fn (array $s) => $s['clicks_total'] === 2 && $s['links_total'] === 2);
     }
 
-    public function test_referrers_are_grouped_by_host(): void
+    public function test_dashboard_breaks_clicks_down_by_source_and_channel(): void
+    {
+        $channel = $this->makeChannel($this->project, ['title' => 'PM Feed']);
+        $posted = $this->makeLink($this->project, 'https://example.com/a', ['source' => 'bot', 'channel_id' => $channel->id]);
+        $plain = $this->makeLink($this->project, 'https://example.com/b', ['source' => 'api']);
+
+        $this->makeVisit($posted, now(), 'desktop', 'https://t.me/c');
+        $this->makeVisit($posted, now(), 'mobile');
+        $this->makeVisit($plain, now(), 'desktop');
+
+        $summary = $this->actingAs($this->user)->get('panel')->assertOk()
+            ->assertSee('PM Feed')
+            ->assertSee('Not posted to a channel')
+            ->viewData('summary');
+
+        $this->assertSame([['name' => 'bot', 'clicks' => 2], ['name' => 'api', 'clicks' => 1]], $summary['sources']);
+        $this->assertSame([['id' => $channel->id, 'name' => 'PM Feed', 'clicks' => 2], ['id' => null, 'name' => null, 'clicks' => 1]], $summary['channels']);
+        $this->assertSame([['name' => 'direct', 'clicks' => 2], ['name' => 't.me', 'clicks' => 1]], $summary['referrers']);
+    }
+
+    public function test_link_detail_uses_the_shared_stats(): void
     {
         $short = $this->makeLink($this->project);
+        $this->makeVisit($short, now(), 'mobile', 'https://t.me/c');
+        $this->makeVisit($short, now()->subDays(40), 'desktop');
 
-        $this->makeVisit($short, now(), 'desktop', 'https://t.me/channel-one');
-        $this->makeVisit($short, now(), 'desktop', 'https://t.me/channel-two');
-        $this->makeVisit($short, now(), 'mobile', 'https://x.com/post');
-
-        $response = $this->actingAs($this->user)->get('panel');
-        $referrers = $response->viewData('referrers');
-
-        $this->assertSame('t.me', $referrers->first()->host);
-        $this->assertSame(2, $referrers->first()->views);
-        $this->assertSame('x.com', $referrers->last()->host);
+        $this->actingAs($this->user)->get('links/'.$short->url_key)->assertOk()
+            ->assertViewHas('stats', fn (array $s) => $s['clicks_total'] === 2 && $s['clicks'] === 1 && $s['devices'][0]['name'] === 'mobile')
+            ->assertSee('t.me');
     }
 }

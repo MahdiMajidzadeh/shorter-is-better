@@ -112,7 +112,7 @@ class ForChannel extends Conversation
         }
 
         try {
-            $link = app(Shortener::class)->make($this->botProject($bot), $this->botUser($bot), $url, Link::SOURCE_BOT);
+            $link = app(Shortener::class)->make($this->botProject($bot), $this->botUser($bot), $url, Link::SOURCE_BOT, channel: $this->channel());
         } catch (ShortenerException $e) {
             $bot->sendMessage($e->getMessage());
 
@@ -138,7 +138,7 @@ class ForChannel extends Conversation
         $url = trim($bot->message()?->text ?? '');
 
         try {
-            $link = app(Shortener::class)->make($this->botProject($bot), $this->botUser($bot), $url, Link::SOURCE_BOT);
+            $link = app(Shortener::class)->make($this->botProject($bot), $this->botUser($bot), $url, Link::SOURCE_BOT, channel: $this->channel());
         } catch (ShortenerException) {
             $bot->sendMessage(__('bot_replies.invalid_feed_url'));
 

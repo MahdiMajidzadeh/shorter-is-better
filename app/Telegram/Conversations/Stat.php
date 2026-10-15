@@ -3,9 +3,8 @@
 namespace App\Telegram\Conversations;
 
 use App\Models\Link;
-use App\Models\Visit;
 use SergiX44\Nutgram\Nutgram;
-use Illuminate\Support\Facades\DB;
+use App\Services\ReportService;
 use App\Telegram\Support\InteractsWithBotChat;
 use SergiX44\Nutgram\Conversations\Conversation;
 use SergiX44\Nutgram\Telegram\Properties\ParseMode;
@@ -37,42 +36,27 @@ class Stat extends Conversation
             return;
         }
 
+        $stats = app(ReportService::class)->linkStats($link, 14);
+
         $lines = [
             '<b>'.e($link->displayTitle()).'</b>',
             e($link->default_short_url),
-            e(__('bot_replies.clicks', ['count' => local_number($link->visits()->human()->count())])),
+            e(__('bot_replies.clicks', ['count' => local_number($stats['clicks_total'])])),
             '',
             '<b>'.e(__('bot_replies.stat_daily')).'</b>',
         ];
 
-        $daily = Visit::query()
-            ->where('short_url_id', $link->id)
-            ->human()
-            ->select(DB::raw('Date(visited_at) as day'), DB::raw('count(*) as views'))
-            ->where('visited_at', '>=', now()->subDays(14))
-            ->groupBy(DB::raw('Date(visited_at)'))
-            ->orderBy('day')
-            ->get();
-
-        foreach ($daily as $row) {
-            $lines[] = e(local_date($row->day)).': '.e(local_number($row->views));
+        foreach ($stats['daily'] as $row) {
+            $lines[] = e(local_date($row['date'])).': '.e(local_number($row['clicks']));
         }
 
-        foreach (['browser' => 'telegram.stat_browser', 'device_type' => 'telegram.stat_device', 'operating_system' => 'telegram.stat_os'] as $column => $title) {
+        foreach (['browsers' => 'bot_replies.stat_browser', 'devices' => 'bot_replies.stat_device', 'operating_systems' => 'bot_replies.stat_os'] as $group => $title) {
             $lines[] = '';
             $lines[] = '<b>'.e(__($title)).'</b>';
 
-            $rows = Visit::query()
-                ->where('short_url_id', $link->id)
-                ->human()
-                ->groupBy($column)
-                ->selectRaw($column.' as name, count(*) as views')
-                ->orderByDesc('views')
-                ->get();
-
-            foreach ($rows as $row) {
-                $name = $row->name ?: __('Unknown');
-                $lines[] = e($column === 'device_type' && $row->name ? __('device.'.$row->name) : $name).': '.e(local_number($row->views));
+            foreach ($stats[$group] as $row) {
+                $name = $row['name'] ?: __('Unknown');
+                $lines[] = e($group === 'devices' && $row['name'] ? __('device.'.$row['name']) : $name).': '.e(local_number($row['clicks']));
             }
         }
 

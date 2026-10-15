@@ -9,6 +9,27 @@ Hard constraints (never changed): the `/s/{key}` prefix, every existing
 row. The `short_urls` and `short_url_visits` tables are kept and only gain
 columns. All migrations are additive.
 
+## Deploying v2 the first time
+
+1. Run the local Docker compose once (`compose.local.yaml`) so MySQL executes
+   the new migrations before a production tag; so far they have only run on
+   SQLite. The entrypoint runs `migrate --force` on container start.
+2. Set `TELEGRAM_TOKEN` in Dokploy. The panel's Bot page shows the token of
+   the bot created in the old version, ready to copy.
+3. After the first start, press "Register webhook and commands" on the Bot
+   page, or run `php artisan bot:update`. The webhook path changed to
+   `/api/telegram/webhook`.
+4. Open the imported channel under Channels and switch it to Persian if you
+   want the right-to-left marks; it was imported as English so the post
+   stays identical.
+5. For every extra short domain: point DNS at the server, add the domain to
+   the app in Dokploy, then create the project with that domain in the panel.
+6. Expect dashboard totals to shift slightly: visits with no device type
+   now count as human. Channel attribution starts from this deploy; older
+   bot links show under "not posted to a channel".
+7. Existing bot chats keep working if they were bound to a user; other chats
+   must send /start and be approved under Bot access.
+
 ## Decisions taken from your answers
 
 | Topic | Decision |
@@ -171,7 +192,7 @@ Each phase ends green on `php artisan test` and Pint, and is one commit.
   `GET reports/summary?days=7`. JSON resources, one error shape.
 - Tests per endpoint and per scope denial.
 
-### Phase 4: auto title and reports
+### Phase 4: auto title and reports (done)
 
 - `FetchLinkTitle` queued job: OpenGraph title, fallback `<title>`, fallback
   host name, 5 second timeout, Laravel Http client. Sync in tests, Redis
