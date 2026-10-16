@@ -75,6 +75,6 @@ $bot->onApiError(function (Nutgram $bot, Throwable $e) {
     report($e);
 
     if ($bot->chatId()) {
-        $bot->sendMessage(__('bot.telegram_error', ['error' => $e->getMessage()]));
+        $bot->sendMessage(__('bot_replies.telegram_error', ['error' => $e->getMessage()]));
     }
 });

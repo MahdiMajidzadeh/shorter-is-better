@@ -7,6 +7,7 @@ use App\Models\Link;
 use App\Models\User;
 use App\Models\BotChat;
 use App\Models\Project;
+use Illuminate\Support\Str;
 use SergiX44\Nutgram\Nutgram;
 use Illuminate\Support\Facades\Http;
 use SergiX44\Nutgram\Testing\FakeNutgram;
@@ -226,6 +227,8 @@ class BotTest extends TestCase
 
         $this->assertTrue($texts->contains(fn (string $body) => str_contains($body, json_encode(__('bot_replies.publish_failed', ['channel' => $channel->title]), JSON_UNESCAPED_UNICODE))));
         $this->assertFalse($texts->contains(fn (string $body) => str_contains($body, json_encode(__('bot_replies.published', ['channel' => $channel->title]), JSON_UNESCAPED_UNICODE))));
+        $this->assertTrue($texts->contains(fn (string $body) => str_contains($body, Str::before(__('bot_replies.telegram_error'), ':error'))));
+        $this->assertFalse($texts->contains(fn (string $body) => str_contains($body, 'telegram_error')));
         $this->bot->assertNoConversation(self::CHAT, self::CHAT);
     }
 
