@@ -38,6 +38,25 @@ class BotAccessTest extends TestCase
         $this->actingAs($this->admin)->get('auth/bot/nope')->assertNotFound();
     }
 
+    public function test_hash_link_survives_logging_in_first(): void
+    {
+        $chat = BotChat::create(['chat_id' => 1, 'hash' => 'h1']);
+        $regular = $this->makeUser(['username' => 'sam']);
+
+        $this->get('auth/bot/h1')->assertRedirect(route('login'));
+        $this->post('auth', ['username' => 'sam', 'password' => 'secret-password'])->assertRedirect('auth/bot/h1');
+
+        $this->get('auth/bot/h1')->assertRedirect('panel');
+        $this->assertSame([$regular->id, BotChat::PENDING], [$chat->fresh()->user_id, $chat->fresh()->status]);
+    }
+
+    public function test_login_without_an_intended_url_lands_on_the_panel(): void
+    {
+        $this->makeUser(['username' => 'sam']);
+
+        $this->post('auth', ['username' => 'sam', 'password' => 'secret-password'])->assertRedirect('panel');
+    }
+
     public function test_admin_approves_blocks_and_removes_chats(): void
     {
         $chat = BotChat::create(['chat_id' => 1, 'name' => 'Sam', 'telegram_user_id' => 1]);

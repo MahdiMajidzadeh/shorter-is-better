@@ -33,7 +33,7 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
-            return redirect('panel');
+            return redirect()->intended('panel');
         }
 
         return back()
