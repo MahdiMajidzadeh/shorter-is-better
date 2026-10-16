@@ -30,7 +30,10 @@ class BotTest extends TestCase
     {
         parent::setUp();
 
-        Http::fake(['*' => Http::response('<html><head><meta property="og:title" content="Title"><meta property="og:description" content="Desc"></head></html>')]);
+        Http::fake([
+            'moved.test/*' => Http::response('', 301, ['Location' => 'https://example.com/final']),
+            '*'            => Http::response('<html><head><meta property="og:title" content="Title"><meta property="og:description" content="Desc"></head></html>'),
+        ]);
 
         $this->bot = app(Nutgram::class);
         $this->user = $this->makeAdmin();
@@ -256,6 +259,22 @@ class BotTest extends TestCase
                 [['text' => 'Read on PM Feed', 'url' => $feed]],
             ]],
         ], 0);
+    }
+
+    public function test_for_channel_refuses_a_url_that_redirects(): void
+    {
+        $this->approve();
+        $this->makeChannel($this->project, ['chat_id' => '-1001']);
+
+        $this->say('/for_channel');
+        $this->say('https://moved.test/old')->assertReplyText(__('bot_replies.url_redirects'));
+        $this->assertSame(0, Link::count());
+
+        Http::assertSent(fn ($request) => $request->url() === 'https://moved.test/old'
+            && $request->hasHeader('User-Agent', config('shortener.user_agent')));
+
+        $this->say('https://example.com/article');
+        $this->assertSame(1, Link::count());
     }
 
     public function test_for_channel_asks_which_channel_when_the_project_has_several(): void

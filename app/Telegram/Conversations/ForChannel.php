@@ -2,6 +2,7 @@
 
 namespace App\Telegram\Conversations;
 
+use Throwable;
 use App\Models\Link;
 use App\Models\Channel;
 use App\Services\PageMeta;
@@ -9,6 +10,7 @@ use App\Services\Shortener;
 use SergiX44\Nutgram\Nutgram;
 use App\Services\PostComposer;
 use App\Services\ChannelPublisher;
+use Illuminate\Support\Facades\Http;
 use App\Exceptions\ShortenerException;
 use App\Telegram\Support\InteractsWithBotChat;
 use SergiX44\Nutgram\Conversations\Conversation;
@@ -266,14 +268,18 @@ class ForChannel extends Conversation
         }
     }
 
+    /** Whether the url answers with a redirect; an unreachable url is not one. */
     protected function urlRedirects(string $url): bool
     {
-        if (app()->runningUnitTests()) {
+        try {
+            $response = Http::timeout((int) config('shortener.fetch_timeout'))
+                ->withUserAgent(config('shortener.user_agent'))
+                ->withoutRedirecting()
+                ->get($url);
+        } catch (Throwable) {
             return false;
         }
 
-        $headers = @get_headers($url, true);
-
-        return ! empty($headers['Location']);
+        return $response->redirect() && $response->header('Location') !== '';
     }
 }
