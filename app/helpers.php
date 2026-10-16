@@ -50,3 +50,24 @@ if (! function_exists('local_number')) {
         return $formatted;
     }
 }
+
+if (! function_exists('versioned_asset')) {
+    /**
+     * Url of a file in public/ with a `?v=` fingerprint of its content, so a
+     * new build gets a new url and no browser or CDN keeps serving the
+     * previous stylesheet. Falls back to the plain url when the file is
+     * missing (the Tailwind build has not run yet).
+     */
+    function versioned_asset(string $path): string
+    {
+        static $versions = [];
+
+        $file = public_path($path);
+
+        if (! array_key_exists($file, $versions)) {
+            $versions[$file] = is_file($file) ? substr(md5_file($file), 0, 8) : null;
+        }
+
+        return $versions[$file] ? asset($path).'?v='.$versions[$file] : asset($path);
+    }
+}

@@ -6,7 +6,7 @@
     <title>{{ config('app.name') }}</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=vazirmatn:400,500,600,700|inter:400,500,600,700" rel="stylesheet">
-    <link href="{{ asset('index.css') }}" rel="stylesheet">
+    <link href="{{ versioned_asset('index.css') }}" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script defer src="{{ asset('js/alpine-3.14.9.min.js') }}"></script>
     <style>
