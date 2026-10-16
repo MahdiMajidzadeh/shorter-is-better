@@ -1,7 +1,8 @@
 name: Release
 
-# tag push → build image → push to GHCR → webhook tells Dokploy to redeploy.
-# PRs build only (no push, no deploy) so a broken Dockerfile is caught pre-merge.
+# tag push → test → build image → push to GHCR → webhook tells Dokploy to redeploy.
+# PRs test and build only (no push, no deploy) so a failing test or a broken
+# Dockerfile is caught pre-merge.
 #
 #   git tag v0.2.3 && git push origin v0.2.3
 # or, because bare tag pushes have not always produced push events reliably:
@@ -40,8 +41,43 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  # Runs on every event, not just PRs and tag pushes: `build` needs it, and a
+  # skipped dependency would skip the build on release and workflow_dispatch.
+  test:
+    name: Lint and test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: bcmath, intl, pdo_sqlite
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      # phpunit.xml sets everything but APP_KEY, which sessions and the
+      # encrypter refuse to run without.
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Check formatting
+        run: ./vendor/bin/pint --test
+
+      - name: Run tests
+        run: php artisan test
+
   build:
     name: Build and push image
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
