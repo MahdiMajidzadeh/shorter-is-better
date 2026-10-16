@@ -240,6 +240,21 @@ supervisord process model as production (web + worker in one container).
   without the secret token Nutgram derives from `APP_KEY`, so changing
   `APP_KEY` also needs a `bot:update`.
 - **Worker liveness:** `docker exec <container> supervisorctl status`.
+- **Slow migrations on a big table.** Migrations run in the entrypoint before
+  the web server listens, and the healthcheck allows 40 s of grace plus three
+  30 s probes. An `ALTER TABLE` on a large table (`short_url_visits` grows
+  with every click) that runs longer than that gets the task killed, the
+  statement rolled back and Swarm restarting the task forever while the old
+  one keeps serving. Index migrations in this repo are therefore idempotent:
+  create the index by hand first from a one-off container with the service's
+  environment, and the boot-time migration finds it and returns at once.
+  ```bash
+  docker service inspect <service> --format '{{range .Spec.TaskTemplate.ContainerSpec.Env}}{{println .}}{{end}}' > /tmp/app.env
+  docker run --rm --network dokploy-network --env-file /tmp/app.env --entrypoint php <image> artisan db:table short_url_visits
+  docker run --rm --network dokploy-network --env-file /tmp/app.env --entrypoint php <image> -r \
+    '$p = new PDO(sprintf("mysql:host=%s;port=%s;dbname=%s", getenv("DB_HOST"), getenv("DB_PORT") ?: 3306, getenv("DB_DATABASE")), getenv("DB_USERNAME"), getenv("DB_PASSWORD"));
+     $p->exec("alter table short_url_visits add index short_url_visits_short_url_id_visited_at_index (short_url_id, visited_at)");'
+  ```
 - **Artisan in the running container:**
   ```bash
   docker exec <container> php artisan migrate:status

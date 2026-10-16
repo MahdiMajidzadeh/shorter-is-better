@@ -21,16 +21,32 @@ class ReportService
         $since = now()->subDays($days);
         $previous = now()->subDays($days * 2);
 
+        // One pass over the project's visits for every headline number
+        // instead of five separate counts of the same rows.
+        $clicks = $this->visits($project)->selectRaw(
+            'count(*) as total, '
+            .'sum(case when visited_at >= ? then 1 else 0 end) as today, '
+            .'sum(case when visited_at between ? and ? then 1 else 0 end) as yesterday, '
+            .'sum(case when visited_at >= ? then 1 else 0 end) as period, '
+            .'sum(case when visited_at between ? and ? then 1 else 0 end) as previous',
+            [today(), today()->subDay(), today(), $since, $previous, $since]
+        )->first();
+
+        $links = Link::forProject($project)->selectRaw(
+            'count(*) as total, sum(case when created_at >= ? then 1 else 0 end) as recent',
+            [$since]
+        )->first();
+
         return [
             'days'             => $days,
             'since'            => $since->toIso8601String(),
-            'clicks_today'     => $this->visits($project)->where('visited_at', '>=', today())->count(),
-            'clicks_yesterday' => $this->visits($project)->whereBetween('visited_at', [today()->subDay(), today()])->count(),
-            'clicks'           => $this->visits($project)->where('visited_at', '>=', $since)->count(),
-            'clicks_previous'  => $this->visits($project)->whereBetween('visited_at', [$previous, $since])->count(),
-            'clicks_total'     => $this->visits($project)->count(),
-            'links_total'      => Link::forProject($project)->count(),
-            'links_new'        => Link::forProject($project)->where('created_at', '>=', $since)->count(),
+            'clicks_today'     => (int) $clicks->today,
+            'clicks_yesterday' => (int) $clicks->yesterday,
+            'clicks'           => (int) $clicks->period,
+            'clicks_previous'  => (int) $clicks->previous,
+            'clicks_total'     => (int) $clicks->total,
+            'links_total'      => (int) $links->total,
+            'links_new'        => (int) $links->recent,
             'daily'            => $this->daily($this->visits($project), $since),
             'top_links'        => $this->topLinks($project, $since),
             'devices'          => $this->breakdown($this->visits($project)->where('visited_at', '>=', $since), 'device_type'),
@@ -45,10 +61,15 @@ class ReportService
         $since = now()->subDays($days);
         $visits = fn () => Visit::query()->where('short_url_id', $link->id)->human();
 
+        $clicks = $visits()->selectRaw(
+            'count(*) as total, sum(case when visited_at >= ? then 1 else 0 end) as period',
+            [$since]
+        )->first();
+
         return [
             'days'              => $days,
-            'clicks_total'      => $visits()->count(),
-            'clicks'            => $visits()->where('visited_at', '>=', $since)->count(),
+            'clicks_total'      => (int) $clicks->total,
+            'clicks'            => (int) $clicks->period,
             'daily'             => $this->daily($visits(), $since),
             'browsers'          => $this->breakdown($visits(), 'browser'),
             'devices'           => $this->breakdown($visits(), 'device_type'),
@@ -90,20 +111,29 @@ class ReportService
     /** @return list<array{key: string, short_url: string, destination_url: string, title: string|null, clicks: int}> */
     public function topLinks(Project $project, $since, int $limit = 10): array
     {
-        return $this->visits($project)
-            ->join('short_urls', 'short_urls.id', '=', 'short_url_visits.short_url_id')
+        // Rank by link id first and fetch the links after: grouping the
+        // joined rows by destination_url (a TEXT column) forced MariaDB
+        // through an on-disk temporary table.
+        $ranked = $this->visits($project)
             ->where('visited_at', '>=', $since)
-            ->groupBy('short_url_id', 'url_key', 'default_short_url', 'destination_url', 'title')
+            ->groupBy('short_url_id')
             ->orderByDesc('clicks')
+            ->orderBy('short_url_id')
             ->take($limit)
-            ->get(['short_url_id', 'url_key', 'default_short_url', 'destination_url', 'title', DB::raw('COUNT(*) as clicks')])
+            ->get(['short_url_id', DB::raw('COUNT(*) as clicks')]);
+
+        $links = Link::whereIn('id', $ranked->pluck('short_url_id'))->get()->keyBy('id');
+
+        return $ranked
+            ->filter(fn ($row) => $links->has($row->short_url_id))
             ->map(fn ($row) => [
-                'key'             => $row->url_key,
-                'short_url'       => $row->default_short_url,
-                'destination_url' => $row->destination_url,
-                'title'           => $row->title,
+                'key'             => $links[$row->short_url_id]->url_key,
+                'short_url'       => $links[$row->short_url_id]->default_short_url,
+                'destination_url' => $links[$row->short_url_id]->destination_url,
+                'title'           => $links[$row->short_url_id]->title,
                 'clicks'          => (int) $row->clicks,
             ])
+            ->values()
             ->all();
     }
 
@@ -134,10 +164,14 @@ class ReportService
             ->all();
     }
 
-    /** The latest human clicks with their link, for the activity feed. */
+    /**
+     * The latest human clicks with their link, for the activity feed. Ordered
+     * by id, which grows with visited_at, so the primary key serves the sort
+     * instead of a filesort over the project's whole history.
+     */
     public function recent(Project $project, int $limit = 8): EloquentCollection
     {
-        return $this->visits($project)->with('link')->orderByDesc('visited_at')->take($limit)->get();
+        return $this->visits($project)->with('link')->orderByDesc('id')->take($limit)->get();
     }
 
     /** Referring hosts; clicks without a referer are "direct". */
