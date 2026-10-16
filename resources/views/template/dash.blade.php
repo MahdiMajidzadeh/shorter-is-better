@@ -5,8 +5,7 @@
         <flux:sidebar.header>
             <flux:sidebar.brand
                 href="{{ url('/panel') }}"
-                logo="{{ asset('logo.png') }}"
-                logo:dark="{{ asset('logo-2.png') }}"
+                logo="{{ versioned_asset('logo.png') }}"
                 name="{{ config('app.name') }}"
             />
         </flux:sidebar.header>

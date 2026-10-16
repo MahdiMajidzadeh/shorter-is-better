@@ -6,7 +6,7 @@
     <div class="flex min-h-screen items-center justify-center px-6">
         <div class="w-full max-w-sm">
             <div class="mb-10 text-center">
-                <img src="{{ asset('favicon.png') }}" class="mx-auto h-12 w-12" alt="{{ config('app.name') }}">
+                <img src="{{ versioned_asset('logo.png') }}" class="mx-auto h-12 w-12" alt="{{ config('app.name') }}">
                 <flux:heading size="xl" level="1" class="mt-6">{{ __('Sign in to your account') }}</flux:heading>
                 <flux:text class="mt-2">{{ __("Let's build some shorts") }}</flux:text>
             </div>
