@@ -47,6 +47,30 @@ class DashboardTest extends TestCase
             ->assertSee('/s/'.$short->url_key);
     }
 
+    public function test_dashboard_replaces_the_daily_chart_with_a_message_when_the_month_is_quiet(): void
+    {
+        $short = $this->makeLink($this->project);
+        $this->makeVisit($short, now()->subDays(40));
+
+        $this->actingAs($this->user)->get('panel')
+            ->assertOk()
+            ->assertSee('No clicks in the last 30 days.')
+            ->assertDontSee('view-chart')
+            ->assertDontSee('apexcharts');
+    }
+
+    public function test_dashboard_draws_the_daily_chart_when_the_month_has_clicks(): void
+    {
+        $short = $this->makeLink($this->project);
+        $this->makeVisit($short, now()->subDays(3));
+
+        $this->actingAs($this->user)->get('panel')
+            ->assertOk()
+            ->assertSee('view-chart')
+            ->assertSee('apexcharts')
+            ->assertDontSee('No clicks in the last 30 days.');
+    }
+
     public function test_visits_without_a_device_type_count_as_human(): void
     {
         $short = $this->makeLink($this->project);

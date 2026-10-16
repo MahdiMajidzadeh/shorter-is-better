@@ -112,6 +112,30 @@ class PagesRenderTest extends TestCase
             ->assertSessionHasErrors(['url' => 'فیلد آدرس الزامی است.']);
     }
 
+    public function test_link_page_replaces_the_daily_chart_with_a_message_when_the_month_is_quiet(): void
+    {
+        $short = $this->makeLink($this->project);
+        $this->makeVisit($short, now()->subDays(40));
+
+        $this->actingAs($this->user)->get('links/'.$short->url_key)
+            ->assertOk()
+            ->assertSee('No clicks in the last 30 days.')
+            ->assertDontSee('view-chart')
+            ->assertDontSee('apexcharts');
+    }
+
+    public function test_link_page_draws_the_daily_chart_when_the_month_has_clicks(): void
+    {
+        $short = $this->makeLink($this->project);
+        $this->makeVisit($short, now()->subDays(3));
+
+        $this->actingAs($this->user)->get('links/'.$short->url_key)
+            ->assertOk()
+            ->assertSee('view-chart')
+            ->assertSee('apexcharts')
+            ->assertDontSee('No clicks in the last 30 days.');
+    }
+
     public function test_unknown_short_key_returns_404(): void
     {
         $this->actingAs($this->user)->get('links/does-not-exist')->assertNotFound();

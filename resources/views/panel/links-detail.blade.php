@@ -25,7 +25,11 @@
         <flux:text>{{ __('Clicks, bots excluded') }}</flux:text>
         <flux:heading size="xl" class="mt-1">{{ local_number($stats['clicks_total']) }}</flux:heading>
         <flux:text size="sm" class="mt-1">{{ __(':count in the last 30 days', ['count' => local_number($stats['clicks'])]) }}</flux:text>
-        <div id="view-chart" class="mt-6" dir="ltr"></div>
+        @if(empty($stats['daily']))
+            <flux:text size="sm" class="mt-6">{{ __('No clicks in the last 30 days.') }}</flux:text>
+        @else
+            <div id="view-chart" class="mt-6" dir="ltr"></div>
+        @endif
     </flux:card>
 
     <div class="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
@@ -75,15 +79,17 @@
 @endsection
 
 @push('js')
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <script>
-        var chart = new ApexCharts(document.querySelector("#view-chart"), {
-            chart: { type: 'bar', height: 400, background: 'transparent', fontFamily: 'Vazirmatn, Inter, ui-sans-serif, system-ui, sans-serif', toolbar: { show: false } },
-            theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' },
-            plotOptions: { bar: { horizontal: false, borderRadius: 2 } },
-            dataLabels: { enabled: false },
-            series: [{ name: @json(__('Clicks')), data: @json(collect($stats['daily'])->map(fn ($d) => ['x' => local_date($d['date']), 'y' => $d['clicks']])->values()) }]
-        });
-        chart.render();
-    </script>
+    @if(! empty($stats['daily']))
+        <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+        <script>
+            var chart = new ApexCharts(document.querySelector("#view-chart"), {
+                chart: { type: 'bar', height: 400, background: 'transparent', fontFamily: 'Vazirmatn, Inter, ui-sans-serif, system-ui, sans-serif', toolbar: { show: false } },
+                theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' },
+                plotOptions: { bar: { horizontal: false, borderRadius: 2 } },
+                dataLabels: { enabled: false },
+                series: [{ name: @json(__('Clicks')), data: @json(collect($stats['daily'])->map(fn ($d) => ['x' => local_date($d['date']), 'y' => $d['clicks']])->values()) }]
+            });
+            chart.render();
+        </script>
+    @endif
 @endpush

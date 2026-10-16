@@ -61,7 +61,11 @@
             <flux:card class="min-w-0 lg:col-span-3">
                 <flux:heading size="lg">{{ __('Daily clicks') }}</flux:heading>
                 <flux:text size="sm" class="mt-1">{{ __('Last 30 days, bots excluded') }}</flux:text>
-                <div id="view-chart" class="mt-4" dir="ltr"></div>
+                @if(empty($daily))
+                    <flux:text size="sm" class="mt-4">{{ __('No clicks in the last 30 days.') }}</flux:text>
+                @else
+                    <div id="view-chart" class="mt-4" dir="ltr"></div>
+                @endif
             </flux:card>
 
             <flux:card class="min-w-0 lg:col-span-2">
@@ -147,7 +151,7 @@
 @endsection
 
 @push('js')
-    @if($hasLinks)
+    @if($hasLinks && ! empty($daily))
         <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
         <script>
             var options = {
