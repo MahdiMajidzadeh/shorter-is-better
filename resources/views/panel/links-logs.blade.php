@@ -9,10 +9,10 @@
         <flux:table :paginate="$logs">
             <flux:table.columns>
                 <flux:table.column>{{ __('Link') }}</flux:table.column>
-                <flux:table.column>{{ __('Operating system') }}</flux:table.column>
-                <flux:table.column>{{ __('Browser') }}</flux:table.column>
+                <flux:table.column class="hidden md:table-cell">{{ __('Operating system') }}</flux:table.column>
+                <flux:table.column class="hidden md:table-cell">{{ __('Browser') }}</flux:table.column>
                 <flux:table.column>{{ __('Device') }}</flux:table.column>
-                <flux:table.column>{{ __('IP') }}</flux:table.column>
+                <flux:table.column class="hidden md:table-cell">{{ __('IP') }}</flux:table.column>
                 <flux:table.column>{{ __('Visited at') }}</flux:table.column>
             </flux:table.columns>
             <flux:table.rows>
@@ -24,14 +24,14 @@
                                 <div class="truncate text-xs text-zinc-500">{{ $log->link->displayTitle() }}</div>
                             @endif
                         </flux:table.cell>
-                        <flux:table.cell>{{ trim($log->operating_system.' '.$log->operating_system_version) }}</flux:table.cell>
-                        <flux:table.cell>{{ trim($log->browser.' '.$log->browser_version) }}</flux:table.cell>
+                        <flux:table.cell class="hidden md:table-cell">{{ trim($log->operating_system.' '.$log->operating_system_version) }}</flux:table.cell>
+                        <flux:table.cell class="hidden md:table-cell">{{ trim($log->browser.' '.$log->browser_version) }}</flux:table.cell>
                         <flux:table.cell>
                             @if($log->device_type)
                                 <flux:badge size="sm">{{ __('device.'.$log->device_type) }}</flux:badge>
                             @endif
                         </flux:table.cell>
-                        <flux:table.cell dir="ltr">{{ $log->ip_address }}</flux:table.cell>
+                        <flux:table.cell class="hidden md:table-cell" dir="ltr">{{ $log->ip_address }}</flux:table.cell>
                         <flux:table.cell class="whitespace-nowrap">{{ local_date($log->visited_at, true) }}</flux:table.cell>
                     </flux:table.row>
                 @endforeach

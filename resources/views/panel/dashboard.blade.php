@@ -58,13 +58,13 @@
         </div>
 
         <div class="mt-6 grid gap-6 lg:grid-cols-5">
-            <flux:card class="lg:col-span-3">
+            <flux:card class="min-w-0 lg:col-span-3">
                 <flux:heading size="lg">{{ __('Daily clicks') }}</flux:heading>
                 <flux:text size="sm" class="mt-1">{{ __('Last 30 days, bots excluded') }}</flux:text>
                 <div id="view-chart" class="mt-4" dir="ltr"></div>
             </flux:card>
 
-            <flux:card class="lg:col-span-2">
+            <flux:card class="min-w-0 lg:col-span-2">
                 <flux:heading size="lg">{{ __('Top links, 7 days') }}</flux:heading>
                 <div class="mt-4 space-y-5">
                     @php $maxViews = max(array_column($summary['top_links'], 'clicks') ?: [1]); @endphp

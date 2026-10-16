@@ -84,6 +84,7 @@
 
     <flux:header class="lg:hidden">
         <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left"/>
+        <flux:brand href="{{ url('/panel') }}" logo="{{ versioned_asset('logo.png') }}" name="{{ config('app.name') }}" class="ms-2"/>
         <flux:spacer/>
     </flux:header>
 

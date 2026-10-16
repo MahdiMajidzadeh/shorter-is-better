@@ -12,8 +12,8 @@
             <flux:table.columns>
                 <flux:table.column>{{ __('Name') }}</flux:table.column>
                 <flux:table.column>{{ __('Username') }}</flux:table.column>
-                <flux:table.column>{{ __('Role') }}</flux:table.column>
-                <flux:table.column>{{ __('Projects') }}</flux:table.column>
+                <flux:table.column class="hidden md:table-cell">{{ __('Role') }}</flux:table.column>
+                <flux:table.column class="hidden md:table-cell">{{ __('Projects') }}</flux:table.column>
                 <flux:table.column>{{ __('Status') }}</flux:table.column>
                 <flux:table.column></flux:table.column>
             </flux:table.columns>
@@ -22,8 +22,8 @@
                     <flux:table.row :key="$user->id">
                         <flux:table.cell class="font-medium">{{ $user->name }}</flux:table.cell>
                         <flux:table.cell dir="ltr">{{ $user->username }}</flux:table.cell>
-                        <flux:table.cell>{{ $user->is_admin ? __('Admin') : __('User') }}</flux:table.cell>
-                        <flux:table.cell>{{ $user->is_admin ? __('All projects') : $user->projects->pluck('name')->implode('، ') }}</flux:table.cell>
+                        <flux:table.cell class="hidden md:table-cell">{{ $user->is_admin ? __('Admin') : __('User') }}</flux:table.cell>
+                        <flux:table.cell class="hidden md:table-cell">{{ $user->is_admin ? __('All projects') : $user->projects->pluck('name')->implode('، ') }}</flux:table.cell>
                         <flux:table.cell>
                             <flux:badge size="sm" :color="$user->is_active ? 'green' : 'zinc'">{{ $user->is_active ? __('Active') : __('Disabled') }}</flux:badge>
                         </flux:table.cell>
